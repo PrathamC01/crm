@@ -26,10 +26,12 @@ app = FastAPI(title="CRM Authentication API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com",
-        "http://30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com"
+        # "http://localhost:3000",
+        # "http://127.0.0.1:3000",
+        # "https://30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com",
+        # "http://30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com"
+
+        "*"
     ],
     allow_credentials=True,
     allow_methods=["*"],
