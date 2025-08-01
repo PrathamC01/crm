@@ -255,6 +255,10 @@ async def startup_event():
 async def root():
     return {"status": True, "message": "CRM Authentication API is running", "data": None, "error": None}
 
+@app.get("/api/")
+async def api_root():
+    return {"status": True, "message": "CRM Authentication API is running", "data": None, "error": None}
+
 @app.post("/api/login")
 async def login(login_request: LoginRequest, request: Request):
     try:
