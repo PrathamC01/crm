@@ -24,7 +24,7 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001';
       const response = await fetch(`${backendUrl}/api/login`, {
         method: 'POST',
         headers: {
