@@ -13,7 +13,7 @@ function App() {
     const token = localStorage.getItem('token');
     if (token) {
       // Verify token validity by calling dashboard endpoint
-      fetch(`${import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}/api/dashboard`, {
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'}/api/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
