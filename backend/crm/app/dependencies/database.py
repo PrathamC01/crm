@@ -20,23 +20,25 @@ async def init_databases():
         postgres_pool = await asyncpg.create_pool(settings.POSTGRES_URL)
         print("✅ PostgreSQL connected successfully")
         
-        # Create tables
+        # Create tables in proper order (dependencies first)
+        from ..models.role import Role
+        from ..models.department import Department
         from ..models.user import User
+        
         async with postgres_pool.acquire() as conn:
+            # Create base tables first
+            await Role.create_table(conn)
+            await Department.create_table(conn)
             await User.create_table(conn)
             
-            # Create a default admin user for testing
-            from ..utils.auth import hash_password
-            admin_password = hash_password("admin123")
-            await conn.execute("""
-                INSERT INTO users (name, email, username, password_hash, role, department)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                ON CONFLICT (email) DO NOTHING
-            """, "Admin User", "admin@crm.com", "admin", admin_password, "admin", "IT")
+            # Seed admin user with proper role
+            await User.seed_admin_user(conn)
             
             print("✅ Database tables created and admin user seeded")
     except Exception as e:
         print(f"❌ PostgreSQL connection failed: {e}")
+        import traceback
+        traceback.print_exc()
     
     # MongoDB connection
     try:
