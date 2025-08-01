@@ -4,10 +4,6 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
 asyncpg==0.29.0
-databases==0.8.0
-sqlalchemy==2.0.23
-alembic==1.12.1
 pymongo==4.6.0
 python-dotenv==1.0.0
-pydantic==2.5.0
 bcrypt==4.1.2
