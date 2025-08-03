@@ -1,35 +1,37 @@
-import React, { useState } from 'react';
-import CompanyManagement from './CompanyManagement';
-import ContactManagement from './ContactManagement';
-import LeadManagement from './LeadManagement';
-import OpportunityManagement from './OpportunityManagement';
-import UserManagement from './UserManagement';
+import React, { useState } from "react";
+import CompanyManagement from "./CompanyManagement";
+import ContactManagement from "./ContactManagement";
+import LeadManagement from "./LeadManagement";
+import OpportunityManagement from "./OpportunityManagement";
+import UserManagement from "./UserManagement";
+import Dashboard from "./Dashboard";
 
 const CRM = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('companies');
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const tabs = [
-    { id: 'companies', name: 'Companies', icon: '🏢' },
-    { id: 'contacts', name: 'Contacts', icon: '👥' },
-    { id: 'leads', name: 'Leads', icon: '🎯' },
-    { id: 'opportunities', name: 'Opportunities', icon: '💰' },
-    { id: 'users', name: 'Users', icon: '👤' },
+    { id: "dashboard", name: "Dashboard", icon: "👤" },
+    { id: "companies", name: "Companies", icon: "🏢" },
+    { id: "contacts", name: "Contacts", icon: "👥" },
+    { id: "leads", name: "Leads", icon: "🎯" },
+    { id: "opportunities", name: "Opportunities", icon: "💰" },
+    { id: "users", name: "Users", icon: "👤" },
   ];
 
   const renderActiveComponent = () => {
     switch (activeTab) {
-      case 'companies':
+      case "companies":
         return <CompanyManagement />;
-      case 'contacts':
+      case "contacts":
         return <ContactManagement />;
-      case 'leads':
+      case "leads":
         return <LeadManagement />;
-      case 'opportunities':
+      case "opportunities":
         return <OpportunityManagement />;
-      case 'users':
+      case "users":
         return <UserManagement />;
       default:
-        return <CompanyManagement />;
+        return <Dashboard />;
     }
   };
 
@@ -41,7 +43,9 @@ const CRM = ({ onLogout }) => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">CRM Management System</h1>
-              <p className="text-blue-100 mt-1">Manage your business relationships</p>
+              <p className="text-blue-100 mt-1">
+                Manage your business relationships
+              </p>
             </div>
             <button
               onClick={onLogout}
@@ -63,8 +67,8 @@ const CRM = ({ onLogout }) => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
