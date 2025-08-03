@@ -1,21 +1,20 @@
 """
-User Management API endpoints
+User Management API endpoints with SQLAlchemy
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 from typing import List, Optional
-from ...schemas.user import (
-    UserCreate, UserUpdate, UserResponse, UserListResponse, 
-    UserPasswordUpdate, RoleResponse, DepartmentResponse
-)
+from ...schemas.user import UserCreate, UserUpdate
 from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_users_read, require_users_write, require_admin_role
-from ...dependencies.auth import get_user_service
+from ...dependencies.database import get_postgres_db
 from ...services.user_service import UserService
-from ...models.role import Role
-from ...models.department import Department
-from ...dependencies.database import get_postgres_pool
+from ...models import Role, Department
 
 router = APIRouter(prefix="/api/users", tags=["User Management"])
+
+def get_user_service(db: Session = Depends(get_postgres_db)) -> UserService:
+    return UserService(db)
 
 @router.get("/", response_model=StandardResponse)
 async def get_users(
@@ -27,14 +26,30 @@ async def get_users(
 ):
     """Get all users with pagination and search"""
     try:
-        users = await user_service.get_all_users(skip, limit, search)
-        total = len(users)  # For now, we'll get actual count later
+        users = user_service.get_users(skip, limit, search)
+        total = user_service.get_user_count(search)
+        
+        # Convert SQLAlchemy objects to dict
+        users_data = []
+        for user in users:
+            user_dict = {
+                "id": str(user.id),
+                "name": user.name,
+                "email": user.email,
+                "username": user.username,
+                "role_name": user.role.name if user.role else None,
+                "department_name": user.department.name if user.department else None,
+                "is_active": user.is_active,
+                "created_on": user.created_on.isoformat() if user.created_on else None,
+                "last_login": user.last_login.isoformat() if user.last_login else None
+            }
+            users_data.append(user_dict)
         
         return StandardResponse(
             status=True,
             message="Users retrieved successfully",
             data={
-                "users": users,
+                "users": users_data,
                 "total": total,
                 "skip": skip,
                 "limit": limit
@@ -51,14 +66,28 @@ async def get_user(
 ):
     """Get user by ID"""
     try:
-        user = await user_service.get_user_by_id(user_id)
+        user = user_service.get_user_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        
+        user_data = {
+            "id": str(user.id),
+            "name": user.name,
+            "email": user.email,
+            "username": user.username,
+            "role_id": str(user.role_id) if user.role_id else None,
+            "role_name": user.role.name if user.role else None,
+            "department_id": str(user.department_id) if user.department_id else None,
+            "department_name": user.department.name if user.department else None,
+            "is_active": user.is_active,
+            "created_on": user.created_on.isoformat() if user.created_on else None,
+            "last_login": user.last_login.isoformat() if user.last_login else None
+        }
         
         return StandardResponse(
             status=True,
             message="User retrieved successfully",
-            data=user
+            data=user_data
         )
     except HTTPException:
         raise
@@ -73,12 +102,23 @@ async def create_user(
 ):
     """Create new user"""
     try:
-        user = await user_service.create_user(user_data, current_user["id"])
+        user = user_service.create_user(user_data, current_user["id"])
+        
+        user_dict = {
+            "id": str(user.id),
+            "name": user.name,
+            "email": user.email,
+            "username": user.username,
+            "role_id": str(user.role_id) if user.role_id else None,
+            "department_id": str(user.department_id) if user.department_id else None,
+            "is_active": user.is_active,
+            "created_on": user.created_on.isoformat() if user.created_on else None
+        }
         
         return StandardResponse(
             status=True,
             message="User created successfully",
-            data=user
+            data=user_dict
         )
     except Exception as e:
         if "duplicate key" in str(e).lower():
@@ -94,14 +134,25 @@ async def update_user(
 ):
     """Update user information"""
     try:
-        user = await user_service.update_user(user_id, user_data, current_user["id"])
+        user = user_service.update_user(user_id, user_data, current_user["id"])
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        
+        user_dict = {
+            "id": str(user.id),
+            "name": user.name,
+            "email": user.email,
+            "username": user.username,
+            "role_id": str(user.role_id) if user.role_id else None,
+            "department_id": str(user.department_id) if user.department_id else None,
+            "is_active": user.is_active,
+            "updated_on": user.updated_on.isoformat() if user.updated_on else None
+        }
         
         return StandardResponse(
             status=True,
             message="User updated successfully",
-            data=user
+            data=user_dict
         )
     except HTTPException:
         raise
@@ -112,19 +163,13 @@ async def update_user(
 async def delete_user(
     user_id: str,
     current_user: dict = Depends(require_admin_role),
-    postgres_pool = Depends(get_postgres_pool)
+    user_service: UserService = Depends(get_user_service)
 ):
     """Soft delete user"""
     try:
-        async with postgres_pool.acquire() as conn:
-            result = await conn.execute("""
-                UPDATE users 
-                SET is_active = false, deleted_on = CURRENT_TIMESTAMP, deleted_by = $1
-                WHERE id = $2 AND is_active = true
-            """, current_user["id"], user_id)
-            
-            if result != "UPDATE 1":
-                raise HTTPException(status_code=404, detail="User not found")
+        deleted = user_service.delete_user(user_id, current_user["id"])
+        if not deleted:
+            raise HTTPException(status_code=404, detail="User not found")
         
         return StandardResponse(
             status=True,
@@ -138,13 +183,20 @@ async def delete_user(
 @router.get("/roles/list", response_model=StandardResponse)
 async def get_roles(
     current_user: dict = Depends(require_users_read),
-    postgres_pool = Depends(get_postgres_pool)
+    db: Session = Depends(get_postgres_db)
 ):
     """Get all roles"""
     try:
-        async with postgres_pool.acquire() as conn:
-            roles = await Role.get_all(conn)
-            roles_data = [dict(role) for role in roles]
+        roles = db.query(Role).filter(Role.is_active == True).all()
+        roles_data = [
+            {
+                "id": str(role.id),
+                "name": role.name,
+                "description": role.description,
+                "permissions": role.permissions
+            }
+            for role in roles
+        ]
         
         return StandardResponse(
             status=True,
@@ -157,13 +209,19 @@ async def get_roles(
 @router.get("/departments/list", response_model=StandardResponse)
 async def get_departments(
     current_user: dict = Depends(require_users_read),
-    postgres_pool = Depends(get_postgres_pool)
+    db: Session = Depends(get_postgres_db)
 ):
     """Get all departments"""
     try:
-        async with postgres_pool.acquire() as conn:
-            departments = await Department.get_all(conn)
-            departments_data = [dict(dept) for dept in departments]
+        departments = db.query(Department).filter(Department.is_active == True).all()
+        departments_data = [
+            {
+                "id": str(dept.id),
+                "name": dept.name,
+                "description": dept.description
+            }
+            for dept in departments
+        ]
         
         return StandardResponse(
             status=True,
@@ -176,14 +234,20 @@ async def get_departments(
 @router.get("/sales-people/list", response_model=StandardResponse)
 async def get_sales_people(
     current_user: dict = Depends(require_users_read),
-    postgres_pool = Depends(get_postgres_pool)
+    user_service: UserService = Depends(get_user_service)
 ):
     """Get all sales people for lead assignment"""
     try:
-        from ...models.user import User
-        async with postgres_pool.acquire() as conn:
-            sales_people = await User.get_sales_people(conn)
-            sales_data = [dict(person) for person in sales_people]
+        sales_people = user_service.get_sales_people()
+        sales_data = [
+            {
+                "id": str(person.id),
+                "name": person.name,
+                "email": person.email,
+                "role_name": person.role.name if person.role else None
+            }
+            for person in sales_people
+        ]
         
         return StandardResponse(
             status=True,

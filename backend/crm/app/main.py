@@ -1,155 +1,123 @@
 """
-FastAPI application entry point
+FastAPI main application with SQLAlchemy
 """
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-import time
-import traceback
-import uuid
-from datetime import datetime
+from contextlib import asynccontextmanager
 
 from .config import settings
-from .dependencies.database import init_databases, close_databases, get_mongo_db
+# from .dependencies.database import init_databases, close_databases, get_mongo_db
 from .utils.logger import log_request, log_error
-from .routers.front import health_router
-from .routers.sso import auth_router
-from .routers.portal import (
-    users_router,
-    companies_router,
-    contacts_router,
-    leads_router,
-    opportunities_router,
-)
 
-# Create FastAPI application
+# from .routers.front import health_router
+# from .routers.sso import auth_router
+# from .routers.portal import (
+#     users_router,
+#     companies_router,
+#     contacts_router,
+#     leads_router,
+#     opportunities_router,
+# )
+# Import routers
+from .routers.sso import auth, dashboard
+from .routers.portal import companies, contacts, leads, opportunities, users
+from .routers.front import health
+
+# Import database
+from .database.init_db import init_database
+from .dependencies.database import init_mongodb, close_mongodb
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events"""
+    # Startup
+    try:
+        print("🚀 Starting CRM Application...")
+
+        # Initialize databases
+        init_database()
+        init_mongodb()
+
+        print("✅ CRM Application started successfully!")
+
+    except Exception as e:
+        print(f"❌ Failed to start application: {e}")
+        raise
+
+    yield
+
+    # Shutdown
+    try:
+        close_mongodb()
+        print("📴 CRM Application shutdown completed")
+    except Exception as e:
+        print(f"❌ Error during shutdown: {e}")
+
+
+# Create FastAPI app
 app = FastAPI(
-    title=settings.APP_NAME, version=settings.APP_VERSION, debug=settings.DEBUG
+    title="CRM Management System",
+    description="Comprehensive CRM system with SQLAlchemy ORM",
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(health_router)
-app.include_router(auth_router)
-app.include_router(users_router)
-app.include_router(companies_router)
-app.include_router(contacts_router)
-app.include_router(leads_router)
-app.include_router(opportunities_router)
-
-# Global variables for database connections
-mongo_db = None
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup"""
-    await init_databases()
-
-    # Get MongoDB connection for logging
-    global mongo_db
-    try:
-        mongo_db = await get_mongo_db()
-    except Exception as e:
-        print(f"⚠️ MongoDB not available for logging: {e}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on application shutdown"""
-    await close_databases()
-
-
-# Request logging middleware
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log HTTP requests"""
-    start_time = time.time()
-
-    response = await call_next(request)
-
-    process_time = time.time() - start_time
-
-    # Log request details
-    try:
-        if mongo_db is not None:
-            await log_request(
-                mongo_db,
-                method=request.method,
-                url=str(request.url),
-                status_code=response.status_code,
-                process_time=process_time,
-                ip_address=request.client.host,
-                user_agent=request.headers.get("user-agent", ""),
-            )
-    except Exception as e:
-        print(f"Failed to log request: {e}")
-
-    return response
-
 
 # Global exception handler
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Handle global exceptions"""
-    error_id = str(uuid.uuid4())
-    error_details = {
-        "error_id": error_id,
-        "type": type(exc).__name__,
-        "message": str(exc),
-        "traceback": traceback.format_exc(),
-    }
-
-    # Log error to MongoDB
-    try:
-        if mongo_db is not None:
-            await log_error(
-                mongo_db,
-                error_id=error_id,
-                url=str(request.url),
-                method=request.method,
-                error_details=error_details,
-            )
-    except Exception as e:
-        print(f"Failed to log error: {e}")
-    print(exc)
+async def global_exception_handler(request, exc):
+    """Global exception handler"""
     return JSONResponse(
         status_code=500,
         content={
             "status": False,
             "message": "Internal server error",
             "data": None,
-            "error": error_details,
+            "error": str(exc),
         },
     )
 
 
-# Validation error handler
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle request validation errors"""
-    return JSONResponse(
-        status_code=422,
-        content={
-            "status": False,
-            "message": "Validation error",
-            "data": None,
-            "error": {"details": exc.errors(), "body": exc.body},
+# Include routers
+app.include_router(health.router)
+app.include_router(auth.router)
+app.include_router(dashboard.router)
+app.include_router(companies.router)
+app.include_router(contacts.router)
+app.include_router(leads.router)
+app.include_router(opportunities.router)
+app.include_router(users.router)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "status": True,
+        "message": "CRM Management System API",
+        "version": "2.0.0",
+        "data": {
+            "endpoints": [
+                "/api/health",
+                "/api/login",
+                "/api/dashboard",
+                "/api/companies",
+                "/api/contacts",
+                "/api/leads",
+                "/api/opportunities",
+                "/api/users",
+            ]
         },
-    )
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    }

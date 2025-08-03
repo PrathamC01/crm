@@ -1,91 +1,152 @@
 """
-Contact management service
+Contact management service using SQLAlchemy ORM
 """
 from typing import Optional, List
-from ..models.contact import Contact
-from ..schemas.contact import ContactCreate, ContactUpdate
+from datetime import datetime
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_, and_
+from ..models import Contact, Company, User, RoleType
 
 class ContactService:
-    def __init__(self, postgres_pool):
-        self.postgres_pool = postgres_pool
+    def __init__(self, db: Session):
+        self.db = db
     
-    async def create_contact(self, contact_data: ContactCreate, created_by: Optional[str] = None) -> dict:
+    def create_contact(self, contact_data: dict, created_by: Optional[str] = None) -> Contact:
         """Create a new contact"""
-        async with self.postgres_pool.acquire() as conn:
-            contact = await Contact.create_contact(
-                conn,
-                **contact_data.dict(),
-                created_by=created_by
+        db_contact = Contact(
+            full_name=contact_data.get('full_name'),
+            designation=contact_data.get('designation'),
+            email=contact_data.get('email'),
+            phone_number=contact_data.get('phone_number'),
+            company_id=contact_data.get('company_id'),
+            role_type=contact_data.get('role_type'),
+            business_card_path=contact_data.get('business_card_path'),
+            created_by=created_by
+        )
+        
+        self.db.add(db_contact)
+        self.db.commit()
+        self.db.refresh(db_contact)
+        return db_contact
+    
+    def get_contact_by_id(self, contact_id: str) -> Optional[Contact]:
+        """Get contact by ID with company details"""
+        return self.db.query(Contact).options(
+            joinedload(Contact.company)
+        ).filter(
+            and_(
+                Contact.id == contact_id,
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
             )
-            return dict(contact)
+        ).first()
     
-    async def get_contact_by_id(self, contact_id: str) -> Optional[dict]:
-        """Get contact by ID"""
-        async with self.postgres_pool.acquire() as conn:
-            contact = await Contact.find_by_id(conn, contact_id)
-            return dict(contact) if contact else None
+    def get_contact_by_email(self, email: str) -> Optional[Contact]:
+        """Get contact by email"""
+        return self.db.query(Contact).filter(
+            and_(
+                Contact.email == email,
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
+            )
+        ).first()
     
-    async def get_contacts(self, skip: int = 0, limit: int = 100, search: str = None) -> List[dict]:
-        """Get all contacts with optional search"""
-        async with self.postgres_pool.acquire() as conn:
-            contacts = await Contact.get_all(conn, skip, limit, search)
-            return [dict(contact) for contact in contacts]
-    
-    async def get_contacts_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[dict]:
-        """Get contacts by company"""
-        async with self.postgres_pool.acquire() as conn:
-            contacts = await Contact.get_by_company(conn, company_id, skip, limit)
-            return [dict(contact) for contact in contacts]
-    
-    async def get_decision_makers(self, company_id: str) -> List[dict]:
-        """Get decision makers for a company"""
-        async with self.postgres_pool.acquire() as conn:
-            contacts = await Contact.get_decision_makers_by_company(conn, company_id)
-            return [dict(contact) for contact in contacts]
-    
-    async def update_contact(self, contact_id: str, contact_data: ContactUpdate, updated_by: str) -> Optional[dict]:
+    def update_contact(self, contact_id: str, contact_data: dict, updated_by: Optional[str] = None) -> Optional[Contact]:
         """Update contact information"""
-        async with self.postgres_pool.acquire() as conn:
-            contact = await Contact.update_contact(
-                conn, 
-                contact_id, 
-                updated_by, 
-                **contact_data.dict(exclude_unset=True)
-            )
-            return dict(contact) if contact else None
+        db_contact = self.get_contact_by_id(contact_id)
+        if not db_contact:
+            return None
+        
+        for field, value in contact_data.items():
+            if field not in ['id', 'created_on', 'created_by'] and value is not None:
+                setattr(db_contact, field, value)
+        
+        if updated_by:
+            db_contact.updated_by = updated_by
+        
+        self.db.commit()
+        self.db.refresh(db_contact)
+        return db_contact
     
-    async def delete_contact(self, contact_id: str, deleted_by: str) -> bool:
+    def delete_contact(self, contact_id: str, deleted_by: Optional[str] = None) -> bool:
         """Soft delete contact"""
-        async with self.postgres_pool.acquire() as conn:
-            result = await conn.execute("""
-                UPDATE contacts 
-                SET is_active = false, deleted_on = CURRENT_TIMESTAMP, deleted_by = $1
-                WHERE id = $2 AND is_active = true
-            """, deleted_by, contact_id)
-            return result == "UPDATE 1"
+        db_contact = self.get_contact_by_id(contact_id)
+        if not db_contact:
+            return False
+        
+        db_contact.is_active = False
+        db_contact.deleted_on = datetime.utcnow()
+        if deleted_by:
+            db_contact.deleted_by = deleted_by
+        
+        self.db.commit()
+        return True
     
-    async def get_contact_count(self, search: str = None) -> int:
-        """Get total count of contacts"""
-        async with self.postgres_pool.acquire() as conn:
-            if search:
-                result = await conn.fetchval("""
-                    SELECT COUNT(*) FROM contacts c
-                    LEFT JOIN companies comp ON c.company_id = comp.id
-                    WHERE c.is_active = true AND c.deleted_on IS NULL 
-                    AND (c.full_name ILIKE $1 OR c.email ILIKE $1 OR c.designation ILIKE $1 OR comp.name ILIKE $1)
-                """, f"%{search}%")
-            else:
-                result = await conn.fetchval(
-                    "SELECT COUNT(*) FROM contacts WHERE is_active = true AND deleted_on IS NULL"
+    def get_contacts(self, skip: int = 0, limit: int = 100, search: str = None) -> List[Contact]:
+        """Get all contacts with pagination and search"""
+        query = self.db.query(Contact).options(
+            joinedload(Contact.company)
+        ).filter(
+            and_(
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
+            )
+        )
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Company).filter(
+                or_(
+                    Contact.full_name.ilike(search_term),
+                    Contact.email.ilike(search_term),
+                    Contact.designation.ilike(search_term),
+                    Company.name.ilike(search_term)
                 )
-            return result or 0
+            )
+        
+        return query.order_by(Contact.full_name).offset(skip).limit(limit).all()
     
-    async def upload_business_card(self, contact_id: str, file_path: str, updated_by: str) -> bool:
-        """Upload business card for contact"""
-        async with self.postgres_pool.acquire() as conn:
-            result = await conn.execute("""
-                UPDATE contacts 
-                SET business_card_path = $1, updated_on = CURRENT_TIMESTAMP, updated_by = $2
-                WHERE id = $3 AND is_active = true
-            """, file_path, updated_by, contact_id)
-            return result == "UPDATE 1"
+    def get_contacts_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Contact]:
+        """Get contacts by company"""
+        return self.db.query(Contact).options(
+            joinedload(Contact.company)
+        ).filter(
+            and_(
+                Contact.company_id == company_id,
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
+            )
+        ).order_by(Contact.full_name).offset(skip).limit(limit).all()
+    
+    def get_decision_makers(self, company_id: str) -> List[Contact]:
+        """Get decision makers for a company"""
+        return self.db.query(Contact).filter(
+            and_(
+                Contact.company_id == company_id,
+                Contact.role_type == RoleType.DECISION_MAKER,
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
+            )
+        ).order_by(Contact.full_name).all()
+    
+    def get_contact_count(self, search: str = None) -> int:
+        """Get total count of contacts"""
+        query = self.db.query(Contact).filter(
+            and_(
+                Contact.is_active == True,
+                Contact.deleted_on.is_(None)
+            )
+        )
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Company).filter(
+                or_(
+                    Contact.full_name.ilike(search_term),
+                    Contact.email.ilike(search_term),
+                    Contact.designation.ilike(search_term),
+                    Company.name.ilike(search_term)
+                )
+            )
+        
+        return query.count()
