@@ -11,7 +11,7 @@ class CompanyService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_company(self, company_data: dict, created_by: Optional[str] = None) -> Company:
+    def create_company(self, company_data: dict, created_by: Optional[int] = None) -> Company:
         """Create a new company"""
         db_company = Company(
             name=company_data.get('name'),
