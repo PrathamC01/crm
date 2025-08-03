@@ -7,11 +7,11 @@ from ...schemas.contact import ContactCreate, ContactUpdate, ContactListResponse
 from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_contacts_read, require_contacts_write
 from ...services.contact_service import ContactService
-from ...dependencies.database import get_postgres_pool
+from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/contacts", tags=["Contact Management"])
 
-async def get_contact_service(postgres_pool = Depends(get_postgres_pool)) -> ContactService:
+async def get_contact_service(postgres_pool = Depends(get_postgres_db)) -> ContactService:
     return ContactService(postgres_pool)
 
 @router.get("/", response_model=StandardResponse)

@@ -10,11 +10,11 @@ from ...schemas.lead import (
 from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_leads_read, require_leads_write
 from ...services.lead_service import LeadService
-from ...dependencies.database import get_postgres_pool
+from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/leads", tags=["Lead Management"])
 
-async def get_lead_service(postgres_pool = Depends(get_postgres_pool)) -> LeadService:
+async def get_lead_service(postgres_pool = Depends(get_postgres_db)) -> LeadService:
     return LeadService(postgres_pool)
 
 @router.get("/", response_model=StandardResponse)

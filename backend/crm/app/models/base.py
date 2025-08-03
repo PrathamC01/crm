@@ -1,29 +1,54 @@
-"""
-Base model with common fields for all entities
-"""
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from datetime import datetime
-import uuid
 
 Base = declarative_base()
 
+
 class BaseModel(Base):
-    """Abstract base model with common audit fields"""
     __abstract__ = True
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_on = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_on = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    deleted_on = Column(DateTime, nullable=True)
-    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
-    updated_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
-    
-    # Relationships for audit fields
-    creator = relationship("User", foreign_keys=[created_by], back_populates=None)
-    updater = relationship("User", foreign_keys=[updated_by], back_populates=None)
-    deleter = relationship("User", foreign_keys=[deleted_by], back_populates=None)
+
+    @declared_attr
+    def id(cls):
+        return Column(Integer, primary_key=True)
+
+    @declared_attr
+    def is_active(cls):
+        return Column(Boolean, default=True, nullable=False)
+
+    @declared_attr
+    def created_on(cls):
+        return Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    @declared_attr
+    def updated_on(cls):
+        return Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @declared_attr
+    def deleted_on(cls):
+        return Column(DateTime, nullable=True)
+
+    @declared_attr
+    def created_by(cls):
+        return Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    @declared_attr
+    def updated_by(cls):
+        return Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    @declared_attr
+    def deleted_by(cls):
+        return Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    @declared_attr
+    def creator(cls):
+        return relationship("User", foreign_keys=[cls.created_by])
+
+    @declared_attr
+    def updater(cls):
+        return relationship("User", foreign_keys=[cls.updated_by])
+
+    @declared_attr
+    def deleter(cls):
+        return relationship("User", foreign_keys=[cls.deleted_by])

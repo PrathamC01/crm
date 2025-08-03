@@ -7,11 +7,11 @@ from ...schemas.company import CompanyCreate, CompanyUpdate, CompanyListResponse
 from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_companies_read, require_companies_write
 from ...services.company_service import CompanyService
-from ...dependencies.database import get_postgres_pool
+from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/companies", tags=["Company Management"])
 
-async def get_company_service(postgres_pool = Depends(get_postgres_pool)) -> CompanyService:
+async def get_company_service(postgres_pool = Depends(get_postgres_db)) -> CompanyService:
     return CompanyService(postgres_pool)
 
 @router.get("/", response_model=StandardResponse)

@@ -1,13 +1,14 @@
 """
 FastAPI main application with SQLAlchemy
 """
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 # Import routers
-from .routers.sso import auth, dashboard
+from .routers.sso import auth
 from .routers.portal import companies, contacts, leads, opportunities, users
 from .routers.front import health
 
@@ -15,25 +16,26 @@ from .routers.front import health
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     try:
         print("🚀 Starting CRM Application...")
-        
+
         # Initialize databases
         init_database()
         init_mongodb()
-        
+
         print("✅ CRM Application started successfully!")
-        
+
     except Exception as e:
         print(f"❌ Failed to start application: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     try:
         close_mongodb()
@@ -41,12 +43,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"❌ Error during shutdown: {e}")
 
+
 # Create FastAPI app
 app = FastAPI(
     title="CRM Management System",
     description="Comprehensive CRM system with SQLAlchemy ORM",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -58,6 +61,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
@@ -68,19 +72,21 @@ async def global_exception_handler(request, exc):
             "status": False,
             "message": "Internal server error",
             "data": None,
-            "error": str(exc)
-        }
+            "error": str(exc),
+        },
     )
+
 
 # Include routers
 app.include_router(health.router)
 app.include_router(auth.router)
-app.include_router(dashboard.router)
+# app.include_router(dashboard.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(leads.router)
 app.include_router(opportunities.router)
 app.include_router(users.router)
+
 
 @app.get("/")
 async def root():
@@ -95,10 +101,10 @@ async def root():
                 "/api/login",
                 "/api/dashboard",
                 "/api/companies",
-                "/api/contacts", 
+                "/api/contacts",
                 "/api/leads",
                 "/api/opportunities",
-                "/api/users"
+                "/api/users",
             ]
-        }
+        },
     }

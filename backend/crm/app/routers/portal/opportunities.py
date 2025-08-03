@@ -10,11 +10,11 @@ from ...schemas.opportunity import (
 from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_opportunities_read, require_opportunities_write
 from ...services.opportunity_service import OpportunityService
-from ...dependencies.database import get_postgres_pool
+from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/opportunities", tags=["Opportunity Management"])
 
-async def get_opportunity_service(postgres_pool = Depends(get_postgres_pool)) -> OpportunityService:
+async def get_opportunity_service(postgres_pool = Depends(get_postgres_db)) -> OpportunityService:
     return OpportunityService(postgres_pool)
 
 @router.get("/", response_model=StandardResponse)
