@@ -51,7 +51,7 @@ class ContactService:
             )
         ).first()
     
-    def update_contact(self, contact_id: str, contact_data: dict, updated_by: Optional[str] = None) -> Optional[Contact]:
+    def update_contact(self, contact_id: int, contact_data: dict, updated_by: Optional[int] = None) -> Optional[Contact]:
         """Update contact information"""
         db_contact = self.get_contact_by_id(contact_id)
         if not db_contact:
@@ -68,7 +68,7 @@ class ContactService:
         self.db.refresh(db_contact)
         return db_contact
     
-    def delete_contact(self, contact_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_contact(self, contact_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete contact"""
         db_contact = self.get_contact_by_id(contact_id)
         if not db_contact:
