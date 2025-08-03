@@ -1,68 +1,128 @@
 """
-Company management service
+Company management service using SQLAlchemy ORM
 """
 from typing import Optional, List
-from ..models.company import Company
-from ..schemas.company import CompanyCreate, CompanyUpdate
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_, and_
+from datetime import datetime
+from ..models import Company, User
 
 class CompanyService:
-    def __init__(self, postgres_pool):
-        self.postgres_pool = postgres_pool
+    def __init__(self, db: Session):
+        self.db = db
     
-    async def create_company(self, company_data: CompanyCreate, created_by: Optional[str] = None) -> dict:
+    def create_company(self, company_data: dict, created_by: Optional[str] = None) -> Company:
         """Create a new company"""
-        async with self.postgres_pool.acquire() as conn:
-            company = await Company.create_company(
-                conn,
-                **company_data.dict(),
-                created_by=created_by
-            )
-            return dict(company)
+        db_company = Company(
+            name=company_data.get('name'),
+            gst_number=company_data.get('gst_number'),
+            pan_number=company_data.get('pan_number'),
+            parent_company_id=company_data.get('parent_company_id'),
+            industry_category=company_data.get('industry_category'),
+            address=company_data.get('address'),
+            city=company_data.get('city'),
+            state=company_data.get('state'),
+            country=company_data.get('country', 'India'),
+            postal_code=company_data.get('postal_code'),
+            website=company_data.get('website'),
+            description=company_data.get('description'),
+            created_by=created_by
+        )
+        
+        self.db.add(db_company)
+        self.db.commit()
+        self.db.refresh(db_company)
+        return db_company
     
-    async def get_company_by_id(self, company_id: str) -> Optional[dict]:
+    def get_company_by_id(self, company_id: str) -> Optional[Company]:
         """Get company by ID"""
-        async with self.postgres_pool.acquire() as conn:
-            company = await Company.find_by_id(conn, company_id)
-            return dict(company) if company else None
-    
-    async def get_companies(self, skip: int = 0, limit: int = 100, search: str = None) -> List[dict]:
-        """Get all companies with optional search"""
-        async with self.postgres_pool.acquire() as conn:
-            companies = await Company.get_all(conn, skip, limit, search)
-            return [dict(company) for company in companies]
-    
-    async def update_company(self, company_id: str, company_data: CompanyUpdate, updated_by: str) -> Optional[dict]:
-        """Update company information"""
-        async with self.postgres_pool.acquire() as conn:
-            company = await Company.update_company(
-                conn, 
-                company_id, 
-                updated_by, 
-                **company_data.dict(exclude_unset=True)
+        return self.db.query(Company).filter(
+            and_(
+                Company.id == company_id,
+                Company.is_active == True,
+                Company.deleted_on.is_(None)
             )
-            return dict(company) if company else None
+        ).first()
     
-    async def delete_company(self, company_id: str, deleted_by: str) -> bool:
+    def get_company_by_name(self, name: str) -> Optional[Company]:
+        """Get company by name"""
+        return self.db.query(Company).filter(
+            and_(
+                Company.name == name,
+                Company.is_active == True,
+                Company.deleted_on.is_(None)
+            )
+        ).first()
+    
+    def update_company(self, company_id: str, company_data: dict, updated_by: Optional[str] = None) -> Optional[Company]:
+        """Update company information"""
+        db_company = self.get_company_by_id(company_id)
+        if not db_company:
+            return None
+        
+        for field, value in company_data.items():
+            if field not in ['id', 'created_on', 'created_by'] and value is not None:
+                setattr(db_company, field, value)
+        
+        if updated_by:
+            db_company.updated_by = updated_by
+        
+        self.db.commit()
+        self.db.refresh(db_company)
+        return db_company
+    
+    def delete_company(self, company_id: str, deleted_by: Optional[str] = None) -> bool:
         """Soft delete company"""
-        async with self.postgres_pool.acquire() as conn:
-            result = await conn.execute("""
-                UPDATE companies 
-                SET is_active = false, deleted_on = CURRENT_TIMESTAMP, deleted_by = $1
-                WHERE id = $2 AND is_active = true
-            """, deleted_by, company_id)
-            return result == "UPDATE 1"
+        db_company = self.get_company_by_id(company_id)
+        if not db_company:
+            return False
+        
+        db_company.is_active = False
+        db_company.deleted_on = datetime.utcnow()
+        if deleted_by:
+            db_company.deleted_by = deleted_by
+        
+        self.db.commit()
+        return True
     
-    async def get_company_count(self, search: str = None) -> int:
-        """Get total count of companies"""
-        async with self.postgres_pool.acquire() as conn:
-            if search:
-                result = await conn.fetchval("""
-                    SELECT COUNT(*) FROM companies 
-                    WHERE is_active = true AND deleted_on IS NULL 
-                    AND (name ILIKE $1 OR industry_category ILIKE $1 OR city ILIKE $1)
-                """, f"%{search}%")
-            else:
-                result = await conn.fetchval(
-                    "SELECT COUNT(*) FROM companies WHERE is_active = true AND deleted_on IS NULL"
+    def get_companies(self, skip: int = 0, limit: int = 100, search: str = None) -> List[Company]:
+        """Get all companies with pagination and search"""
+        query = self.db.query(Company).filter(
+            and_(
+                Company.is_active == True,
+                Company.deleted_on.is_(None)
+            )
+        )
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Company.name.ilike(search_term),
+                    Company.industry_category.ilike(search_term),
+                    Company.city.ilike(search_term)
                 )
-            return result or 0
+            )
+        
+        return query.order_by(Company.name).offset(skip).limit(limit).all()
+    
+    def get_company_count(self, search: str = None) -> int:
+        """Get total count of companies"""
+        query = self.db.query(Company).filter(
+            and_(
+                Company.is_active == True,
+                Company.deleted_on.is_(None)  
+            )
+        )
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Company.name.ilike(search_term),
+                    Company.industry_category.ilike(search_term),
+                    Company.city.ilike(search_term)
+                )
+            )
+        
+        return query.count()
