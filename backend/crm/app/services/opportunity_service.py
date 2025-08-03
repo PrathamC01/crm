@@ -11,7 +11,7 @@ class OpportunityService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_opportunity(self, opportunity_data: dict, created_by: Optional[str] = None) -> Opportunity:
+    def create_opportunity(self, opportunity_data: dict, created_by: Optional[int] = None) -> Opportunity:
         """Create a new opportunity"""
         # Validate that contact is a Decision Maker
         contact = self.db.query(Contact).filter(
