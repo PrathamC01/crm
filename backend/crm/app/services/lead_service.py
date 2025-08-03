@@ -154,7 +154,7 @@ class LeadService:
         
         return query.count()
     
-    def convert_to_opportunity(self, lead_id: str, conversion_data: dict, created_by: str) -> dict:
+    def convert_to_opportunity(self, lead_id: int, conversion_data: dict, created_by: int) -> dict:
         """Convert lead to opportunity"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
