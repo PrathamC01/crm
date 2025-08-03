@@ -29,7 +29,7 @@ class ContactService:
         self.db.refresh(db_contact)
         return db_contact
     
-    def get_contact_by_id(self, contact_id: str) -> Optional[Contact]:
+    def get_contact_by_id(self, contact_id: int) -> Optional[Contact]:
         """Get contact by ID with company details"""
         return self.db.query(Contact).options(
             joinedload(Contact.company)
