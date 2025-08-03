@@ -139,12 +139,12 @@ async def update_user(
             raise HTTPException(status_code=404, detail="User not found")
         
         user_dict = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "role_id": user.role_id if user.role_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "is_active": user.is_active,
             "updated_on": user.updated_on.isoformat() if user.updated_on else None
         }
