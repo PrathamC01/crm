@@ -71,13 +71,13 @@ async def get_user(
             raise HTTPException(status_code=404, detail="User not found")
         
         user_data = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
+            "role_id": user.role_id if user.role_id else None,
             "role_name": user.role.name if user.role else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "department_name": user.department.name if user.department else None,
             "is_active": user.is_active,
             "created_on": user.created_on.isoformat() if user.created_on else None,
