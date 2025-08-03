@@ -2,7 +2,7 @@
 Dependency injection for CRM application
 """
 from .auth import get_current_user, get_auth_service, get_user_service
-from .database import get_postgres_pool, get_mongo_db
+from .database import get_postgres_db, get_mongo_db
 from .rbac import (
     require_permission, require_any_permission, require_all_permissions,
     require_users_read, require_users_write,
@@ -16,7 +16,7 @@ from .rbac import (
 
 __all__ = [
     "get_current_user", "get_auth_service", "get_user_service", 
-    "get_postgres_pool", "get_mongo_db",
+    "get_postgres_db", "get_mongo_db",
     "require_permission", "require_any_permission", "require_all_permissions",
     "require_users_read", "require_users_write",
     "require_companies_read", "require_companies_write",
