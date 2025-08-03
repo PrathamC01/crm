@@ -59,7 +59,7 @@ class OpportunityService:
             )
         ).first()
     
-    def update_opportunity(self, opportunity_id: str, opportunity_data: dict, updated_by: Optional[str] = None) -> Optional[Opportunity]:
+    def update_opportunity(self, opportunity_id: int, opportunity_data: dict, updated_by: Optional[int] = None) -> Optional[Opportunity]:
         """Update opportunity information"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -76,7 +76,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def update_stage(self, opportunity_id: str, stage: str, updated_by: str, notes: str = None) -> Optional[Opportunity]:
+    def update_stage(self, opportunity_id: int, stage: str, updated_by: int, notes: str = None) -> Optional[Opportunity]:
         """Update opportunity stage"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -92,7 +92,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def close_opportunity(self, opportunity_id: str, status: str, close_date: str, updated_by: str, notes: str = None) -> Optional[Opportunity]:
+    def close_opportunity(self, opportunity_id: int, status: str, close_date: str, updated_by: int, notes: str = None) -> Optional[Opportunity]:
         """Close opportunity"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -109,7 +109,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def delete_opportunity(self, opportunity_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_opportunity(self, opportunity_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete opportunity"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
