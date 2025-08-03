@@ -106,7 +106,7 @@ class ContactService:
         
         return query.order_by(Contact.full_name).offset(skip).limit(limit).all()
     
-    def get_contacts_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Contact]:
+    def get_contacts_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Contact]:
         """Get contacts by company"""
         return self.db.query(Contact).options(
             joinedload(Contact.company)
@@ -118,7 +118,7 @@ class ContactService:
             )
         ).order_by(Contact.full_name).offset(skip).limit(limit).all()
     
-    def get_decision_makers(self, company_id: str) -> List[Contact]:
+    def get_decision_makers(self, company_id: int) -> List[Contact]:
         """Get decision makers for a company"""
         return self.db.query(Contact).filter(
             and_(
