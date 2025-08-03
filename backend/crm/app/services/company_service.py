@@ -34,7 +34,7 @@ class CompanyService:
         self.db.refresh(db_company)
         return db_company
     
-    def get_company_by_id(self, company_id: str) -> Optional[Company]:
+    def get_company_by_id(self, company_id: int) -> Optional[Company]:
         """Get company by ID"""
         return self.db.query(Company).filter(
             and_(
