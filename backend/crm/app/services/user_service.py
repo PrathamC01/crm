@@ -157,7 +157,7 @@ class UserService:
             )
         ).order_by(User.name).all()
     
-    def update_last_login(self, user_id: str):
+    def update_last_login(self, user_id: int):
         """Update user's last login timestamp"""
         db_user = self.get_user_by_id(user_id)
         if db_user:
@@ -165,7 +165,7 @@ class UserService:
             db_user.failed_login_attempts = 0
             self.db.commit()
     
-    def increment_failed_login(self, user_id: str):
+    def increment_failed_login(self, user_id: int):
         """Increment failed login attempts"""
         db_user = self.get_user_by_id(user_id)
         if db_user:
