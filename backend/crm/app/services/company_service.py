@@ -54,7 +54,7 @@ class CompanyService:
             )
         ).first()
     
-    def update_company(self, company_id: str, company_data: dict, updated_by: Optional[str] = None) -> Optional[Company]:
+    def update_company(self, company_id: int, company_data: dict, updated_by: Optional[int] = None) -> Optional[Company]:
         """Update company information"""
         db_company = self.get_company_by_id(company_id)
         if not db_company:
