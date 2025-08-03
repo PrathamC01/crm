@@ -31,6 +31,17 @@ async def init_databases():
             await Department.create_table(conn)
             await User.create_table(conn)
             
+            # Create business tables
+            from ..models.company import Company
+            from ..models.contact import Contact
+            from ..models.lead import Lead
+            from ..models.opportunity import Opportunity
+            
+            await Company.create_table(conn)
+            await Contact.create_table(conn)
+            await Lead.create_table(conn)
+            await Opportunity.create_table(conn)
+            
             # Seed admin user with proper role
             await User.seed_admin_user(conn)
             

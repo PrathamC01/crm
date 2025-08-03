@@ -16,6 +16,10 @@ from .dependencies.database import init_databases, close_databases, get_mongo_db
 from .utils.logger import log_request, log_error
 from .routers.front import health_router
 from .routers.sso import auth_router
+from .routers.portal import (
+    users_router, companies_router, contacts_router, 
+    leads_router, opportunities_router
+)
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,6 +38,11 @@ app.add_middleware(
 # Include routers
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(companies_router)
+app.include_router(contacts_router)
+app.include_router(leads_router)
+app.include_router(opportunities_router)
 
 # Global variables for database connections
 mongo_db = None

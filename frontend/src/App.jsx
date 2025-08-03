@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import CRM from './components/CRM';
 import './App.css';
 
 function App() {
@@ -66,7 +67,7 @@ function App() {
             path="/login" 
             element={
               isAuthenticated ? 
-              <Navigate to="/dashboard" replace /> : 
+              <Navigate to="/crm" replace /> : 
               <Login onLogin={handleLogin} />
             } 
           />
@@ -79,9 +80,17 @@ function App() {
             } 
           />
           <Route 
+            path="/crm" 
+            element={
+              isAuthenticated ? 
+              <CRM onLogout={handleLogout} /> : 
+              <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
             path="/" 
             element={
-              <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+              <Navigate to={isAuthenticated ? "/crm" : "/login"} replace />
             } 
           />
         </Routes>
