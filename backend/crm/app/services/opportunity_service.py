@@ -44,7 +44,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def get_opportunity_by_id(self, opportunity_id: str) -> Optional[Opportunity]:
+    def get_opportunity_by_id(self, opportunity_id: int) -> Optional[Opportunity]:
         """Get opportunity by ID with related details"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
