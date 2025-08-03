@@ -43,7 +43,7 @@ class LeadService:
             )
         ).first()
     
-    def update_lead(self, lead_id: str, lead_data: dict, updated_by: Optional[str] = None) -> Optional[Lead]:
+    def update_lead(self, lead_id: int, lead_data: dict, updated_by: Optional[int] = None) -> Optional[Lead]:
         """Update lead information"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
@@ -63,7 +63,7 @@ class LeadService:
         self.db.refresh(db_lead)
         return db_lead
     
-    def delete_lead(self, lead_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_lead(self, lead_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete lead"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
