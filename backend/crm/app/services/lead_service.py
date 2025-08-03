@@ -196,7 +196,7 @@ class LeadService:
         
         return db_opportunity
     
-    def get_lead_summary(self, sales_person_id: str = None) -> dict:
+    def get_lead_summary(self, sales_person_id: int = None) -> dict:
         """Get lead summary statistics"""
         query = self.db.query(Lead).filter(
             and_(
