@@ -11,7 +11,7 @@ class ContactService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_contact(self, contact_data: dict, created_by: Optional[str] = None) -> Contact:
+    def create_contact(self, contact_data: dict, created_by: Optional[int] = None) -> Contact:
         """Create a new contact"""
         db_contact = Contact(
             full_name=contact_data.get('full_name'),
