@@ -2,7 +2,6 @@
 SQLAlchemy Opportunity model
 """
 from sqlalchemy import Column, String, Text, ForeignKey, Date, Integer, Enum as SQLEnum, DECIMAL, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from enum import Enum
 from .base import BaseModel
@@ -25,14 +24,14 @@ class OpportunityStatus(str, Enum):
 class Opportunity(BaseModel):
     __tablename__ = 'opportunities'
     
-    lead_id = Column(UUID(as_uuid=True), ForeignKey('leads.id'), nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey('companies.id'), nullable=False, index=True)
-    contact_id = Column(UUID(as_uuid=True), ForeignKey('contacts.id'), nullable=False, index=True)
+    lead_id = Column(Integer, ForeignKey('leads.id'), nullable=False)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey('contacts.id'), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     stage = Column(SQLEnum(OpportunityStage), default=OpportunityStage.L1, nullable=False, index=True)
     amount = Column(DECIMAL(15, 2))
     scoring = Column(Integer, default=0)
-    bom_id = Column(UUID(as_uuid=True))  # Bill of Materials ID (future reference)
+    bom_id = Column(Integer)  # Bill of Materials ID (future reference)
     costing = Column(DECIMAL(15, 2))
     status = Column(SQLEnum(OpportunityStatus), default=OpportunityStatus.OPEN, nullable=False, index=True)
     justification = Column(Text)
