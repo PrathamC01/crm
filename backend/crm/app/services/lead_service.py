@@ -30,7 +30,7 @@ class LeadService:
         self.db.refresh(db_lead)
         return db_lead
     
-    def get_lead_by_id(self, lead_id: str) -> Optional[Lead]:
+    def get_lead_by_id(self, lead_id: int) -> Optional[Lead]:
         """Get lead by ID with related details"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
