@@ -127,7 +127,7 @@ async def create_user(
 
 @router.put("/{user_id}", response_model=StandardResponse)
 async def update_user(
-    user_id: str,
+    user_id: int,
     user_data: UserUpdate,
     current_user: dict = Depends(require_users_write),
     user_service: UserService = Depends(get_user_service)
