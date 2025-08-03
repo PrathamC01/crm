@@ -208,7 +208,7 @@ class OpportunityService:
         
         return query.count()
     
-    def get_pipeline_summary(self, user_id: str = None) -> dict:
+    def get_pipeline_summary(self, user_id: int = None) -> dict:
         """Get opportunity pipeline summary"""
         query = self.db.query(Opportunity).filter(
             and_(
