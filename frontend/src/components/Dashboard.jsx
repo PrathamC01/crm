@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { apiRequest } from '../utils/api';
 
 const Dashboard = ({ onLogout }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [metrics, setMetrics] = useState({
+    leads: { total: 0, new: 0, qualified: 0, conversion_rate: 0 },
+    opportunities: { total: 0, open: 0, won: 0, total_value: 0, win_rate: 0 },
+    contacts: { total: 0, decision_makers: 0 },
+    companies: { total: 0 }
+  });
 
   useEffect(() => {
     fetchUserData();
+    fetchDashboardMetrics();
   }, []);
 
   const fetchUserData = async () => {
@@ -37,6 +45,65 @@ const Dashboard = ({ onLogout }) => {
       console.error('Dashboard error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDashboardMetrics = async () => {
+    try {
+      // Fetch leads summary
+      const leadsResponse = await apiRequest('/api/leads/summary/statistics');
+      if (leadsResponse.status) {
+        const leadData = leadsResponse.data;
+        setMetrics(prev => ({
+          ...prev,
+          leads: {
+            total: leadData.total_leads || 0,
+            new: leadData.new_leads || 0,
+            qualified: leadData.qualified_leads || 0,
+            conversion_rate: leadData.conversion_rate || 0
+          }
+        }));
+      }
+
+      // Fetch opportunities pipeline
+      const opportunitiesResponse = await apiRequest('/api/opportunities/pipeline/summary');
+      if (opportunitiesResponse.status) {
+        const oppData = opportunitiesResponse.data;
+        setMetrics(prev => ({
+          ...prev,
+          opportunities: {
+            total: oppData.summary?.total_opportunities || 0,
+            open: oppData.summary?.total_opportunities || 0,
+            won: 0, // Will be calculated from status
+            total_value: oppData.summary?.total_value || 0,
+            win_rate: 0 // Will be calculated
+          }
+        }));
+      }
+
+      // Fetch companies count
+      const companiesResponse = await apiRequest('/api/companies?limit=1');
+      if (companiesResponse.status) {
+        setMetrics(prev => ({
+          ...prev,
+          companies: { total: companiesResponse.data.total || 0 }
+        }));
+      }
+
+      // Fetch contacts count
+      const contactsResponse = await apiRequest('/api/contacts?limit=1');
+      if (contactsResponse.status) {
+        setMetrics(prev => ({
+          ...prev,
+          contacts: { 
+            total: contactsResponse.data.total || 0,
+            decision_makers: 0 // We'll estimate this
+          }
+        }));
+      }
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard metrics:', err);
     }
   };
 
