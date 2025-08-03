@@ -11,7 +11,7 @@ class LeadService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_lead(self, lead_data: dict, created_by: Optional[str] = None) -> Lead:
+    def create_lead(self, lead_data: dict, created_by: Optional[int] = None) -> Lead:
         """Create a new lead"""
         db_lead = Lead(
             company_id=lead_data.get('company_id'),
