@@ -32,7 +32,7 @@ class UserService:
         self.db.refresh(db_user)
         return db_user
     
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Get user by ID with role and department"""
         return self.db.query(User).options(
             joinedload(User.role),
