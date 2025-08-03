@@ -216,7 +216,7 @@ async def get_departments(
         departments = db.query(Department).filter(Department.is_active == True).all()
         departments_data = [
             {
-                "id": str(dept.id),
+                "id": dept.id,
                 "name": dept.name,
                 "description": dept.description
             }
