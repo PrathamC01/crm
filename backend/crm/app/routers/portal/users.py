@@ -33,7 +33,7 @@ async def get_users(
         users_data = []
         for user in users:
             user_dict = {
-                "id": str(user.id),
+                "id": user.id,
                 "name": user.name,
                 "email": user.email,
                 "username": user.username,
