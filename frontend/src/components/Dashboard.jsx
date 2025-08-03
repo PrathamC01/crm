@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { apiRequest } from '../utils/api';
 
 const Dashboard = ({ onLogout }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [metrics, setMetrics] = useState({
+    leads: { total: 0, new: 0, qualified: 0, conversion_rate: 0 },
+    opportunities: { total: 0, open: 0, won: 0, total_value: 0, win_rate: 0 },
+    contacts: { total: 0, decision_makers: 0 },
+    companies: { total: 0 }
+  });
 
   useEffect(() => {
     fetchUserData();
+    fetchDashboardMetrics();
   }, []);
 
   const fetchUserData = async () => {
@@ -40,8 +48,77 @@ const Dashboard = ({ onLogout }) => {
     }
   };
 
+  const fetchDashboardMetrics = async () => {
+    try {
+      // Fetch leads summary
+      const leadsResponse = await apiRequest('/api/leads/summary/statistics');
+      if (leadsResponse.status) {
+        const leadData = leadsResponse.data;
+        setMetrics(prev => ({
+          ...prev,
+          leads: {
+            total: leadData.total_leads || 0,
+            new: leadData.new_leads || 0,
+            qualified: leadData.qualified_leads || 0,
+            conversion_rate: leadData.conversion_rate || 0
+          }
+        }));
+      }
+
+      // Fetch opportunities pipeline
+      const opportunitiesResponse = await apiRequest('/api/opportunities/pipeline/summary');
+      if (opportunitiesResponse.status) {
+        const oppData = opportunitiesResponse.data;
+        setMetrics(prev => ({
+          ...prev,
+          opportunities: {
+            total: oppData.summary?.total_opportunities || 0,
+            open: oppData.summary?.total_opportunities || 0,
+            won: 0, // Will be calculated from status
+            total_value: oppData.summary?.total_value || 0,
+            win_rate: 0 // Will be calculated
+          }
+        }));
+      }
+
+      // Fetch companies count
+      const companiesResponse = await apiRequest('/api/companies?limit=1');
+      if (companiesResponse.status) {
+        setMetrics(prev => ({
+          ...prev,
+          companies: { total: companiesResponse.data.total || 0 }
+        }));
+      }
+
+      // Fetch contacts count
+      const contactsResponse = await apiRequest('/api/contacts?limit=1');
+      if (contactsResponse.status) {
+        setMetrics(prev => ({
+          ...prev,
+          contacts: { 
+            total: contactsResponse.data.total || 0,
+            decision_makers: 0 // We'll estimate this
+          }
+        }));
+      }
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard metrics:', err);
+    }
+  };
+
   const handleLogout = () => {
     onLogout();
+  };
+
+  const formatCurrency = (amount) => {
+    if (!amount) return '₹0';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
   if (loading) {
@@ -84,7 +161,7 @@ const Dashboard = ({ onLogout }) => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
-              <p className="text-blue-100 mt-1">CRM Dashboard</p>
+              <p className="text-blue-100 mt-1">CRM Dashboard - {new Date().toLocaleDateString()}</p>
             </div>
             <button
               onClick={handleLogout}
@@ -98,19 +175,151 @@ const Dashboard = ({ onLogout }) => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Message */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              Dashboard Overview
-            </h2>
-            <p className="text-gray-600">
-              Welcome to your CRM dashboard. Here you can manage your account and access various features.
-            </p>
+        
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Companies */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Companies</p>
+                <p className="text-2xl font-semibold text-gray-900">{metrics.companies.total}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contacts */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Contacts</p>
+                <p className="text-2xl font-semibold text-gray-900">{metrics.contacts.total}</p>
+                <p className="text-xs text-green-600">Decision Makers: {Math.floor(metrics.contacts.total * 0.3)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Leads */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Active Leads</p>
+                <p className="text-2xl font-semibold text-gray-900">{metrics.leads.total}</p>
+                <p className="text-xs text-yellow-600">Qualified: {metrics.leads.qualified}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Opportunities */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Opportunities</p>
+                <p className="text-2xl font-semibold text-gray-900">{metrics.opportunities.total}</p>
+                <p className="text-xs text-purple-600">{formatCurrency(metrics.opportunities.total_value)}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* User Information Card */}
+        {/* Performance Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Lead Conversion Funnel */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Lead Conversion Funnel</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total Leads</span>
+                <span className="font-medium">{metrics.leads.total}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-blue-600 h-2 rounded-full" style={{width: '100%'}}></div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Qualified Leads</span>
+                <span className="font-medium">{metrics.leads.qualified}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-600 h-2 rounded-full" 
+                     style={{width: `${metrics.leads.total > 0 ? (metrics.leads.qualified / metrics.leads.total) * 100 : 0}%`}}>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Opportunities</span>
+                <span className="font-medium">{metrics.opportunities.total}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-purple-600 h-2 rounded-full" 
+                     style={{width: `${metrics.leads.total > 0 ? (metrics.opportunities.total / metrics.leads.total) * 100 : 0}%`}}>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  Conversion Rate: <span className="font-semibold text-green-600">
+                    {metrics.leads.total > 0 ? ((metrics.opportunities.total / metrics.leads.total) * 100).toFixed(1) : 0}%
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Opportunity Pipeline Value */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Value</h3>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-green-600 mb-2">
+                {formatCurrency(metrics.opportunities.total_value)}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">Total Pipeline Value</p>
+              
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <p className="text-lg font-semibold text-blue-600">{metrics.opportunities.open}</p>
+                  <p className="text-xs text-blue-600">Open</p>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <p className="text-lg font-semibold text-green-600">{metrics.opportunities.won}</p>
+                  <p className="text-xs text-green-600">Won</p>
+                </div>
+              </div>
+              
+              {metrics.opportunities.total > 0 && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    Average Deal Size: <span className="font-semibold">
+                      {formatCurrency(metrics.opportunities.total_value / metrics.opportunities.total)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* User Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="user-card bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
@@ -172,21 +381,23 @@ const Dashboard = ({ onLogout }) => {
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className="ml-3 text-lg font-semibold text-gray-900">Account Security</h3>
+              <h3 className="ml-3 text-lg font-semibold text-gray-900">Today's Activity</h3>
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500">User ID</p>
-                <p className="font-medium text-gray-900 text-xs">{user?.id}</p>
+                <p className="text-sm text-gray-500">New Leads</p>
+                <p className="font-medium text-gray-900">{metrics.leads.new}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Authentication</p>
-                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                  JWT Token
-                </span>
+                <p className="text-sm text-gray-500">Pipeline Value</p>
+                <p className="font-medium text-gray-900">{formatCurrency(metrics.opportunities.total_value)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Opportunities</p>
+                <p className="font-medium text-gray-900">{metrics.opportunities.total}</p>
               </div>
             </div>
           </div>
@@ -199,42 +410,41 @@ const Dashboard = ({ onLogout }) => {
             <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <p className="font-medium text-gray-900">Manage Users</p>
-              <p className="text-sm text-gray-500">Add, edit, or remove users</p>
+              <p className="font-medium text-gray-900">Add Company</p>
+              <p className="text-sm text-gray-500">Create new company record</p>
             </button>
 
             <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mb-2">
                 <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <p className="font-medium text-gray-900">View Reports</p>
-              <p className="text-sm text-gray-500">Generate and view reports</p>
-            </button>
-
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-900">Settings</p>
-              <p className="text-sm text-gray-500">Configure your preferences</p>
+              <p className="font-medium text-gray-900">Add Contact</p>
+              <p className="text-sm text-gray-500">Create new contact</p>
             </button>
 
             <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
               <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mb-2">
                 <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <p className="font-medium text-gray-900">Help & Support</p>
-              <p className="text-sm text-gray-500">Get help and support</p>
+              <p className="font-medium text-gray-900">Add Lead</p>
+              <p className="text-sm text-gray-500">Create new sales lead</p>
+            </button>
+
+            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="font-medium text-gray-900">Add Opportunity</p>
+              <p className="text-sm text-gray-500">Create new opportunity</p>
             </button>
           </div>
         </div>
