@@ -13,8 +13,8 @@ class UserResponse(BaseModel):
     name: str
     email: str
     username: str
-    role: str
-    department: str
+    role_name: str
+    department_name: str
     is_active: bool
 
 class StandardResponse(BaseModel):
