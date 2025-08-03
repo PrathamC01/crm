@@ -105,12 +105,12 @@ async def create_user(
         user = user_service.create_user(user_data, current_user["id"])
         
         user_dict = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "role_id": user.role_id if user.role_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "is_active": user.is_active,
             "created_on": user.created_on.isoformat() if user.created_on else None
         }
