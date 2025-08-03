@@ -190,7 +190,7 @@ async def get_roles(
         roles = db.query(Role).filter(Role.is_active == True).all()
         roles_data = [
             {
-                "id": str(role.id),
+                "id": role.id,
                 "name": role.name,
                 "description": role.description,
                 "permissions": role.permissions
