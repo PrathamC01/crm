@@ -71,7 +71,7 @@ class UserService:
             )
         ).first()
     
-    def update_user(self, user_id: str, user_data: UserUpdate, updated_by: Optional[str] = None) -> Optional[User]:
+    def update_user(self, user_id: int, user_data: UserUpdate, updated_by: Optional[int] = None) -> Optional[User]:
         """Update user information"""
         db_user = self.get_user_by_id(user_id)
         if not db_user:
