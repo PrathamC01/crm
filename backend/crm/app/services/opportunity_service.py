@@ -252,7 +252,7 @@ class OpportunityService:
             "stage_breakdown": stage_breakdown_list
         }
     
-    def get_opportunity_metrics(self, user_id: str = None) -> dict:
+    def get_opportunity_metrics(self, user_id: int = None) -> dict:
         """Get opportunity metrics and analytics"""
         query = self.db.query(Opportunity).filter(
             and_(
