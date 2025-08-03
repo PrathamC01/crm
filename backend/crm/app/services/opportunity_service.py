@@ -155,7 +155,7 @@ class OpportunityService:
         
         return query.order_by(Opportunity.updated_on.desc()).offset(skip).limit(limit).all()
     
-    def get_opportunities_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Opportunity]:
+    def get_opportunities_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Opportunity]:
         """Get opportunities by company"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
@@ -168,7 +168,7 @@ class OpportunityService:
             )
         ).order_by(Opportunity.created_on.desc()).offset(skip).limit(limit).all()
     
-    def get_opportunities_by_lead(self, lead_id: str, skip: int = 0, limit: int = 100) -> List[Opportunity]:
+    def get_opportunities_by_lead(self, lead_id: int, skip: int = 0, limit: int = 100) -> List[Opportunity]:
         """Get opportunities by lead"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
