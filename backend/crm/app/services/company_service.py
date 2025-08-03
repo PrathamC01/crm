@@ -71,7 +71,7 @@ class CompanyService:
         self.db.refresh(db_company)
         return db_company
     
-    def delete_company(self, company_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_company(self, company_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete company"""
         db_company = self.get_company_by_id(company_id)
         if not db_company:
