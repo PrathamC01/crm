@@ -2,10 +2,8 @@
 SQLAlchemy User model
 """
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .base import BaseModel
-import uuid
 
 class User(BaseModel):
     __tablename__ = 'users'
@@ -14,8 +12,8 @@ class User(BaseModel):
     username = Column(String(100), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=True, index=True)
-    department_id = Column(UUID(as_uuid=True), ForeignKey('departments.id'), nullable=True, index=True)
+    role_id = Column(Integer, ForeignKey('roles.id'), nullable=True, index=True)
+    department_id = Column(Integer, ForeignKey('departments.id'), nullable=True, index=True)
     last_login = Column(DateTime, nullable=True)
     failed_login_attempts = Column(Integer, default=0)
     locked_until = Column(DateTime, nullable=True)

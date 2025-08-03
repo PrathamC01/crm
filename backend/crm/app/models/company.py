@@ -1,8 +1,7 @@
 """
 SQLAlchemy Company model
 """
-from sqlalchemy import Column, String, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Text, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
@@ -12,7 +11,7 @@ class Company(BaseModel):
     name = Column(String(255), unique=True, nullable=False, index=True)
     gst_number = Column(String(15), nullable=True, index=True)
     pan_number = Column(String(10), nullable=True, index=True)
-    parent_company_id = Column(UUID(as_uuid=True), ForeignKey('companies.id'), nullable=True)
+    parent_company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
     industry_category = Column(String(100))
     address = Column(Text)
     city = Column(String(100))
