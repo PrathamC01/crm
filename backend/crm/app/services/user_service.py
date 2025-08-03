@@ -13,7 +13,7 @@ class UserService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_user(self, user_data: UserCreate, created_by: Optional[str] = None) -> User:
+    def create_user(self, user_data: UserCreate, created_by: Optional[int] = None) -> User:
         """Create a new user"""
         password_hash = hash_password(user_data.password)
         
