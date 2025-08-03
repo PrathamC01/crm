@@ -1,200 +1,58 @@
 """
-Lead model
+SQLAlchemy Lead model
 """
-from typing import Optional
-import uuid
-from datetime import datetime, timedelta
+from sqlalchemy import Column, String, Text, ForeignKey, Date, DateTime, Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from enum import Enum
+from datetime import datetime
+from .base import BaseModel
 
-class Lead:
-    """Lead model for managing sales leads"""
+class LeadSource(str, Enum):
+    WEB = "Web"
+    PARTNER = "Partner"
+    CAMPAIGN = "Campaign"
+    REFERRAL = "Referral"
+    COLD_CALL = "Cold Call"
+    EVENT = "Event"
+
+class LeadStatus(str, Enum):
+    NEW = "New"
+    CONTACTED = "Contacted"
+    QUALIFIED = "Qualified"
+    PROPOSAL = "Proposal"
+    NEGOTIATION = "Negotiation"
+    CLOSED_WON = "Closed Won"
+    CLOSED_LOST = "Closed Lost"
+    DROPPED = "Dropped"
+
+class LeadPriority(str, Enum):
+    LOW = "Low"
+    MEDIUM = "Medium"
+    HIGH = "High"
+    URGENT = "Urgent"
+
+class Lead(BaseModel):
+    __tablename__ = 'leads'
     
-    @staticmethod
-    async def create_table(conn):
-        """Create leads table"""
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS leads (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                company_id UUID NOT NULL,
-                location VARCHAR(255),
-                lead_source VARCHAR(50) NOT NULL CHECK (lead_source IN ('Web', 'Partner', 'Campaign', 'Referral', 'Cold Call', 'Event')),
-                sales_person_id UUID NOT NULL,
-                status VARCHAR(20) NOT NULL DEFAULT 'New' CHECK (status IN ('New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost', 'Dropped')),
-                notes TEXT,
-                priority VARCHAR(10) DEFAULT 'Medium' CHECK (priority IN ('Low', 'Medium', 'High', 'Urgent')),
-                expected_close_date DATE,
-                last_activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                is_active BOOLEAN DEFAULT true,
-                created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                deleted_on TIMESTAMP NULL,
-                created_by UUID,
-                updated_by UUID,
-                deleted_by UUID,
-                FOREIGN KEY (company_id) REFERENCES companies(id),
-                FOREIGN KEY (sales_person_id) REFERENCES users(id),
-                FOREIGN KEY (created_by) REFERENCES users(id),
-                FOREIGN KEY (updated_by) REFERENCES users(id),
-                FOREIGN KEY (deleted_by) REFERENCES users(id)
-            )
-        """)
-        
-        # Create indexes
-        await conn.execute("CREATE INDEX IF NOT EXISTS idx_leads_company ON leads(company_id)")
-        await conn.execute("CREATE INDEX IF NOT EXISTS idx_leads_salesperson ON leads(sales_person_id)")
-        await conn.execute("CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status)")
-        await conn.execute("CREATE INDEX IF NOT EXISTS idx_leads_last_activity ON leads(last_activity_date)")
+    company_id = Column(UUID(as_uuid=True), ForeignKey('companies.id'), nullable=False, index=True)
+    location = Column(String(255))
+    lead_source = Column(SQLEnum(LeadSource), nullable=False)
+    sales_person_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
+    status = Column(SQLEnum(LeadStatus), default=LeadStatus.NEW, nullable=False, index=True)
+    notes = Column(Text)
+    priority = Column(SQLEnum(LeadPriority), default=LeadPriority.MEDIUM)
+    expected_close_date = Column(Date)
+    last_activity_date = Column(DateTime, default=datetime.utcnow, index=True)
     
-    @staticmethod
-    async def find_by_id(conn, lead_id: str) -> Optional[dict]:
-        """Find lead by ID with related details"""
-        return await conn.fetchrow("""
-            SELECT l.*, c.name as company_name, u.name as sales_person_name 
-            FROM leads l
-            LEFT JOIN companies c ON l.company_id = c.id
-            LEFT JOIN users u ON l.sales_person_id = u.id
-            WHERE l.id = $1 AND l.is_active = true AND l.deleted_on IS NULL
-        """, uuid.UUID(lead_id))
+    # Relationships
+    company = relationship("Company", back_populates="leads")
+    sales_person = relationship("User", foreign_keys="Lead.sales_person_id", back_populates="leads_assigned")
+    creator = relationship("User", foreign_keys="Lead.created_by", back_populates="leads_created")
+    updater = relationship("User", foreign_keys="Lead.updated_by", back_populates="leads_updated")
     
-    @staticmethod
-    async def get_by_company(conn, company_id: str, skip: int = 0, limit: int = 100) -> list:
-        """Get leads by company"""
-        return await conn.fetch("""
-            SELECT l.*, c.name as company_name, u.name as sales_person_name 
-            FROM leads l
-            LEFT JOIN companies c ON l.company_id = c.id
-            LEFT JOIN users u ON l.sales_person_id = u.id
-            WHERE l.company_id = $1 AND l.is_active = true AND l.deleted_on IS NULL
-            ORDER BY l.created_on DESC LIMIT $2 OFFSET $3
-        """, uuid.UUID(company_id), limit, skip)
+    # Opportunities created from this lead
+    opportunities = relationship("Opportunity", back_populates="lead")
     
-    @staticmethod
-    async def get_by_salesperson(conn, sales_person_id: str, skip: int = 0, limit: int = 100) -> list:
-        """Get leads by salesperson"""
-        return await conn.fetch("""
-            SELECT l.*, c.name as company_name, u.name as sales_person_name 
-            FROM leads l
-            LEFT JOIN companies c ON l.company_id = c.id
-            LEFT JOIN users u ON l.sales_person_id = u.id
-            WHERE l.sales_person_id = $1 AND l.is_active = true AND l.deleted_on IS NULL
-            ORDER BY l.last_activity_date DESC LIMIT $2 OFFSET $3
-        """, uuid.UUID(sales_person_id), limit, skip)
-    
-    @staticmethod
-    async def get_all(conn, skip: int = 0, limit: int = 100, status: str = None, search: str = None) -> list:
-        """Get all active leads with optional filtering"""
-        base_query = """
-            SELECT l.*, c.name as company_name, u.name as sales_person_name 
-            FROM leads l
-            LEFT JOIN companies c ON l.company_id = c.id
-            LEFT JOIN users u ON l.sales_person_id = u.id
-            WHERE l.is_active = true AND l.deleted_on IS NULL
-        """
-        
-        conditions = []
-        params = []
-        param_count = 1
-        
-        if status:
-            conditions.append(f"l.status = ${param_count}")
-            params.append(status)
-            param_count += 1
-        
-        if search:
-            conditions.append(f"(c.name ILIKE ${param_count} OR l.location ILIKE ${param_count} OR l.notes ILIKE ${param_count})")
-            params.append(f"%{search}%")
-            param_count += 1
-        
-        if conditions:
-            base_query += " AND " + " AND ".join(conditions)
-        
-        base_query += f" ORDER BY l.last_activity_date DESC LIMIT ${param_count} OFFSET ${param_count + 1}"
-        params.extend([limit, skip])
-        
-        return await conn.fetch(base_query, *params)
-    
-    @staticmethod
-    async def get_inactive_leads(conn, weeks: int = 4) -> list:
-        """Get leads that haven't been updated in specified weeks"""
-        cutoff_date = datetime.utcnow() - timedelta(weeks=weeks)
-        return await conn.fetch("""
-            SELECT l.*, c.name as company_name 
-            FROM leads l
-            LEFT JOIN companies c ON l.company_id = c.id
-            WHERE l.last_activity_date < $1 
-            AND l.status NOT IN ('Closed Won', 'Closed Lost', 'Dropped')
-            AND l.is_active = true AND l.deleted_on IS NULL
-        """, cutoff_date)
-    
-    @staticmethod
-    async def create_lead(conn, **kwargs) -> dict:
-        """Create a new lead"""
-        return await conn.fetchrow("""
-            INSERT INTO leads (company_id, location, lead_source, sales_person_id, 
-                             status, notes, priority, expected_close_date, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *
-        """, 
-        uuid.UUID(kwargs['company_id']),
-        kwargs.get('location'),
-        kwargs.get('lead_source'),
-        uuid.UUID(kwargs['sales_person_id']),
-        kwargs.get('status', 'New'),
-        kwargs.get('notes'),
-        kwargs.get('priority', 'Medium'),
-        kwargs.get('expected_close_date'),
-        uuid.UUID(kwargs['created_by']) if kwargs.get('created_by') else None
-        )
-    
-    @staticmethod
-    async def update_lead(conn, lead_id: str, updated_by: str, **kwargs) -> Optional[dict]:
-        """Update lead information"""
-        # Build dynamic update query
-        update_fields = []
-        values = []
-        param_count = 1
-        
-        for field, value in kwargs.items():
-            if value is not None and field not in ['id', 'created_on', 'created_by']:
-                if field in ['company_id', 'sales_person_id']:
-                    value = uuid.UUID(value)
-                update_fields.append(f"{field} = ${param_count}")
-                values.append(value)
-                param_count += 1
-        
-        if not update_fields:
-            return None
-        
-        # Add updated_on, updated_by, and last_activity_date
-        update_fields.extend([
-            f"updated_on = CURRENT_TIMESTAMP",
-            f"updated_by = ${param_count}",
-            f"last_activity_date = CURRENT_TIMESTAMP"
-        ])
-        values.append(uuid.UUID(updated_by))
-        param_count += 1
-        
-        query = f"""
-            UPDATE leads 
-            SET {', '.join(update_fields)}
-            WHERE id = ${param_count} AND is_active = true AND deleted_on IS NULL
-            RETURNING *
-        """
-        values.append(uuid.UUID(lead_id))
-        
-        return await conn.fetchrow(query, *values)
-    
-    @staticmethod
-    async def auto_close_inactive_leads(conn, weeks: int = 4) -> int:
-        """Auto-close leads inactive for specified weeks"""
-        cutoff_date = datetime.utcnow() - timedelta(weeks=weeks)
-        result = await conn.execute("""
-            UPDATE leads 
-            SET status = 'Dropped', 
-                updated_on = CURRENT_TIMESTAMP,
-                notes = COALESCE(notes, '') || ' [Auto-closed due to inactivity]'
-            WHERE last_activity_date < $1 
-            AND status NOT IN ('Closed Won', 'Closed Lost', 'Dropped')
-            AND is_active = true AND deleted_on IS NULL
-        """, cutoff_date)
-        
-        return int(result.split()[-1])  # Extract number of updated rows
+    def __repr__(self):
+        return f"<Lead(id={self.id}, company={self.company.name if self.company else 'N/A'}, status={self.status})>"
