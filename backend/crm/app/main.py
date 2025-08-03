@@ -39,6 +39,11 @@ app.add_middleware(
 # Include routers
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(companies_router)
+app.include_router(contacts_router)
+app.include_router(leads_router)
+app.include_router(opportunities_router)
 
 # Global variables for database connections
 mongo_db = None
