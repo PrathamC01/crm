@@ -104,7 +104,7 @@ class LeadService:
         
         return query.order_by(Lead.last_activity_date.desc()).offset(skip).limit(limit).all()
     
-    def get_leads_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Lead]:
+    def get_leads_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Lead]:
         """Get leads by company"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
@@ -117,7 +117,7 @@ class LeadService:
             )
         ).order_by(Lead.created_on.desc()).offset(skip).limit(limit).all()
     
-    def get_leads_by_salesperson(self, sales_person_id: str, skip: int = 0, limit: int = 100) -> List[Lead]:
+    def get_leads_by_salesperson(self, sales_person_id: int, skip: int = 0, limit: int = 100) -> List[Lead]:
         """Get leads by salesperson"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
