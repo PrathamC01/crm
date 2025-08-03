@@ -161,7 +161,7 @@ async def update_user(
 
 @router.delete("/{user_id}", response_model=StandardResponse)
 async def delete_user(
-    user_id: str,
+    user_id: int,
     current_user: dict = Depends(require_admin_role),
     user_service: UserService = Depends(get_user_service)
 ):
