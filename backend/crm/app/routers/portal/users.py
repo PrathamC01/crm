@@ -60,7 +60,7 @@ async def get_users(
 
 @router.get("/{user_id}", response_model=StandardResponse)
 async def get_user(
-    user_id: str,
+    user_id: int,
     current_user: dict = Depends(require_users_read),
     user_service: UserService = Depends(get_user_service)
 ):
