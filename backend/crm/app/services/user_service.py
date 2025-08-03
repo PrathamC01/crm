@@ -2,6 +2,7 @@
 User management service using SQLAlchemy ORM
 """
 from typing import Optional, List
+from datetime import datetime
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_
 from ..models import User, Role, Department
