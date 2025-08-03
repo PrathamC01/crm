@@ -1,20 +1,90 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { UserList, UserForm, UserView } from '../modules/user';
 
 const UserManagement = () => {
+  const [currentView, setCurrentView] = useState('list');
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleCreate = () => {
+    setSelectedUser(null);
+    setCurrentView('form');
+  };
+
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setCurrentView('form');
+  };
+
+  const handleView = (user) => {
+    setSelectedUser(user);
+    setCurrentView('view');
+  };
+
+  const handleSave = (savedUser) => {
+    setCurrentView('list');
+    setSelectedUser(null);
+  };
+
+  const handleCancel = () => {
+    setCurrentView('list');
+    setSelectedUser(null);
+  };
+
+  const handleDelete = (userId) => {
+    // Delete is handled within UserList component
+    // This could be used for additional logic if needed
+  };
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow">
-      <h3 className="text-lg font-medium mb-4">User & Role Management</h3>
-      <p className="text-gray-600">User and role management functionality coming soon...</p>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-indigo-50 rounded-lg">
-          <h4 className="font-medium text-indigo-900">Role-Based Access Control</h4>
-          <p className="text-indigo-700 text-sm mt-1">Super Admin, Admin, Sales Manager, Sales Executive, Marketing, User</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+          <p className="text-gray-600">Manage users, roles & permissions</p>
         </div>
-        <div className="p-4 bg-teal-50 rounded-lg">
-          <h4 className="font-medium text-teal-900">Department Management</h4>
-          <p className="text-teal-700 text-sm mt-1">IT, Sales, Marketing, Finance, HR, Operations</p>
-        </div>
+        {currentView === 'list' && (
+          <button
+            onClick={handleCreate}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <span className="mr-2">+</span>
+            Add User
+          </button>
+        )}
       </div>
+
+      {/* Content */}
+      {currentView === 'list' && (
+        <UserList
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDelete}
+        />
+      )}
+
+      {currentView === 'form' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium mb-6">
+            {selectedUser ? 'Edit User' : 'Create New User'}
+          </h3>
+          <UserForm
+            user={selectedUser}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </div>
+      )}
+
+      {currentView === 'view' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <UserView
+            user={selectedUser}
+            onEdit={handleEdit}
+            onClose={handleCancel}
+          />
+        </div>
+      )}
     </div>
   );
 };
