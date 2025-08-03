@@ -241,7 +241,7 @@ async def get_sales_people(
         sales_people = user_service.get_sales_people()
         sales_data = [
             {
-                "id": str(person.id),
+                "id": person.id,
                 "name": person.name,
                 "email": person.email,
                 "role_name": person.role.name if person.role else None
