@@ -88,7 +88,7 @@ class UserService:
         self.db.refresh(db_user)
         return db_user
     
-    def delete_user(self, user_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_user(self, user_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete user"""
         db_user = self.get_user_by_id(user_id)
         if not db_user:
