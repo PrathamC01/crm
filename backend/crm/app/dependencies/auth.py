@@ -1,22 +1,22 @@
 """
-Authentication dependencies
+Authentication dependencies using SQLAlchemy
 """
 
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
 from ..utils.auth import verify_token
-from ..models.user import User
+from ..models import User
 from ..services.auth_service import AuthService
 from ..services.user_service import UserService
 from .database import get_postgres_db, get_mongo_db
-import uuid
 
 security = HTTPBearer()
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    postgres_pool=Depends(get_postgres_db),
+    db: Session = Depends(get_postgres_db),
 ) -> dict:
     """Get current authenticated user"""
     try:
@@ -24,26 +24,38 @@ async def get_current_user(
         payload = verify_token(token)
         user_id = payload.get("sub")
         if user_id is None:
+            print(user_id)
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        # Get user from database
-        async with postgres_pool.acquire() as conn:
-            user = await User.find_by_id(conn, user_id)
-            if not user:
-                raise HTTPException(status_code=401, detail="User not found")
-
-        return dict(user)
+        # Get user from database using SQLAlchemy
+        user_service = UserService(db)
+        user = user_service.get_user_by_id(int(user_id))
+        # print(user)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "username": user.username,
+            "role": user.role.name if user.role else None,
+            "permissions": user.role.permissions if user.role.permissions else None,
+            "department": user.department.name if user.department else None,
+        }
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid user ID format")
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-async def get_auth_service(
-    postgres_pool=Depends(get_postgres_db), mongo_db=Depends(get_mongo_db)
+def get_auth_service(
+    db: Session = Depends(get_postgres_db), mongo_db=Depends(get_mongo_db)
 ) -> AuthService:
     """Get authentication service"""
-    return AuthService(postgres_pool, mongo_db)
+    return AuthService(db, mongo_db)
 
 
-async def get_user_service(postgres_pool=Depends(get_postgres_db)) -> UserService:
+def get_user_service(db: Session = Depends(get_postgres_db)) -> UserService:
     """Get user service"""
-    return UserService(postgres_pool)
+    return UserService(db)

@@ -40,7 +40,7 @@ const ContactManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Contact Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">Contact Management</h2>
           <p className="text-gray-600">Manage business contacts with role-based classification</p>
         </div>
         {currentView === 'list' && (

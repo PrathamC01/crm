@@ -1,8 +1,7 @@
 """
 SQLAlchemy Lead model
 """
-from sqlalchemy import Column, String, Text, ForeignKey, Date, DateTime, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Text, ForeignKey, Date, DateTime, Enum as SQLEnum, Integer
 from sqlalchemy.orm import relationship
 from enum import Enum
 from datetime import datetime
@@ -35,10 +34,10 @@ class LeadPriority(str, Enum):
 class Lead(BaseModel):
     __tablename__ = 'leads'
     
-    company_id = Column(UUID(as_uuid=True), ForeignKey('companies.id'), nullable=False, index=True)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=False, index=True)
     location = Column(String(255))
     lead_source = Column(SQLEnum(LeadSource), nullable=False)
-    sales_person_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
+    sales_person_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
     status = Column(SQLEnum(LeadStatus), default=LeadStatus.NEW, nullable=False, index=True)
     notes = Column(Text)
     priority = Column(SQLEnum(LeadPriority), default=LeadPriority.MEDIUM)

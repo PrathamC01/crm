@@ -8,7 +8,7 @@ const CompanyView = ({ company, onEdit, onClose }) => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">{company.name}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 text-left">{company.name}</h3>
           {company.website && (
             <a 
               href={company.website} 

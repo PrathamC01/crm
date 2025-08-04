@@ -11,7 +11,7 @@ class CompanyService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_company(self, company_data: dict, created_by: Optional[str] = None) -> Company:
+    def create_company(self, company_data: dict, created_by: Optional[int] = None) -> Company:
         """Create a new company"""
         db_company = Company(
             name=company_data.get('name'),
@@ -34,7 +34,7 @@ class CompanyService:
         self.db.refresh(db_company)
         return db_company
     
-    def get_company_by_id(self, company_id: str) -> Optional[Company]:
+    def get_company_by_id(self, company_id: int) -> Optional[Company]:
         """Get company by ID"""
         return self.db.query(Company).filter(
             and_(
@@ -54,7 +54,7 @@ class CompanyService:
             )
         ).first()
     
-    def update_company(self, company_id: str, company_data: dict, updated_by: Optional[str] = None) -> Optional[Company]:
+    def update_company(self, company_id: int, company_data: dict, updated_by: Optional[int] = None) -> Optional[Company]:
         """Update company information"""
         db_company = self.get_company_by_id(company_id)
         if not db_company:
@@ -71,7 +71,7 @@ class CompanyService:
         self.db.refresh(db_company)
         return db_company
     
-    def delete_company(self, company_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_company(self, company_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete company"""
         db_company = self.get_company_by_id(company_id)
         if not db_company:

@@ -1,18 +1,18 @@
-import React from 'react';
+import React from "react";
 
 const UserView = ({ user, onEdit, onClose }) => {
   if (!user) return null;
 
   const getRoleBadgeColor = (role) => {
     const colors = {
-      'super_admin': 'bg-red-100 text-red-800',
-      'admin': 'bg-purple-100 text-purple-800',
-      'sales_manager': 'bg-blue-100 text-blue-800',
-      'sales_executive': 'bg-green-100 text-green-800',
-      'marketing': 'bg-yellow-100 text-yellow-800',
-      'user': 'bg-gray-100 text-gray-800'
+      super_admin: "bg-red-100 text-red-800",
+      admin: "bg-purple-100 text-purple-800",
+      sales_manager: "bg-blue-100 text-blue-800",
+      sales_executive: "bg-green-100 text-green-800",
+      marketing: "bg-yellow-100 text-yellow-800",
+      user: "bg-gray-100 text-gray-800",
     };
-    return colors[role] || 'bg-gray-100 text-gray-800';
+    return colors[role] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -26,7 +26,9 @@ const UserView = ({ user, onEdit, onClose }) => {
             </div>
           </div>
           <div className="ml-4">
-            <h3 className="text-2xl font-bold text-gray-900">{user.name}</h3>
+            <h3 className="text-2xl font-bold text-gray-900 text-left">
+              {user.name}
+            </h3>
             <p className="text-gray-600">{user.email}</p>
             <p className="text-gray-500">@{user.username}</p>
           </div>
@@ -49,7 +51,6 @@ const UserView = ({ user, onEdit, onClose }) => {
 
       {/* User Information Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
         {/* Account Information */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -58,29 +59,39 @@ const UserView = ({ user, onEdit, onClose }) => {
           </h4>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-500">Full Name</label>
+              <label className="text-sm font-medium text-gray-500">
+                Full Name
+              </label>
               <p className="text-gray-900">{user.name}</p>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-gray-500">Email Address</label>
+              <label className="text-sm font-medium text-gray-500">
+                Email Address
+              </label>
               <p className="text-gray-900">{user.email}</p>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-gray-500">Username</label>
+              <label className="text-sm font-medium text-gray-500">
+                Username
+              </label>
               <p className="text-gray-900 font-mono">@{user.username}</p>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-gray-500">Account Status</label>
+              <label className="text-sm font-medium text-gray-500">
+                Account Status
+              </label>
               <div>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  user.is_active 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {user.is_active ? 'Active' : 'Inactive'}
+                <span
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    user.is_active
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {user.is_active ? "Active" : "Inactive"}
                 </span>
               </div>
             </div>
@@ -97,15 +108,24 @@ const UserView = ({ user, onEdit, onClose }) => {
             <div>
               <label className="text-sm font-medium text-gray-500">Role</label>
               <div>
-                <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(user.role_name)}`}>
-                  {user.role_name?.replace('_', ' ').toUpperCase() || 'No Role Assigned'}
+                <span
+                  className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(
+                    user.role_name
+                  )}`}
+                >
+                  {user.role_name?.replace("_", " ").toUpperCase() ||
+                    "No Role Assigned"}
                 </span>
               </div>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-gray-500">Department</label>
-              <p className="text-gray-900">{user.department_name || 'No Department Assigned'}</p>
+              <label className="text-sm font-medium text-gray-500">
+                Department
+              </label>
+              <p className="text-gray-900">
+                {user.department_name || "No Department Assigned"}
+              </p>
             </div>
           </div>
         </div>
@@ -118,48 +138,54 @@ const UserView = ({ user, onEdit, onClose }) => {
           </h4>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-500">Last Login</label>
+              <label className="text-sm font-medium text-gray-500">
+                Last Login
+              </label>
               <p className="text-gray-900">
-                {user.last_login 
-                  ? new Date(user.last_login).toLocaleDateString('en-IN', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
+                {user.last_login
+                  ? new Date(user.last_login).toLocaleDateString("en-IN", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })
-                  : 'Never logged in'
-                }
+                  : "Never logged in"}
               </p>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-gray-500">Account Created</label>
+              <label className="text-sm font-medium text-gray-500">
+                Account Created
+              </label>
               <p className="text-gray-900">
-                {new Date(user.created_on).toLocaleDateString('en-IN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                {new Date(user.created_on).toLocaleDateString("en-IN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </p>
             </div>
-            
-            {user.updated_on && new Date(user.updated_on) > new Date(user.created_on) && (
-              <div>
-                <label className="text-sm font-medium text-gray-500">Last Updated</label>
-                <p className="text-gray-900">
-                  {new Date(user.updated_on).toLocaleDateString('en-IN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-            )}
+
+            {user.updated_on &&
+              new Date(user.updated_on) > new Date(user.created_on) && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Last Updated
+                  </label>
+                  <p className="text-gray-900">
+                    {new Date(user.updated_on).toLocaleDateString("en-IN", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -173,31 +199,40 @@ const UserView = ({ user, onEdit, onClose }) => {
             {user.role_name ? (
               <div>
                 <p className="text-sm text-gray-600 mb-2">
-                  This user has <strong>{user.role_name.replace('_', ' ')}</strong> permissions which include:
+                  This user has{" "}
+                  <strong>{user.role_name.replace("_", " ")}</strong>{" "}
+                  permissions which include:
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  {user.role_name === 'super_admin' && (
-                    <span className="text-red-600 font-medium">• All System Access</span>
+                  {user.role_name === "super_admin" && (
+                    <span className="text-red-600 font-medium">
+                      • All System Access
+                    </span>
                   )}
-                  {(user.role_name === 'admin' || user.role_name === 'super_admin') && (
+                  {(user.role_name === "admin" ||
+                    user.role_name === "super_admin") && (
                     <>
                       <span className="text-blue-600">• User Management</span>
                       <span className="text-blue-600">• Full CRM Access</span>
                     </>
                   )}
-                  {user.role_name.includes('sales') && (
+                  {user.role_name.includes("sales") && (
                     <>
                       <span className="text-green-600">• Lead Management</span>
-                      <span className="text-green-600">• Opportunity Access</span>
+                      <span className="text-green-600">
+                        • Opportunity Access
+                      </span>
                     </>
                   )}
-                  {user.role_name === 'marketing' && (
+                  {user.role_name === "marketing" && (
                     <span className="text-yellow-600">• Lead Creation</span>
                   )}
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500 italic">No role assigned - limited access</p>
+              <p className="text-gray-500 italic">
+                No role assigned - limited access
+              </p>
             )}
           </div>
         </div>
@@ -205,36 +240,46 @@ const UserView = ({ user, onEdit, onClose }) => {
 
       {/* Quick Actions */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg border border-indigo-200">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h4>
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+          Quick Actions
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <button className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
             <div className="text-center">
               <div className="text-2xl mb-2">🔑</div>
-              <div className="text-sm font-medium text-gray-900">Reset Password</div>
+              <div className="text-sm font-medium text-gray-900">
+                Reset Password
+              </div>
               <div className="text-xs text-gray-500">Send reset link</div>
             </div>
           </button>
-          
+
           <button className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
             <div className="text-center">
               <div className="text-2xl mb-2">🎯</div>
-              <div className="text-sm font-medium text-gray-900">View Leads</div>
+              <div className="text-sm font-medium text-gray-900">
+                View Leads
+              </div>
               <div className="text-xs text-gray-500">Assigned leads</div>
             </div>
           </button>
-          
+
           <button className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
             <div className="text-center">
               <div className="text-2xl mb-2">💰</div>
-              <div className="text-sm font-medium text-gray-900">View Opportunities</div>
+              <div className="text-sm font-medium text-gray-900">
+                View Opportunities
+              </div>
               <div className="text-xs text-gray-500">Created opportunities</div>
             </div>
           </button>
-          
+
           <button className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
             <div className="text-center">
               <div className="text-2xl mb-2">📊</div>
-              <div className="text-sm font-medium text-gray-900">Activity Log</div>
+              <div className="text-sm font-medium text-gray-900">
+                Activity Log
+              </div>
               <div className="text-xs text-gray-500">View user activity</div>
             </div>
           </button>

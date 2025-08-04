@@ -13,7 +13,7 @@ class UserService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_user(self, user_data: UserCreate, created_by: Optional[str] = None) -> User:
+    def create_user(self, user_data: UserCreate, created_by: Optional[int] = None) -> User:
         """Create a new user"""
         password_hash = hash_password(user_data.password)
         
@@ -32,7 +32,7 @@ class UserService:
         self.db.refresh(db_user)
         return db_user
     
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Get user by ID with role and department"""
         return self.db.query(User).options(
             joinedload(User.role),
@@ -71,7 +71,7 @@ class UserService:
             )
         ).first()
     
-    def update_user(self, user_id: str, user_data: UserUpdate, updated_by: Optional[str] = None) -> Optional[User]:
+    def update_user(self, user_id: int, user_data: UserUpdate, updated_by: Optional[int] = None) -> Optional[User]:
         """Update user information"""
         db_user = self.get_user_by_id(user_id)
         if not db_user:
@@ -88,7 +88,7 @@ class UserService:
         self.db.refresh(db_user)
         return db_user
     
-    def delete_user(self, user_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_user(self, user_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete user"""
         db_user = self.get_user_by_id(user_id)
         if not db_user:
@@ -157,7 +157,7 @@ class UserService:
             )
         ).order_by(User.name).all()
     
-    def update_last_login(self, user_id: str):
+    def update_last_login(self, user_id: int):
         """Update user's last login timestamp"""
         db_user = self.get_user_by_id(user_id)
         if db_user:
@@ -165,7 +165,7 @@ class UserService:
             db_user.failed_login_attempts = 0
             self.db.commit()
     
-    def increment_failed_login(self, user_id: str):
+    def increment_failed_login(self, user_id: int):
         """Increment failed login attempts"""
         db_user = self.get_user_by_id(user_id)
         if db_user:

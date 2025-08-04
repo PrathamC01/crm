@@ -54,7 +54,7 @@ const OpportunityView = ({ opportunity, onEdit, onClose }) => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">{opportunity.name}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 text-left">{opportunity.name}</h3>
           <p className="text-gray-600 mt-1">{opportunity.company_name}</p>
         </div>
         <div className="flex space-x-3">
@@ -77,7 +77,7 @@ const OpportunityView = ({ opportunity, onEdit, onClose }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4">
           <h4 className="text-sm font-medium text-gray-500 mb-2">Amount</h4>
-          <p className="text-2xl font-bold text-gray-900">{formatCurrency(opportunity.amount)}</p>
+          <p className="text-2xl font-bold text-gray-900 text-left">{formatCurrency(opportunity.amount)}</p>
         </div>
         
         <div className="bg-white rounded-lg shadow p-4">
@@ -89,12 +89,12 @@ const OpportunityView = ({ opportunity, onEdit, onClose }) => {
         
         <div className="bg-white rounded-lg shadow p-4">
           <h4 className="text-sm font-medium text-gray-500 mb-2">Probability</h4>
-          <p className="text-2xl font-bold text-gray-900">{opportunity.probability}%</p>
+          <p className="text-2xl font-bold text-gray-900 text-left">{opportunity.probability}%</p>
         </div>
         
         <div className="bg-white rounded-lg shadow p-4">
           <h4 className="text-sm font-medium text-gray-500 mb-2">Scoring</h4>
-          <p className="text-2xl font-bold text-gray-900">{opportunity.scoring}/100</p>
+          <p className="text-2xl font-bold text-gray-900 text-left">{opportunity.scoring}/100</p>
         </div>
       </div>
 

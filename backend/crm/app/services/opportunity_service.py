@@ -11,7 +11,7 @@ class OpportunityService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_opportunity(self, opportunity_data: dict, created_by: Optional[str] = None) -> Opportunity:
+    def create_opportunity(self, opportunity_data: dict, created_by: Optional[int] = None) -> Opportunity:
         """Create a new opportunity"""
         # Validate that contact is a Decision Maker
         contact = self.db.query(Contact).filter(
@@ -44,7 +44,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def get_opportunity_by_id(self, opportunity_id: str) -> Optional[Opportunity]:
+    def get_opportunity_by_id(self, opportunity_id: int) -> Optional[Opportunity]:
         """Get opportunity by ID with related details"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
@@ -59,7 +59,7 @@ class OpportunityService:
             )
         ).first()
     
-    def update_opportunity(self, opportunity_id: str, opportunity_data: dict, updated_by: Optional[str] = None) -> Optional[Opportunity]:
+    def update_opportunity(self, opportunity_id: int, opportunity_data: dict, updated_by: Optional[int] = None) -> Optional[Opportunity]:
         """Update opportunity information"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -76,7 +76,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def update_stage(self, opportunity_id: str, stage: str, updated_by: str, notes: str = None) -> Optional[Opportunity]:
+    def update_stage(self, opportunity_id: int, stage: str, updated_by: int, notes: str = None) -> Optional[Opportunity]:
         """Update opportunity stage"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -92,7 +92,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def close_opportunity(self, opportunity_id: str, status: str, close_date: str, updated_by: str, notes: str = None) -> Optional[Opportunity]:
+    def close_opportunity(self, opportunity_id: int, status: str, close_date: str, updated_by: int, notes: str = None) -> Optional[Opportunity]:
         """Close opportunity"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -109,7 +109,7 @@ class OpportunityService:
         self.db.refresh(db_opportunity)
         return db_opportunity
     
-    def delete_opportunity(self, opportunity_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_opportunity(self, opportunity_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete opportunity"""
         db_opportunity = self.get_opportunity_by_id(opportunity_id)
         if not db_opportunity:
@@ -155,7 +155,7 @@ class OpportunityService:
         
         return query.order_by(Opportunity.updated_on.desc()).offset(skip).limit(limit).all()
     
-    def get_opportunities_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Opportunity]:
+    def get_opportunities_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Opportunity]:
         """Get opportunities by company"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
@@ -168,7 +168,7 @@ class OpportunityService:
             )
         ).order_by(Opportunity.created_on.desc()).offset(skip).limit(limit).all()
     
-    def get_opportunities_by_lead(self, lead_id: str, skip: int = 0, limit: int = 100) -> List[Opportunity]:
+    def get_opportunities_by_lead(self, lead_id: int, skip: int = 0, limit: int = 100) -> List[Opportunity]:
         """Get opportunities by lead"""
         return self.db.query(Opportunity).options(
             joinedload(Opportunity.company),
@@ -208,7 +208,7 @@ class OpportunityService:
         
         return query.count()
     
-    def get_pipeline_summary(self, user_id: str = None) -> dict:
+    def get_pipeline_summary(self, user_id: int = None) -> dict:
         """Get opportunity pipeline summary"""
         query = self.db.query(Opportunity).filter(
             and_(
@@ -252,7 +252,7 @@ class OpportunityService:
             "stage_breakdown": stage_breakdown_list
         }
     
-    def get_opportunity_metrics(self, user_id: str = None) -> dict:
+    def get_opportunity_metrics(self, user_id: int = None) -> dict:
         """Get opportunity metrics and analytics"""
         query = self.db.query(Opportunity).filter(
             and_(

@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 # Import routers
-from .routers.sso import auth
+from .routers.sso import auth, dashboard
 from .routers.portal import companies, contacts, leads, opportunities, users
 from .routers.front import health
 

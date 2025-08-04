@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from ..models import Base, Role, Department, User
 from ..database.engine import engine
 from ..utils.auth import hash_password
-import uuid
 
 def create_tables():
     """Create all database tables"""

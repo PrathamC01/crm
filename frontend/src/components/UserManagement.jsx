@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserList, UserForm, UserView } from '../modules/user';
+import { UserList, UserForm, UserView } from './modules/user';
 
 const UserManagement = () => {
   const [currentView, setCurrentView] = useState('list');
@@ -40,7 +40,7 @@ const UserManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">User Management</h2>
           <p className="text-gray-600">Manage users, roles & permissions</p>
         </div>
         {currentView === 'list' && (

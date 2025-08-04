@@ -11,7 +11,7 @@ class ContactService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_contact(self, contact_data: dict, created_by: Optional[str] = None) -> Contact:
+    def create_contact(self, contact_data: dict, created_by: Optional[int] = None) -> Contact:
         """Create a new contact"""
         db_contact = Contact(
             full_name=contact_data.get('full_name'),
@@ -29,7 +29,7 @@ class ContactService:
         self.db.refresh(db_contact)
         return db_contact
     
-    def get_contact_by_id(self, contact_id: str) -> Optional[Contact]:
+    def get_contact_by_id(self, contact_id: int) -> Optional[Contact]:
         """Get contact by ID with company details"""
         return self.db.query(Contact).options(
             joinedload(Contact.company)
@@ -51,7 +51,7 @@ class ContactService:
             )
         ).first()
     
-    def update_contact(self, contact_id: str, contact_data: dict, updated_by: Optional[str] = None) -> Optional[Contact]:
+    def update_contact(self, contact_id: int, contact_data: dict, updated_by: Optional[int] = None) -> Optional[Contact]:
         """Update contact information"""
         db_contact = self.get_contact_by_id(contact_id)
         if not db_contact:
@@ -68,7 +68,7 @@ class ContactService:
         self.db.refresh(db_contact)
         return db_contact
     
-    def delete_contact(self, contact_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_contact(self, contact_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete contact"""
         db_contact = self.get_contact_by_id(contact_id)
         if not db_contact:
@@ -106,7 +106,7 @@ class ContactService:
         
         return query.order_by(Contact.full_name).offset(skip).limit(limit).all()
     
-    def get_contacts_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Contact]:
+    def get_contacts_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Contact]:
         """Get contacts by company"""
         return self.db.query(Contact).options(
             joinedload(Contact.company)
@@ -118,7 +118,7 @@ class ContactService:
             )
         ).order_by(Contact.full_name).offset(skip).limit(limit).all()
     
-    def get_decision_makers(self, company_id: str) -> List[Contact]:
+    def get_decision_makers(self, company_id: int) -> List[Contact]:
         """Get decision makers for a company"""
         return self.db.query(Contact).filter(
             and_(

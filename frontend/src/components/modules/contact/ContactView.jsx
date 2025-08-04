@@ -21,7 +21,7 @@ const ContactView = ({ contact, onEdit, onClose }) => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">{contact.full_name}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 text-left">{contact.full_name}</h3>
           {contact.designation && (
             <p className="text-gray-600 mt-1">{contact.designation}</p>
           )}

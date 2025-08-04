@@ -40,7 +40,7 @@ const OpportunityManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Opportunity Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">Opportunity Management</h2>
           <p className="text-gray-600">Manage sales opportunities through the stage-driven workflow</p>
         </div>
         {currentView === 'list' && (

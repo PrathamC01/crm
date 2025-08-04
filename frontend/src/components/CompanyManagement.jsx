@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CompanyList, CompanyForm, CompanyView } from '../modules/company';
+import { CompanyList, CompanyForm, CompanyView } from './modules/company';
 
 const CompanyManagement = () => {
   const [currentView, setCurrentView] = useState('list');
@@ -40,7 +40,7 @@ const CompanyManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Company Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900 text-left">Company Management</h2>
           <p className="text-gray-600">Manage companies with GST/PAN compliance</p>
         </div>
         {currentView === 'list' && (

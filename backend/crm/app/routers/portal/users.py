@@ -33,7 +33,7 @@ async def get_users(
         users_data = []
         for user in users:
             user_dict = {
-                "id": str(user.id),
+                "id": user.id,
                 "name": user.name,
                 "email": user.email,
                 "username": user.username,
@@ -60,7 +60,7 @@ async def get_users(
 
 @router.get("/{user_id}", response_model=StandardResponse)
 async def get_user(
-    user_id: str,
+    user_id: int,
     current_user: dict = Depends(require_users_read),
     user_service: UserService = Depends(get_user_service)
 ):
@@ -71,13 +71,13 @@ async def get_user(
             raise HTTPException(status_code=404, detail="User not found")
         
         user_data = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
+            "role_id": user.role_id if user.role_id else None,
             "role_name": user.role.name if user.role else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "department_name": user.department.name if user.department else None,
             "is_active": user.is_active,
             "created_on": user.created_on.isoformat() if user.created_on else None,
@@ -105,12 +105,12 @@ async def create_user(
         user = user_service.create_user(user_data, current_user["id"])
         
         user_dict = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "role_id": user.role_id if user.role_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "is_active": user.is_active,
             "created_on": user.created_on.isoformat() if user.created_on else None
         }
@@ -127,7 +127,7 @@ async def create_user(
 
 @router.put("/{user_id}", response_model=StandardResponse)
 async def update_user(
-    user_id: str,
+    user_id: int,
     user_data: UserUpdate,
     current_user: dict = Depends(require_users_write),
     user_service: UserService = Depends(get_user_service)
@@ -139,12 +139,12 @@ async def update_user(
             raise HTTPException(status_code=404, detail="User not found")
         
         user_dict = {
-            "id": str(user.id),
+            "id": user.id,
             "name": user.name,
             "email": user.email,
             "username": user.username,
-            "role_id": str(user.role_id) if user.role_id else None,
-            "department_id": str(user.department_id) if user.department_id else None,
+            "role_id": user.role_id if user.role_id else None,
+            "department_id": user.department_id if user.department_id else None,
             "is_active": user.is_active,
             "updated_on": user.updated_on.isoformat() if user.updated_on else None
         }
@@ -161,7 +161,7 @@ async def update_user(
 
 @router.delete("/{user_id}", response_model=StandardResponse)
 async def delete_user(
-    user_id: str,
+    user_id: int,
     current_user: dict = Depends(require_admin_role),
     user_service: UserService = Depends(get_user_service)
 ):
@@ -190,7 +190,7 @@ async def get_roles(
         roles = db.query(Role).filter(Role.is_active == True).all()
         roles_data = [
             {
-                "id": str(role.id),
+                "id": role.id,
                 "name": role.name,
                 "description": role.description,
                 "permissions": role.permissions
@@ -216,7 +216,7 @@ async def get_departments(
         departments = db.query(Department).filter(Department.is_active == True).all()
         departments_data = [
             {
-                "id": str(dept.id),
+                "id": dept.id,
                 "name": dept.name,
                 "description": dept.description
             }
@@ -241,7 +241,7 @@ async def get_sales_people(
         sales_people = user_service.get_sales_people()
         sales_data = [
             {
-                "id": str(person.id),
+                "id": person.id,
                 "name": person.name,
                 "email": person.email,
                 "role_name": person.role.name if person.role else None

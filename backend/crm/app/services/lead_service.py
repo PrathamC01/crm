@@ -11,7 +11,7 @@ class LeadService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_lead(self, lead_data: dict, created_by: Optional[str] = None) -> Lead:
+    def create_lead(self, lead_data: dict, created_by: Optional[int] = None) -> Lead:
         """Create a new lead"""
         db_lead = Lead(
             company_id=lead_data.get('company_id'),
@@ -30,7 +30,7 @@ class LeadService:
         self.db.refresh(db_lead)
         return db_lead
     
-    def get_lead_by_id(self, lead_id: str) -> Optional[Lead]:
+    def get_lead_by_id(self, lead_id: int) -> Optional[Lead]:
         """Get lead by ID with related details"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
@@ -43,7 +43,7 @@ class LeadService:
             )
         ).first()
     
-    def update_lead(self, lead_id: str, lead_data: dict, updated_by: Optional[str] = None) -> Optional[Lead]:
+    def update_lead(self, lead_id: int, lead_data: dict, updated_by: Optional[int] = None) -> Optional[Lead]:
         """Update lead information"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
@@ -63,7 +63,7 @@ class LeadService:
         self.db.refresh(db_lead)
         return db_lead
     
-    def delete_lead(self, lead_id: str, deleted_by: Optional[str] = None) -> bool:
+    def delete_lead(self, lead_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete lead"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
@@ -104,7 +104,7 @@ class LeadService:
         
         return query.order_by(Lead.last_activity_date.desc()).offset(skip).limit(limit).all()
     
-    def get_leads_by_company(self, company_id: str, skip: int = 0, limit: int = 100) -> List[Lead]:
+    def get_leads_by_company(self, company_id: int, skip: int = 0, limit: int = 100) -> List[Lead]:
         """Get leads by company"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
@@ -117,7 +117,7 @@ class LeadService:
             )
         ).order_by(Lead.created_on.desc()).offset(skip).limit(limit).all()
     
-    def get_leads_by_salesperson(self, sales_person_id: str, skip: int = 0, limit: int = 100) -> List[Lead]:
+    def get_leads_by_salesperson(self, sales_person_id: int, skip: int = 0, limit: int = 100) -> List[Lead]:
         """Get leads by salesperson"""
         return self.db.query(Lead).options(
             joinedload(Lead.company),
@@ -154,7 +154,7 @@ class LeadService:
         
         return query.count()
     
-    def convert_to_opportunity(self, lead_id: str, conversion_data: dict, created_by: str) -> dict:
+    def convert_to_opportunity(self, lead_id: int, conversion_data: dict, created_by: int) -> dict:
         """Convert lead to opportunity"""
         db_lead = self.get_lead_by_id(lead_id)
         if not db_lead:
@@ -196,7 +196,7 @@ class LeadService:
         
         return db_opportunity
     
-    def get_lead_summary(self, sales_person_id: str = None) -> dict:
+    def get_lead_summary(self, sales_person_id: int = None) -> dict:
         """Get lead summary statistics"""
         query = self.db.query(Lead).filter(
             and_(
