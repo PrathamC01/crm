@@ -1,16 +1,23 @@
 """
 Company related schemas
 """
+
 from pydantic import BaseModel, validator
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
-from ..utils.validators import validate_gst_number, validate_pan_number, sanitize_gst_number, sanitize_pan_number
+from ..utils.validators import (
+    validate_gst_number,
+    validate_pan_number,
+    sanitize_gst_number,
+    sanitize_pan_number,
+)
+
 
 class CompanyBase(BaseModel):
     name: str
     gst_number: Optional[str] = None
     pan_number: Optional[str] = None
-    parent_company_id: Optional[str] = None
+    parent_company_id: Optional[int] = None
     industry_category: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
@@ -20,42 +27,48 @@ class CompanyBase(BaseModel):
     website: Optional[str] = None
     description: Optional[str] = None
 
-    @validator('name')
+    @validator("name")
     def validate_name(cls, v):
         if not v or len(v.strip()) < 2:
-            raise ValueError('Company name must be at least 2 characters long')
+            raise ValueError("Company name must be at least 2 characters long")
         return v.strip()
 
-    @validator('gst_number')
+    @validator("gst_number")
     def validate_gst(cls, v):
         if v:
             v = sanitize_gst_number(v)
             if not validate_gst_number(v):
-                raise ValueError('Invalid GST number format. Expected format: 22AAAAA0000A1Z5')
+                raise ValueError(
+                    "Invalid GST number format. Expected format: 22AAAAA0000A1Z5"
+                )
         return v
 
-    @validator('pan_number')
+    @validator("pan_number")
     def validate_pan(cls, v):
         if v:
             v = sanitize_pan_number(v)
             if not validate_pan_number(v):
-                raise ValueError('Invalid PAN number format. Expected format: AAAAA0000A')
+                raise ValueError(
+                    "Invalid PAN number format. Expected format: AAAAA0000A"
+                )
         return v
 
-    @validator('website')
+    @validator("website")
     def validate_website(cls, v):
-        if v and not v.startswith(('http://', 'https://')):
-            v = 'https://' + v
+        if v and not v.startswith(("http://", "https://")):
+            v = "https://" + v
         return v
+
 
 class CompanyCreate(CompanyBase):
     pass
+
 
 class CompanyUpdate(BaseModel):
     name: Optional[str] = None
     gst_number: Optional[str] = None
     pan_number: Optional[str] = None
-    parent_company_id: Optional[str] = None
+    parent_company_id: Optional[int] = None
     industry_category: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
@@ -65,24 +78,25 @@ class CompanyUpdate(BaseModel):
     website: Optional[str] = None
     description: Optional[str] = None
 
-    @validator('gst_number')
+    @validator("gst_number")
     def validate_gst(cls, v):
         if v:
             v = sanitize_gst_number(v)
             if not validate_gst_number(v):
-                raise ValueError('Invalid GST number format')
+                raise ValueError("Invalid GST number format")
         return v
 
-    @validator('pan_number')
+    @validator("pan_number")
     def validate_pan(cls, v):
         if v:
             v = sanitize_pan_number(v)
             if not validate_pan_number(v):
-                raise ValueError('Invalid PAN number format')
+                raise ValueError("Invalid PAN number format")
         return v
 
+
 class CompanyResponse(CompanyBase):
-    id: str
+    id: int
     is_active: bool
     created_on: datetime
     updated_on: Optional[datetime] = None
@@ -90,9 +104,14 @@ class CompanyResponse(CompanyBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True  # Crucial!
+
 
 class CompanyListResponse(BaseModel):
     companies: list[CompanyResponse]
     total: int
     skip: int
-    limit: int
+    limit: Optional[int] = None
+
+    class Config:
+        orm_mode = True  # Crucial!

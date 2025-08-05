@@ -9,8 +9,8 @@ class UserBase(BaseModel):
     name: str
     email: EmailStr
     username: str
-    role_id: Optional[str] = None
-    department_id: Optional[str] = None
+    role_id: Optional[int] = None
+    department_id: Optional[int] = None
 
     @validator('name')
     def validate_name(cls, v):
@@ -45,8 +45,8 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     username: Optional[str] = None
-    role_id: Optional[str] = None
-    department_id: Optional[str] = None
+    role_id: Optional[int] = None
+    department_id: Optional[int] = None
     is_active: Optional[bool] = None
 
     @validator('username')
@@ -76,7 +76,7 @@ class UserPasswordUpdate(BaseModel):
         return v
 
 class UserResponse(UserBase):
-    id: str
+    id: int
     role_name: Optional[str] = None
     department_name: Optional[str] = None
     is_active: bool
@@ -113,7 +113,7 @@ class RoleUpdate(BaseModel):
     permissions: Optional[List[str]] = None
 
 class RoleResponse(RoleBase):
-    id: str
+    id: int
     is_active: bool
     created_on: datetime
     updated_on: Optional[datetime] = None
@@ -124,7 +124,7 @@ class RoleResponse(RoleBase):
 class DepartmentBase(BaseModel):
     name: str
     description: Optional[str] = None
-    head_user_id: Optional[str] = None
+    head_user_id: Optional[int] = None
 
     @validator('name')
     def validate_name(cls, v):
@@ -138,10 +138,10 @@ class DepartmentCreate(DepartmentBase):
 class DepartmentUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    head_user_id: Optional[str] = None
+    head_user_id: Optional[int] = None
 
 class DepartmentResponse(DepartmentBase):
-    id: str
+    id: int
     head_user_name: Optional[str] = None
     is_active: bool
     created_on: datetime
@@ -152,7 +152,7 @@ class DepartmentResponse(DepartmentBase):
 
 class UserPermissions(BaseModel):
     """User permissions for RBAC"""
-    user_id: str
+    user_id: int
     role_name: str
     permissions: List[str]
     can_read_users: bool = False

@@ -11,7 +11,7 @@ class ContactBase(BaseModel):
     designation: Optional[str] = None
     email: EmailStr
     phone_number: Optional[str] = None
-    company_id: str
+    company_id: int
     role_type: Literal['Admin', 'Influencer', 'Decision Maker']
 
     @validator('full_name')
@@ -43,7 +43,7 @@ class ContactUpdate(BaseModel):
     designation: Optional[str] = None
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
-    company_id: Optional[str] = None
+    company_id: Optional[int] = None
     role_type: Optional[Literal['Admin', 'Influencer', 'Decision Maker']] = None
     business_card_file: Optional[str] = None
 
@@ -56,7 +56,7 @@ class ContactUpdate(BaseModel):
         return v
 
 class ContactResponse(ContactBase):
-    id: str
+    id: int
     business_card_path: Optional[str] = None
     company_name: Optional[str] = None
     is_active: bool
@@ -74,7 +74,7 @@ class ContactListResponse(BaseModel):
 
 class BusinessCardUpload(BaseModel):
     """Schema for business card file upload"""
-    contact_id: str
+    contact_id: int
     file_name: str
     file_content: bytes
     content_type: str

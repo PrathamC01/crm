@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../../../utils/api';
+import React, { useState, useEffect } from "react";
+import { apiRequest } from "../../../utils/api";
 
 const CompanyForm = ({ company, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    gst_number: '',
-    pan_number: '',
-    parent_company_id: '',
-    industry_category: '',
-    address: '',
-    city: '',
-    state: '',
-    country: 'India',
-    postal_code: '',
-    website: '',
-    description: ''
+    name: "",
+    gst_number: "",
+    pan_number: "",
+    parent_company_id: null,
+    industry_category: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "India",
+    postal_code: "",
+    website: "",
+    description: "",
   });
-  
+
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -24,18 +24,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   useEffect(() => {
     if (company) {
       setFormData({
-        name: company.name || '',
-        gst_number: company.gst_number || '',
-        pan_number: company.pan_number || '',
-        parent_company_id: company.parent_company_id || '',
-        industry_category: company.industry_category || '',
-        address: company.address || '',
-        city: company.city || '',
-        state: company.state || '',
-        country: company.country || 'India',
-        postal_code: company.postal_code || '',
-        website: company.website || '',
-        description: company.description || ''
+        name: company.name || "",
+        gst_number: company.gst_number || "",
+        pan_number: company.pan_number || "",
+        parent_company_id: company.parent_company_id || "",
+        industry_category: company.industry_category || "",
+        address: company.address || "",
+        city: company.city || "",
+        state: company.state || "",
+        country: company.country || "India",
+        postal_code: company.postal_code || "",
+        website: company.website || "",
+        description: company.description || "",
       });
     }
     fetchCompanies();
@@ -43,12 +43,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await apiRequest('/api/companies?limit=1000');
+      const response = await apiRequest("/api/companies");
       if (response.status) {
         setCompanies(response.data.companies || []);
       }
     } catch (err) {
-      console.error('Failed to fetch companies:', err);
+      console.error("Failed to fetch companies:", err);
     }
   };
 
@@ -56,20 +56,31 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Company name is required';
+      newErrors.name = "Company name is required";
     }
 
-    if (formData.gst_number && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(formData.gst_number)) {
-      newErrors.gst_number = 'Invalid GST format. Expected: 22AAAAA0000A1Z5';
+    if (
+      formData.gst_number &&
+      !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(
+        formData.gst_number
+      )
+    ) {
+      newErrors.gst_number = "Invalid GST format. Expected: 22AAAAA0000A1Z5";
     }
 
-    if (formData.pan_number && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number)) {
-      newErrors.pan_number = 'Invalid PAN format. Expected: AAAAA0000A';
+    if (
+      formData.pan_number &&
+      !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number)
+    ) {
+      newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A";
     }
 
     if (formData.website && !formData.website.match(/^https?:\/\/.+/)) {
-      if (!formData.website.startsWith('http')) {
-        setFormData(prev => ({ ...prev, website: 'https://' + prev.website }));
+      if (!formData.website.startsWith("http")) {
+        setFormData((prev) => ({
+          ...prev,
+          website: "https://" + prev.website,
+        }));
       }
     }
 
@@ -79,28 +90,28 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const endpoint = company 
-        ? `/api/companies/${company.id}` 
-        : '/api/companies';
-      const method = company ? 'PUT' : 'POST';
-      
+      const endpoint = company
+        ? `/api/companies/${company.id}`
+        : "/api/companies";
+      const method = company ? "PUT" : "POST";
+
       const response = await apiRequest(endpoint, {
         method,
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.status) {
         onSave(response.data);
       } else {
-        setErrors({ submit: response.message || 'Operation failed' });
+        setErrors({ submit: response.message || "Operation failed" });
       }
     } catch (err) {
-      setErrors({ submit: 'Network error occurred' });
+      setErrors({ submit: "Network error occurred" });
     } finally {
       setLoading(false);
     }
@@ -108,26 +119,61 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const industryCategories = [
-    'Technology', 'Manufacturing', 'Healthcare', 'Finance', 'Education',
-    'Retail', 'Construction', 'Agriculture', 'Transportation', 'Energy',
-    'Telecommunications', 'Media', 'Real Estate', 'Hospitality', 'Other'
+    "Technology",
+    "Manufacturing",
+    "Healthcare",
+    "Finance",
+    "Education",
+    "Retail",
+    "Construction",
+    "Agriculture",
+    "Transportation",
+    "Energy",
+    "Telecommunications",
+    "Media",
+    "Real Estate",
+    "Hospitality",
+    "Other",
   ];
 
   const indianStates = [
-    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
   ];
 
   return (
@@ -140,7 +186,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
       {/* Basic Information */}
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">
+          Basic Information
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -153,15 +201,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               value={formData.name}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.name ? 'border-red-300' : 'border-gray-300'
+                errors.name ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="Enter company name"
             />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Parent Company</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Parent Company
+            </label>
             <select
               name="parent_company_id"
               value={formData.parent_company_id}
@@ -170,15 +222,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             >
               <option value="">Select parent company (optional)</option>
               {companies
-                .filter(c => c.id !== company?.id) // Don't show self as parent
-                .map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                .filter((c) => c.id !== company?.id) // Don't show self as parent
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Industry Category</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Industry Category
+            </label>
             <select
               name="industry_category"
               value={formData.industry_category}
@@ -186,14 +242,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select industry</option>
-              {industryCategories.map(industry => (
-                <option key={industry} value={industry}>{industry}</option>
+              {industryCategories.map((industry) => (
+                <option key={industry} value={industry}>
+                  {industry}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Website
+            </label>
             <input
               type="url"
               name="website"
@@ -208,48 +268,62 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
       {/* Tax Information */}
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Tax Information</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">
+          Tax Information
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GST Number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              GST Number
+            </label>
             <input
               type="text"
               name="gst_number"
               value={formData.gst_number}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.gst_number ? 'border-red-300' : 'border-gray-300'
+                errors.gst_number ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="22AAAAA0000A1Z5"
               maxLength="15"
             />
-            {errors.gst_number && <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>}
+            {errors.gst_number && (
+              <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PAN Number
+            </label>
             <input
               type="text"
               name="pan_number"
               value={formData.pan_number}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.pan_number ? 'border-red-300' : 'border-gray-300'
+                errors.pan_number ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="AAAAA0000A"
               maxLength="10"
             />
-            {errors.pan_number && <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>}
+            {errors.pan_number && (
+              <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Address Information */}
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Address Information</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">
+          Address Information
+        </h4>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
             <textarea
               name="address"
               value={formData.address}
@@ -262,7 +336,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                City
+              </label>
               <input
                 type="text"
                 name="city"
@@ -274,7 +350,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                State
+              </label>
               <select
                 name="state"
                 value={formData.state}
@@ -282,14 +360,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select state</option>
-                {indianStates.map(state => (
-                  <option key={state} value={state}>{state}</option>
+                {indianStates.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Postal Code
+              </label>
               <input
                 type="text"
                 name="postal_code"
@@ -306,7 +388,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
         <textarea
           name="description"
           value={formData.description}
@@ -334,10 +418,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
           {loading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {company ? 'Updating...' : 'Creating...'}
+              {company ? "Updating..." : "Creating..."}
             </div>
+          ) : company ? (
+            "Update Company"
           ) : (
-            company ? 'Update Company' : 'Create Company'
+            "Create Company"
           )}
         </button>
       </div>

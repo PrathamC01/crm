@@ -24,7 +24,6 @@ async def get_current_user(
         payload = verify_token(token)
         user_id = payload.get("sub")
         if user_id is None:
-            print(user_id)
             raise HTTPException(status_code=401, detail="Invalid token")
 
         # Get user from database using SQLAlchemy

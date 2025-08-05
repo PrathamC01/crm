@@ -45,7 +45,7 @@ const ContactList = ({ onEdit, onView, onDelete }) => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await apiRequest('/api/companies?limit=1000');
+      const response = await apiRequest('/api/companies');
       if (response.status) {
         setCompanies(response.data.companies || []);
       }

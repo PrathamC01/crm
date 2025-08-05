@@ -27,7 +27,7 @@ class AuthService:
             user = self.user_service.get_user_by_email(email_or_username)
         else:
             user = self.user_service.get_user_by_username(email_or_username)
-        print(user)
+        # print(user)
         if not user:
             await log_activity(
                 self.mongo_db,
@@ -67,7 +67,7 @@ class AuthService:
     async def get_user_info(self, user_id: int, request: Request) -> UserResponse:
         """Get user information for dashboard"""
         user = self.user_service.get_user_by_id(user_id)
-        print(user)
+        # print(user)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 

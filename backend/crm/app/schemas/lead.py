@@ -31,10 +31,10 @@ class LeadPriority(str, Enum):
     URGENT = "Urgent"
 
 class LeadBase(BaseModel):
-    company_id: str
+    company_id: int
     location: Optional[str] = None
     lead_source: LeadSource
-    sales_person_id: str
+    sales_person_id: int
     status: LeadStatus = LeadStatus.NEW
     notes: Optional[str] = None
     priority: LeadPriority = LeadPriority.MEDIUM
@@ -56,10 +56,10 @@ class LeadCreate(LeadBase):
     pass
 
 class LeadUpdate(BaseModel):
-    company_id: Optional[str] = None
+    company_id: Optional[int] = None
     location: Optional[str] = None
     lead_source: Optional[LeadSource] = None
-    sales_person_id: Optional[str] = None
+    sales_person_id: Optional[int] = None
     status: Optional[LeadStatus] = None
     notes: Optional[str] = None
     priority: Optional[LeadPriority] = None
@@ -72,7 +72,7 @@ class LeadUpdate(BaseModel):
         return v.strip() if v else v
 
 class LeadResponse(LeadBase):
-    id: str
+    id: int
     company_name: Optional[str] = None
     sales_person_name: Optional[str] = None
     last_activity_date: datetime
@@ -102,7 +102,7 @@ class LeadStatusUpdate(BaseModel):
 
 class LeadConversion(BaseModel):
     """Schema for converting lead to opportunity"""
-    contact_id: str  # Must be a Decision Maker
+    contact_id: int  # Must be a Decision Maker
     opportunity_name: str
     amount: Optional[float] = None
     justification: Optional[str] = None

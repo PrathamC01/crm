@@ -55,7 +55,7 @@ const OpportunityForm = ({ opportunity, onSave, onCancel }) => {
 
   const fetchLeads = async () => {
     try {
-      const response = await apiRequest('/api/leads?limit=1000&status=Qualified');
+      const response = await apiRequest('/api/leads&status=Qualified');
       if (response.status) {
         setLeads(response.data.leads || []);
       }
@@ -66,7 +66,7 @@ const OpportunityForm = ({ opportunity, onSave, onCancel }) => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await apiRequest('/api/companies?limit=1000');
+      const response = await apiRequest('/api/companies');
       if (response.status) {
         setCompanies(response.data.companies || []);
       }

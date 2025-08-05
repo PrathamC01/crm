@@ -30,7 +30,7 @@ class Company(BaseModel):
     updater = relationship("User", foreign_keys="Company.updated_by", back_populates="companies_updated")
     
     # Related entities
-    contacts = relationship("Contact", back_populates="company")
+    contacts = relationship("Contact",  back_populates="company")
     leads = relationship("Lead", back_populates="company")
     opportunities = relationship("Opportunity", back_populates="company")
     
