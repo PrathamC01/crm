@@ -88,6 +88,11 @@ app.include_router(leads.router)
 app.include_router(opportunities.router)
 app.include_router(users.router)
 
+# Masters routers
+app.include_router(product_types.router)
+app.include_router(categories.router)
+app.include_router(products.router)
+
 
 @app.get("/")
 async def root():
