@@ -1,9 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Box } from '@mui/material';
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import CRM from './components/CRM';
-import './App.css';
+import MainLayout from './components/MainLayout';
+
+// Material-UI Theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+    },
+    secondary: {
+      main: '#9c27b0',
+      light: '#ba68c8',
+      dark: '#7b1fa2',
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+    h5: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          borderRadius: 12,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+  },
+});
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,8 +67,8 @@ function App() {
     // Check if user is already logged in
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token validity by calling dashboard endpoint
-      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'}/api/dashboard`, {
+      // Verify token validity by calling backend
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'}/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -53,49 +107,45 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="100vh"
+          bgcolor="background.default"
+        >
+          <Box>Loading...</Box>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Router>
-      <div className="App">
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
         <Routes>
           <Route 
             path="/login" 
             element={
               isAuthenticated ? 
-              <Navigate to="/crm" replace /> : 
+              <Navigate to="/" replace /> : 
               <Login onLogin={handleLogin} />
             } 
           />
           <Route 
-            path="/dashboard" 
+            path="/*" 
             element={
               isAuthenticated ? 
-              <Dashboard onLogout={handleLogout} /> : 
+              <MainLayout onLogout={handleLogout} /> : 
               <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/crm" 
-            element={
-              isAuthenticated ? 
-              <CRM onLogout={handleLogout} /> : 
-              <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/" 
-            element={
-              <Navigate to={isAuthenticated ? "/crm" : "/login"} replace />
             } 
           />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

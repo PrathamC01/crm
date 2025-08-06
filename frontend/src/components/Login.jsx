@@ -1,4 +1,23 @@
 import React, { useState } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  Container,
+  Paper,
+  InputAdornment,
+  IconButton,
+} from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  Business as BusinessIcon,
+} from '@mui/icons-material';
 
 const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -7,6 +26,7 @@ const Login = ({ onLogin }) => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,95 +69,144 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center login-container p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="login-form p-8 rounded-2xl shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper
+          elevation={24}
+          sx={{
+            padding: 4,
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Box textAlign="center" mb={4}>
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+              }}
+            >
+              <BusinessIcon sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, color: '#333' }}>
               Welcome Back
-            </h2>
-            <p className="text-gray-600">
-              Sign in to your CRM account
-            </p>
-          </div>
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Sign in to your ERP CRM account
+            </Typography>
+          </Box>
 
-          {/* Error Message */}
           {error && (
-            <div className="error-message bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                {error}
-              </div>
-            </div>
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
           )}
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email_or_username" className="block text-sm font-medium text-gray-700 mb-2">
-                Email or Username
-              </label>
-              <input
-                id="email_or_username"
-                name="email_or_username"
-                type="text"
-                required
-                className="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your email or username"
-                value={formData.email_or_username}
-                onChange={handleInputChange}
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleInputChange}
-                disabled={loading}
-              />
-            </div>
-
-            <button
-              type="submit"
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Email or Username"
+              name="email_or_username"
+              value={formData.email_or_username}
+              onChange={handleInputChange}
+              margin="normal"
+              required
               disabled={loading}
-              className="login-button w-full py-3 px-4 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={formData.password}
+              onChange={handleInputChange}
+              margin="normal"
+              required
+              disabled={loading}
+              variant="outlined"
+              sx={{ mb: 3 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      disabled={loading}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              disabled={loading}
+              sx={{
+                py: 1.5,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                },
+              }}
             >
               {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <CircularProgress size={20} color="inherit" />
                   Signing in...
-                </div>
+                </Box>
               ) : (
                 'Sign In'
               )}
-            </button>
-          </form>
+            </Button>
+          </Box>
 
           {/* Test Credentials Info */}
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">Test Credentials:</p>
-            <p className="text-sm text-blue-700">
+          <Paper
+            elevation={1}
+            sx={{
+              mt: 4,
+              p: 2,
+              bgcolor: '#e3f2fd',
+              borderLeft: '4px solid #2196f3',
+            }}
+          >
+            <Typography variant="subtitle2" color="primary" gutterBottom>
+              Test Credentials:
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
               <strong>Email:</strong> admin@crm.com<br />
               <strong>Username:</strong> admin<br />
               <strong>Password:</strong> admin123
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Typography>
+          </Paper>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 
