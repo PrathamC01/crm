@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from .routers.sso import auth, dashboard
 from .routers.portal import companies, contacts, leads, opportunities, users
 from .routers.front import health
+from .routers.masters import product_types, categories, products
 
 # Import database
 from .database.init_db import init_database
