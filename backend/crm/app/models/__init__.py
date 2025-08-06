@@ -9,6 +9,12 @@ from .company import Company
 from .contact import Contact, RoleType
 from .lead import Lead, LeadSource, LeadStatus, LeadPriority
 from .opportunity import Opportunity, OpportunityStage, OpportunityStatus
+from .product_type import ProductType
+from .category import Category
+from .sub_category import SubCategory
+from .oem_vendor import OEMVendor
+from .configuration import Configuration
+from .product import Product
 
 __all__ = [
     'Base',
@@ -25,5 +31,11 @@ __all__ = [
     'LeadPriority',
     'Opportunity',
     'OpportunityStage',
-    'OpportunityStatus'
+    'OpportunityStatus',
+    'ProductType',
+    'Category',
+    'SubCategory',
+    'OEMVendor',
+    'Configuration',
+    'Product'
 ]
