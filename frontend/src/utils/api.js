@@ -1,11 +1,11 @@
 // API utility functions
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001';
 
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (endpoint, method = 'GET', data = null, options = {}) => {
   const token = localStorage.getItem('token');
   
   const defaultOptions = {
-    method: 'GET',
+    method,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -21,9 +21,14 @@ export const apiRequest = async (endpoint, options = {}) => {
     },
   };
 
+  // Add body for non-GET requests
+  if (data && method !== 'GET') {
+    finalOptions.body = JSON.stringify(data);
+  }
+
   try {
     const response = await fetch(`${BACKEND_URL}${endpoint}`, finalOptions);
-    const data = await response.json();
+    const result = await response.json();
     
     // Handle unauthorized responses
     if (response.status === 401) {
@@ -32,7 +37,7 @@ export const apiRequest = async (endpoint, options = {}) => {
       return null;
     }
     
-    return data;
+    return result;
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
