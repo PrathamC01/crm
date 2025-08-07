@@ -93,7 +93,7 @@ async def create_contact(
         )
 
         return StandardResponse(
-            status=True, message="Contact created successfully", data=contact
+            status=True, message="Contact created successfully"
         )
     except Exception as e:
         if "duplicate key" in str(e).lower():
