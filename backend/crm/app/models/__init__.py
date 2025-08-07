@@ -28,5 +28,8 @@ __all__ = [
     'LeadPriority',
     'Opportunity',
     'OpportunityStage',
-    'OpportunityStatus'
+    'OpportunityStatus',
+    'QualificationStatus',
+    'GoNoGoStatus',
+    'QuotationStatus'
 ]
