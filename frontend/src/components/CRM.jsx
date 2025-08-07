@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import CompanyManagement from "./CompanyManagement";
 import ContactManagement from "./ContactManagement";
 import LeadManagement from "./LeadManagement";
@@ -7,32 +8,20 @@ import UserManagement from "./UserManagement";
 import Dashboard from "./Dashboard";
 
 const CRM = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation();
 
   const tabs = [
-    { id: "dashboard", name: "Dashboard", icon: "📊" },
-    { id: "companies", name: "Companies", icon: "🏢" },
-    { id: "contacts", name: "Contacts", icon: "👥" },
-    { id: "leads", name: "Leads", icon: "🎯" },
-    { id: "opportunities", name: "Opportunities", icon: "💰" },
-    { id: "users", name: "Users", icon: "👤" },
+    { id: "dashboard", name: "Dashboard", icon: "📊", path: "/crm/dashboard" },
+    { id: "companies", name: "Companies", icon: "🏢", path: "/crm/companies" },
+    { id: "contacts", name: "Contacts", icon: "👥", path: "/crm/contacts" },
+    { id: "leads", name: "Leads", icon: "🎯", path: "/crm/leads" },
+    { id: "opportunities", name: "Opportunities", icon: "💰", path: "/crm/opportunities" },
+    { id: "users", name: "Users", icon: "👤", path: "/crm/users" },
   ];
 
-  const renderActiveComponent = () => {
-    switch (activeTab) {
-      case "companies":
-        return <CompanyManagement />;
-      case "contacts":
-        return <ContactManagement />;
-      case "leads":
-        return <LeadManagement />;
-      case "opportunities":
-        return <OpportunityManagement />;
-      case "users":
-        return <UserManagement />;
-      default:
-        return <Dashboard />;
-    }
+  const getActiveTab = () => {
+    const path = location.pathname;
+    return tabs.find(tab => path.startsWith(tab.path))?.id || "dashboard";
   };
 
   return (
@@ -62,26 +51,34 @@ const CRM = ({ onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {tabs.map((tab) => (
-              <button
+              <Link
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                to={tab.path}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
+                  getActiveTab() === tab.id
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.name}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Main Content with Routing */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderActiveComponent()}
+        <Routes>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="companies" element={<CompanyManagement />} />
+          <Route path="contacts" element={<ContactManagement />} />
+          <Route path="leads" element={<LeadManagement />} />
+          <Route path="opportunities" element={<OpportunityManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="" element={<Navigate to="/crm/dashboard" replace />} />
+        </Routes>
       </main>
     </div>
   );

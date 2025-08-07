@@ -14,7 +14,7 @@ function App() {
     const token = localStorage.getItem('token');
     if (token) {
       // Verify token validity by calling dashboard endpoint
-      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001'}/api/dashboard`, {
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'}/api/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -79,8 +79,9 @@ function App() {
               <Navigate to="/login" replace />
             } 
           />
+          {/* CRM nested routes */}
           <Route 
-            path="/crm" 
+            path="/crm/*" 
             element={
               isAuthenticated ? 
               <CRM onLogout={handleLogout} /> : 
