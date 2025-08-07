@@ -8,7 +8,10 @@ from .department import Department
 from .company import Company
 from .contact import Contact, RoleType
 from .lead import Lead, LeadSource, LeadStatus, LeadPriority
-from .opportunity import Opportunity, OpportunityStage, OpportunityStatus
+from .opportunity import (
+    Opportunity, OpportunityStage, OpportunityStatus, 
+    QualificationStatus, GoNoGoStatus, QuotationStatus
+)
 
 __all__ = [
     'Base',
