@@ -15,6 +15,7 @@ from .routers.front import health
 # Import database
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
+from .middlewares.error_handler import ErrorHandlerMiddleware
 
 
 @asynccontextmanager
@@ -51,7 +52,7 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
-
+app.add_middleware(ErrorHandlerMiddleware)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,

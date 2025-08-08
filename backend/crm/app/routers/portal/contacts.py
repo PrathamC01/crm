@@ -56,7 +56,7 @@ async def get_contacts(
             ),
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.get("/{contact_id}", response_model=StandardResponse)
@@ -77,7 +77,7 @@ async def get_contact(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.post("/", response_model=StandardResponse)
@@ -120,7 +120,7 @@ async def update_contact(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.delete("/{contact_id}", response_model=StandardResponse)
@@ -139,7 +139,7 @@ async def delete_contact(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.get("/company/{company_id}/decision-makers", response_model=StandardResponse)
@@ -162,4 +162,4 @@ async def get_decision_makers(
             },
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)

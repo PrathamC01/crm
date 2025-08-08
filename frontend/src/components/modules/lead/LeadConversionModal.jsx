@@ -7,7 +7,7 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
     opportunity_name: '',
     amount: '',
     justification: '',
-    stage: 'L1',
+    stage: 'L1_Prospect',
     notes: ''
   });
   
@@ -95,13 +95,14 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
   };
 
   const opportunityStages = [
-    { value: 'L1', label: 'L1 - Initial' },
-    { value: 'L2', label: 'L2 - Qualified' },
-    { value: 'L3', label: 'L3 - Needs Analysis' },
-    { value: 'L4', label: 'L4 - Proposal' },
-    { value: 'L5', label: 'L5 - Negotiation' },
-    { value: 'L6', label: 'L6 - Decision' },
-    { value: 'L7', label: 'L7 - Closing' }
+    { value: 'L1_Prospect', label: 'L1 - Prospect' },
+    { value: 'L1_Qualification', label: 'L1 - Initial' },
+    { value: 'L2_Need_Analysis', label: 'L2 - Qualified' },
+    { value: 'L3_Proposal', label: 'L3 - Needs Analysis' },
+    { value: 'L4_Negotiation', label: 'L4 - Proposal' },
+    { value: 'L5_Won', label: 'L5 - Negotiation' },
+    { value: 'L6_Lost', label: 'L6 - Decision' },
+    { value: 'L7_Dropped', label: 'L7 - Closing' }
   ];
 
   return (

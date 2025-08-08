@@ -71,7 +71,7 @@ async def get_leads(
             ),
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.get("/{lead_id}", response_model=StandardResponse)
@@ -92,7 +92,7 @@ async def get_lead(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.post("/", response_model=StandardResponse)
@@ -109,7 +109,7 @@ async def create_lead(
 
         return StandardResponse(status=True, message="Lead created successfully")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.put("/{lead_id}", response_model=StandardResponse)
@@ -156,7 +156,7 @@ async def update_lead_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.post("/{lead_id}/convert", response_model=StandardResponse)
@@ -180,7 +180,8 @@ async def convert_lead_to_opportunity(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        # raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{lead_id}", response_model=StandardResponse)
@@ -199,7 +200,7 @@ async def delete_lead(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.get("/summary/statistics", response_model=StandardResponse)
@@ -216,7 +217,7 @@ async def get_lead_summary(
             status=True, message="Lead summary retrieved successfully", data=summary
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.post("/maintenance/auto-close", response_model=StandardResponse)
@@ -234,4 +235,4 @@ async def auto_close_inactive_leads(
             data={"closed_count": count},
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)

@@ -56,7 +56,7 @@ async def get_users(
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.get("/{user_id}", response_model=StandardResponse)
 async def get_user(
@@ -92,7 +92,7 @@ async def get_user(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.post("/", response_model=StandardResponse)
 async def create_user(
@@ -157,7 +157,7 @@ async def update_user(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.delete("/{user_id}", response_model=StandardResponse)
 async def delete_user(
@@ -178,7 +178,7 @@ async def delete_user(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.get("/roles/list", response_model=StandardResponse)
 async def get_roles(
@@ -204,7 +204,7 @@ async def get_roles(
             data={"roles": roles_data}
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.get("/departments/list", response_model=StandardResponse)
 async def get_departments(
@@ -229,7 +229,7 @@ async def get_departments(
             data={"departments": departments_data}
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 @router.get("/sales-people/list", response_model=StandardResponse)
 async def get_sales_people(
@@ -255,4 +255,4 @@ async def get_sales_people(
             data={"sales_people": sales_data}
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)

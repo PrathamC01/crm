@@ -49,7 +49,7 @@ async def get_companies(
             ),
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.get("/{company_id}", response_model=StandardResponse)
@@ -70,7 +70,7 @@ async def get_company(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.post("/", response_model=StandardResponse)
@@ -111,7 +111,7 @@ async def update_company(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
 
 
 @router.delete("/{company_id}", response_model=StandardResponse)
@@ -130,4 +130,4 @@ async def delete_company(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
