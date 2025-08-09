@@ -104,7 +104,6 @@ class CompanyResponse(CompanyBase):
 
     class Config:
         from_attributes = True
-        orm_mode = True  # Crucial!
 
 
 class CompanyListResponse(BaseModel):
