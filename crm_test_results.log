@@ -1,0 +1,65 @@
+🔧 Using backend URL: http://10.60.90.76:8000
+🚀 Starting Comprehensive CRM API Tests
+📍 Testing against: http://10.60.90.76:8000
+============================================================
+
+🔍 Running: Health Check
+❌ Health Check - FAILED: Exception: HTTPConnectionPool(host='10.60.90.76', port=8000): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0xf8aa7dcedc50>, 'Connection to 10.60.90.76 timed out. (connect timeout=None)'))
+
+🔍 Running: Authentication
+❌ Admin Login - FAILED: Exception: HTTPConnectionPool(host='10.60.90.76', port=8000): Max retries exceeded with url: /api/login (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0xf8aa7dcef050>, 'Connection to 10.60.90.76 timed out. (connect timeout=None)'))
+
+🔍 Running: Dashboard Access
+❌ Dashboard Access - FAILED: No token available
+
+🔍 Running: Invalid Login
+❌ Invalid Login Test - FAILED: Exception: HTTPConnectionPool(host='10.60.90.76', port=8000): Max retries exceeded with url: /api/login (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0xf8aa7dd00390>, 'Connection to 10.60.90.76 timed out. (connect timeout=None)'))
+
+🔍 Running: Company Creation
+❌ Create Company - FAILED: No authentication token
+
+🔍 Running: Company Listing
+❌ Get Companies - FAILED: No authentication token
+
+🔍 Running: Contact Creation
+❌ Create Contact - FAILED: No authentication token
+
+🔍 Running: Contact Listing
+❌ Get Contacts - FAILED: No authentication token
+
+🔍 Running: Lead Creation
+❌ Create Lead - FAILED: No authentication token
+
+🔍 Running: Lead Listing
+❌ Get Leads - FAILED: No authentication token
+
+🔍 Running: Lead Status Update
+❌ Lead Status Update - FAILED: No authentication token
+
+🔍 Running: Lead Conversion Request
+❌ Lead Conversion Request - FAILED: No authentication token
+
+🔍 Running: Lead Conversion Review
+❌ Lead Conversion Review - FAILED: No authentication token
+
+🔍 Running: Lead to Opportunity Conversion
+❌ Lead to Opportunity Conversion - FAILED: No authentication token
+
+🔍 Running: Direct Opportunity Creation
+❌ Create Opportunity Direct - FAILED: No authentication token
+
+🔍 Running: Opportunity Listing
+❌ Get Opportunities - FAILED: No authentication token
+
+🔍 Running: Opportunity Stage Progression
+❌ Opportunity Stage Progression - FAILED: No authentication token
+
+🔍 Running: User Management
+❌ Get Users - FAILED: No authentication token
+
+🔍 Running: Role-Based Access Control
+❌ Role-Based Access Control - FAILED: Exception: HTTPConnectionPool(host='10.60.90.76', port=8000): Max retries exceeded with url: /api/login (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0xf8aa7dcef2d0>, 'Connection to 10.60.90.76 timed out. (connect timeout=None)'))
+
+============================================================
+📊 Test Results: 0/19 tests passed
+⚠️  19 tests failed. Check the details above.
