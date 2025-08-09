@@ -49,7 +49,8 @@ async def get_companies(
             ),
         )
     except Exception as e:
-        print(e)
+        print(f"Error in get_companies: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{company_id}", response_model=StandardResponse)
