@@ -36,6 +36,10 @@ class CRMTester:
         
     def make_request(self, method, endpoint, data=None, headers=None):
         """Make HTTP request with proper error handling"""
+        # Ensure endpoint has trailing slash for API endpoints
+        if endpoint.startswith("/") and not endpoint.endswith("/") and endpoint != "/":
+            endpoint = endpoint + "/"
+            
         url = f"{API_BASE}{endpoint}"
         
         # Add auth header if token exists
