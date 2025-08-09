@@ -1,112 +1,285 @@
-import React, { useState } from "react";
-import { LeadList, LeadForm, LeadView } from "./modules/lead";
+import React, { useState, useEffect } from 'react';
+import { AddNewLeadForm, LeadList, LeadView } from './modules/lead';
+import { apiRequest } from '../utils/api';
 
 const LeadManagement = () => {
-  const [currentView, setCurrentView] = useState("list");
+  const [view, setView] = useState('list'); // 'list', 'form', 'view'
   const [selectedLead, setSelectedLead] = useState(null);
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    total: 0,
+    qualified: 0,
+    converted: 0,
+    value: 0
+  });
 
-  const handleCreate = () => {
+  useEffect(() => {
+    if (view === 'list') {
+      fetchLeads();
+      fetchStats();
+    }
+  }, [view]);
+
+  const fetchLeads = async () => {
+    setLoading(true);
+    try {
+      const response = await apiRequest('/api/leads');
+      if (response.status) {
+        setLeads(response.data.leads || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch leads:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await apiRequest('/api/leads/stats');
+      if (response.status) {
+        setStats(response.data || {
+          total: 0,
+          qualified: 0,
+          converted: 0,
+          value: 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  const handleAddLead = () => {
     setSelectedLead(null);
-    setCurrentView("form");
+    setView('form');
   };
 
-  const handleEdit = (lead) => {
+  const handleEditLead = (lead) => {
     setSelectedLead(lead);
-    setCurrentView("form");
+    setView('form');
   };
 
-  const handleView = (lead) => {
+  const handleViewLead = (lead) => {
     setSelectedLead(lead);
-    setCurrentView("view");
+    setView('view');
   };
 
   const handleSave = (savedLead) => {
-    setCurrentView("list");
+    console.log('Lead saved:', savedLead);
+    setView('list');
     setSelectedLead(null);
+    fetchLeads(); // Refresh the list
   };
 
   const handleCancel = () => {
-    setCurrentView("list");
+    setView('list');
     setSelectedLead(null);
   };
 
-  const handleDelete = (leadId) => {
-    // Delete is handled within LeadList component
-    // This could be used for additional logic if needed
+  const handleDelete = async (lead) => {
+    if (!window.confirm(`Are you sure you want to delete "${lead.project_title}"?`)) return;
+    
+    try {
+      const response = await apiRequest(`/api/leads/${lead.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.status) {
+        fetchLeads(); // Refresh the list
+      } else {
+        alert('Failed to delete lead: ' + response.message);
+      }
+    } catch (err) {
+      alert('Network error occurred');
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+  const renderHeader = () => (
+    <div className="mb-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 text-left">
-            Lead Management
-          </h2>
-          <p className="text-gray-600">
-            Track and manage sales leads through the pipeline
+          <h1 className="text-2xl font-bold text-gray-900">
+            {view === 'form' 
+              ? (selectedLead ? 'Edit Lead' : 'Add New Lead')
+              : view === 'view'
+              ? 'Lead Details'
+              : 'Lead Management'
+            }
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {view === 'form' 
+              ? 'Complete multi-tab form with lead details, contacts, tender information, and documents'
+              : view === 'view'
+              ? 'Comprehensive lead information and conversion tracking'
+              : 'Manage your sales leads from capture to opportunity conversion'
+            }
           </p>
         </div>
-        {currentView === "list" && (
+        {view === 'list' && (
           <button
-            onClick={handleCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            onClick={handleAddLead}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
           >
-            <span className="mr-2">+</span>
-            Add Lead
+            <span className="text-lg">+</span>
+            <span>Add New Lead</span>
+          </button>
+        )}
+        {(view === 'form' || view === 'view') && (
+          <button
+            onClick={handleCancel}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            ← Back to List
           </button>
         )}
       </div>
+    </div>
+  );
 
-      {/* Content */}
-      {currentView === "list" && (
-        <LeadList
-          onEdit={handleEdit}
-          onView={handleView}
-          onDelete={handleDelete}
-        />
-      )}
+  const renderQuickStats = () => (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Total Leads</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+          </div>
+        </div>
+      </div>
 
-      {currentView === "form" && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium mb-6">
-            {selectedLead ? "Edit Lead" : "Create New Lead"}
-          </h3>
-          <LeadForm
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-green-100 text-green-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Qualified Leads</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.qualified}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Converted</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.converted}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Total Value</div>
+            <div className="text-2xl font-bold text-gray-900">
+              ₹{stats.value ? new Intl.NumberFormat('en-IN').format(stats.value) : '0'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (view) {
+      case 'form':
+        return (
+          <AddNewLeadForm
             lead={selectedLead}
             onSave={handleSave}
             onCancel={handleCancel}
           />
-        </div>
-      )}
-
-      {currentView === "view" && (
-        <div className="bg-white rounded-lg shadow p-6">
+        );
+      case 'view':
+        return (
           <LeadView
             lead={selectedLead}
-            onEdit={handleEdit}
+            onEdit={handleEditLead}
             onClose={handleCancel}
           />
-        </div>
-      )}
+        );
+      default:
+        return (
+          <LeadList
+            leads={leads}
+            loading={loading}
+            onEdit={handleEditLead}
+            onView={handleViewLead}
+            onDelete={handleDelete}
+            onRefresh={fetchLeads}
+          />
+        );
+    }
+  };
 
-      {/* Business Flow Info */}
-      {currentView === "list" && (
-        <div className="bg-green-50 rounded-lg p-4">
-          <h4 className="font-medium text-green-900 mb-2">
-            Lead to Opportunity Conversion
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
+  return (
+    <div className="space-y-6">
+      {renderHeader()}
+      
+      {/* Quick Stats - Only show on list view */}
+      {view === 'list' && renderQuickStats()}
+
+      {/* Main Content */}
+      <div className="bg-white rounded-lg shadow">
+        {renderContent()}
+      </div>
+
+      {/* Lead Process Guide - Only show on list view */}
+      {view === 'list' && (
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Lead Management Process</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <p>• Leads must be "Qualified" status to convert</p>
-              <p>• Requires Decision Maker contact for conversion</p>
+              <h4 className="font-medium text-gray-900 mb-2">Lead Capture</h4>
+              <ul className="text-gray-600 space-y-1">
+                <li>• <strong>General Details:</strong> Project info, lead source, company details</li>
+                <li>• <strong>Contact Management:</strong> Decision makers and stakeholders</li>
+                <li>• <strong>Tender Information:</strong> Fees, dates, submission requirements</li>
+                <li>• <strong>Documentation:</strong> Upload tender docs and specifications</li>
+              </ul>
             </div>
             <div>
-              <p>
-                • Auto-close: Inactive leads (4+ weeks) automatically dropped
-              </p>
-              <p>• Conversion creates new opportunity in L1 stage</p>
+              <h4 className="font-medium text-gray-900 mb-2">Lead Progression</h4>
+              <ul className="text-gray-600 space-y-1">
+                <li>• <strong>Qualification:</strong> BANT/CHAMP scoring and validation</li>
+                <li>• <strong>Nurturing:</strong> Follow-ups and relationship building</li>
+                <li>• <strong>Conversion:</strong> Convert qualified leads to opportunities</li>
+                <li>• <strong>Tracking:</strong> Monitor progress and update status</li>
+              </ul>
             </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span className="text-sm font-medium text-blue-900">Pro Tip:</span>
+            </div>
+            <p className="text-sm text-blue-800 mt-1">
+              Use the multi-tab form to capture comprehensive lead information including partner details, 
+              tender requirements, and competitor intelligence for better opportunity conversion rates.
+            </p>
           </div>
         </div>
       )}
