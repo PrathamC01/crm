@@ -4,7 +4,15 @@ SQLAlchemy Role model
 
 from sqlalchemy import Column, String, JSON
 from sqlalchemy.orm import relationship
+from enum import Enum
 from .base import BaseModel
+
+
+class RoleType(str, Enum):
+    ADMIN = "admin"
+    REVIEWER = "reviewer"
+    SALES = "sales"
+    USER = "user"
 
 
 class Role(BaseModel):
