@@ -1,702 +1,405 @@
 """
-Enhanced Opportunity management service with stage-specific functionality
+Opportunity service with Lead-based creation workflow
 """
 
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, and_, func
-from ..models import (
-    Opportunity,
-    Lead,
-    Company,
-    Contact,
-    User,
-    RoleType,
-    OpportunityStatus,
-    OpportunityStage,
-    QualificationStatus,
-    GoNoGoStatus,
-    QuotationStatus,
-)
-from decimal import Decimal
+from sqlalchemy import and_, or_, desc
+from datetime import datetime, date
+
+from ..models import Opportunity, Lead, SalesProcess, Quotation, User
+from ..models.opportunity import OpportunityStatus, OpportunityStage
+from ..models.sales_process import SalesStage, StageStatus
+from ..models.lead import LeadStatus, ReviewStatus
 
 
 class OpportunityService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_opportunity(
-        self, opportunity_data: dict, created_by: Optional[int] = None
+    def create_opportunity_from_lead(
+        self, 
+        lead_id: int, 
+        converted_by_user_id: int, 
+        approved_by_user_id: Optional[int] = None,
+        conversion_notes: Optional[str] = None
     ) -> Opportunity:
-        """Create a new opportunity with POT-{4digit} ID"""
-        # Validate that contact is a Decision Maker
-        contact = (
-            self.db.query(Contact)
-            .filter(Contact.id == opportunity_data["contact_id"])
-            .first()
-        )
-
-        if not contact or contact.role_type != RoleType.DECISION_MAKER:
-            raise ValueError(
-                "Opportunity can only be created with a Decision Maker contact"
+        """
+        Create opportunity from lead with complete data preservation
+        This is the ONLY way opportunities should be created
+        """
+        # Get the lead with all related data
+        lead = self.db.query(Lead).options(
+            joinedload(Lead.company),
+            joinedload(Lead.end_customer),
+            joinedload(Lead.contacts)
+        ).filter(
+            and_(
+                Lead.id == lead_id,
+                Lead.is_active == True,
+                Lead.deleted_on.is_(None)
             )
+        ).first()
+        
+        if not lead:
+            raise ValueError(f"Lead with ID {lead_id} not found")
+        
+        # Check if lead is already converted
+        if lead.converted:
+            raise ValueError(f"Lead {lead_id} has already been converted to an opportunity")
+        
+        # Check if lead is qualified and approved for conversion
+        if lead.status != LeadStatus.QUALIFIED:
+            raise ValueError(f"Lead must be Qualified before conversion. Current status: {lead.status}")
+        
+        if not lead.reviewed or lead.review_status != ReviewStatus.APPROVED:
+            raise ValueError(f"Lead must be reviewed and approved before conversion")
+        
+        # Check if opportunity already exists for this lead
+        existing_opportunity = self.db.query(Opportunity).filter(
+            Opportunity.lead_id == lead_id
+        ).first()
+        
+        if existing_opportunity:
+            raise ValueError(f"Opportunity already exists for Lead {lead_id}: {existing_opportunity.pot_id}")
 
-        # Generate unique POT ID
-        pot_id = self._generate_unique_pot_id()
-
-        db_opportunity = Opportunity(
-            pot_id=pot_id,
-            lead_id=opportunity_data.get("lead_id"),
-            company_id=opportunity_data.get("company_id"),
-            contact_id=opportunity_data.get("contact_id"),
-            name=opportunity_data.get("name"),
-            stage=opportunity_data.get("stage", OpportunityStage.L1_PROSPECT),
-            amount=opportunity_data.get("amount"),
-            scoring=opportunity_data.get("scoring", 0),
-            bom_id=opportunity_data.get("bom_id"),
-            costing=opportunity_data.get("costing"),
-            status=opportunity_data.get("status", OpportunityStatus.OPEN),
-            justification=opportunity_data.get("justification"),
-            close_date=opportunity_data.get("close_date"),
-            probability=opportunity_data.get("probability", 10),
-            notes=opportunity_data.get("notes"),
-            # L1 - Qualification Fields
-            requirement_gathering_notes=opportunity_data.get(
-                "requirement_gathering_notes"
-            ),
-            go_no_go_status=opportunity_data.get(
-                "go_no_go_status", GoNoGoStatus.PENDING
-            ),
-            qualification_completed_by=opportunity_data.get(
-                "qualification_completed_by"
-            ),
-            qualification_status=opportunity_data.get("qualification_status"),
-            qualification_scorecard=opportunity_data.get("qualification_scorecard"),
-            # L2 - Need Analysis / Demo Fields
-            demo_completed=opportunity_data.get("demo_completed", False),
-            demo_date=opportunity_data.get("demo_date"),
-            demo_summary=opportunity_data.get("demo_summary"),
-            presentation_materials=opportunity_data.get("presentation_materials"),
-            qualification_meeting_completed=opportunity_data.get(
-                "qualification_meeting_completed", False
-            ),
-            qualification_meeting_date=opportunity_data.get(
-                "qualification_meeting_date"
-            ),
-            qualification_meeting_notes=opportunity_data.get(
-                "qualification_meeting_notes"
-            ),
-            # L3 - Proposal / Bid Submission Fields
-            quotation_created=opportunity_data.get("quotation_created", False),
-            quotation_status=opportunity_data.get(
-                "quotation_status", QuotationStatus.DRAFT
-            ),
-            quotation_file_path=opportunity_data.get("quotation_file_path"),
-            quotation_version=opportunity_data.get("quotation_version", 1),
-            proposal_prepared=opportunity_data.get("proposal_prepared", False),
-            proposal_file_path=opportunity_data.get("proposal_file_path"),
-            proposal_submitted=opportunity_data.get("proposal_submitted", False),
-            proposal_submission_date=opportunity_data.get("proposal_submission_date"),
-            poc_completed=opportunity_data.get("poc_completed", False),
-            poc_notes=opportunity_data.get("poc_notes"),
-            solutions_team_approval_notes=opportunity_data.get(
-                "solutions_team_approval_notes"
-            ),
-            # L4 - Negotiation Fields
-            customer_discussion_notes=opportunity_data.get("customer_discussion_notes"),
-            proposal_updated=opportunity_data.get("proposal_updated", False),
-            updated_proposal_file_path=opportunity_data.get(
-                "updated_proposal_file_path"
-            ),
-            updated_proposal_submitted=opportunity_data.get(
-                "updated_proposal_submitted", False
-            ),
-            negotiated_quotation_file_path=opportunity_data.get(
-                "negotiated_quotation_file_path"
-            ),
-            negotiation_rounds=opportunity_data.get("negotiation_rounds", 0),
-            commercial_approval_required=opportunity_data.get(
-                "commercial_approval_required", False
-            ),
-            commercial_approval_status=opportunity_data.get(
-                "commercial_approval_status"
-            ),
-            # L5 - Won Fields
-            kickoff_meeting_scheduled=opportunity_data.get(
-                "kickoff_meeting_scheduled", False
-            ),
-            kickoff_meeting_date=opportunity_data.get("kickoff_meeting_date"),
-            loi_received=opportunity_data.get("loi_received", False),
-            loi_file_path=opportunity_data.get("loi_file_path"),
-            order_verified=opportunity_data.get("order_verified", False),
-            handoff_to_delivery=opportunity_data.get("handoff_to_delivery", False),
-            delivery_team_assigned=opportunity_data.get("delivery_team_assigned"),
-            created_by=created_by,
-        )
-
-        self.db.add(db_opportunity)
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def _generate_unique_pot_id(self) -> str:
-        """Generate unique POT-{4digit} ID"""
-        import random
-
-        while True:
-            pot_id = f"POT-{random.randint(1000, 9999)}"
-            existing = (
-                self.db.query(Opportunity).filter(Opportunity.pot_id == pot_id).first()
+        try:
+            # Create opportunity from lead
+            opportunity = Opportunity.create_from_lead(
+                lead=lead,
+                converted_by_user_id=converted_by_user_id,
+                approved_by_user_id=approved_by_user_id
             )
-            if not existing:
-                return pot_id
+            
+            # Add conversion notes if provided
+            if conversion_notes:
+                opportunity.notes = conversion_notes
+            
+            self.db.add(opportunity)
+            self.db.flush()  # Get the opportunity ID
+            
+            # Create initial sales process stages
+            self._initialize_sales_processes(opportunity.id, converted_by_user_id)
+            
+            # Update lead status
+            lead.converted = True
+            lead.converted_to_opportunity_id = opportunity.pot_id
+            lead.conversion_date = datetime.utcnow()
+            lead.conversion_notes = conversion_notes
+            lead.status = LeadStatus.CONVERTED
+            
+            self.db.commit()
+            self.db.refresh(opportunity)
+            
+            return opportunity
+            
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def _initialize_sales_processes(self, opportunity_id: int, created_by: int):
+        """Initialize all sales process stages for new opportunity"""
+        stages = [
+            (SalesStage.L1_PROSPECT, 1),
+            (SalesStage.L2_NEED_ANALYSIS, 2),
+            (SalesStage.L3_PROPOSAL, 3),
+            (SalesStage.WIN, 4),
+            (SalesStage.LOSS, 5)
+        ]
+        
+        for stage, order in stages:
+            # First stage (L1) starts as In Progress, others as Open
+            status = StageStatus.IN_PROGRESS if stage == SalesStage.L1_PROSPECT else StageStatus.OPEN
+            
+            sales_process = SalesProcess(
+                opportunity_id=opportunity_id,
+                stage=stage,
+                stage_order=order,
+                status=status,
+                created_by=created_by
+            )
+            self.db.add(sales_process)
 
     def get_opportunity_by_id(self, opportunity_id: int) -> Optional[Opportunity]:
-        """Get opportunity by ID with related details"""
-        return (
-            self.db.query(Opportunity)
-            .options(
-                joinedload(Opportunity.company),
-                joinedload(Opportunity.contact),
-                joinedload(Opportunity.lead),
-                joinedload(Opportunity.creator),
-                joinedload(Opportunity.qualification_completer),
-                joinedload(Opportunity.delivery_team_member),
+        """Get opportunity by ID with all related data"""
+        return self.db.query(Opportunity).options(
+            joinedload(Opportunity.lead),
+            joinedload(Opportunity.company),
+            joinedload(Opportunity.contact),
+            joinedload(Opportunity.converted_by_user),
+            joinedload(Opportunity.approved_by_user),
+            joinedload(Opportunity.sales_processes),
+            joinedload(Opportunity.quotations)
+        ).filter(
+            and_(
+                Opportunity.id == opportunity_id,
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
             )
-            .filter(
-                and_(
-                    Opportunity.id == opportunity_id,
-                    Opportunity.is_active == True,
-                    Opportunity.deleted_on.is_(None),
-                )
-            )
-            .first()
-        )
+        ).first()
 
     def get_opportunity_by_pot_id(self, pot_id: str) -> Optional[Opportunity]:
         """Get opportunity by POT ID"""
-        return (
-            self.db.query(Opportunity)
-            .options(
-                joinedload(Opportunity.company),
-                joinedload(Opportunity.contact),
-                joinedload(Opportunity.lead),
-                joinedload(Opportunity.creator),
-                joinedload(Opportunity.qualification_completer),
-                joinedload(Opportunity.delivery_team_member),
+        return self.db.query(Opportunity).options(
+            joinedload(Opportunity.lead),
+            joinedload(Opportunity.company),
+            joinedload(Opportunity.contact),
+            joinedload(Opportunity.sales_processes),
+            joinedload(Opportunity.quotations)
+        ).filter(
+            and_(
+                Opportunity.pot_id == pot_id,
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
             )
-            .filter(
-                and_(
-                    Opportunity.pot_id == pot_id,
-                    Opportunity.is_active == True,
-                    Opportunity.deleted_on.is_(None),
-                )
-            )
-            .first()
-        )
+        ).first()
 
-    def update_opportunity(
-        self,
-        opportunity_id: int,
-        opportunity_data: dict,
-        updated_by: Optional[int] = None,
-    ) -> Optional[Opportunity]:
-        """Update opportunity information"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        for field, value in opportunity_data.items():
-            if (
-                field not in ["id", "pot_id", "created_on", "created_by"]
-                and value is not None
-            ):
-                setattr(db_opportunity, field, value)
-
-        if updated_by:
-            db_opportunity.updated_by = updated_by
-
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_stage(
-        self,
-        opportunity_id: int,
-        stage: str,
-        updated_by: int,
-        notes: str = None,
-        stage_specific_data: Dict[str, Any] = None,
-    ) -> Optional[Opportunity]:
-        """Update opportunity stage with stage-specific data"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update basic stage info
-        db_opportunity.stage = stage
-        db_opportunity.updated_by = updated_by
-
-        # Update probability based on stage
-        stage_probabilities = {
-            OpportunityStage.L1_PROSPECT: 5,
-            OpportunityStage.L1_QUALIFICATION: 15,
-            OpportunityStage.L2_NEED_ANALYSIS: 40,
-            OpportunityStage.L3_PROPOSAL: 60,
-            OpportunityStage.L4_NEGOTIATION: 80,
-            OpportunityStage.L5_WON: 100,
-            OpportunityStage.L6_LOST: 0,
-            OpportunityStage.L7_DROPPED: 0,
-        }
-        db_opportunity.probability = stage_probabilities.get(
-            OpportunityStage(stage), db_opportunity.probability
-        )
-
-        # Update stage-specific data if provided
-        if stage_specific_data:
-            for field, value in stage_specific_data.items():
-                if hasattr(db_opportunity, field) and value is not None:
-                    setattr(db_opportunity, field, value)
-
-        if notes:
-            db_opportunity.notes = (
-                db_opportunity.notes or ""
-            ) + f"\n[Stage updated to {stage}]: {notes}"
-
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_qualification(
-        self, opportunity_id: int, qualification_data: Dict[str, Any], updated_by: int
-    ) -> Optional[Opportunity]:
-        """Update L1 qualification stage data"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update qualification fields
-        for field in [
-            "requirement_gathering_notes",
-            "go_no_go_status",
-            "qualification_status",
-            "qualification_scorecard",
-            "qualification_completed_by",
-        ]:
-            if field in qualification_data and qualification_data[field] is not None:
-                setattr(db_opportunity, field, qualification_data[field])
-
-        db_opportunity.updated_by = updated_by
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_demo_tasks(
-        self, opportunity_id: int, demo_data: Dict[str, Any], updated_by: int
-    ) -> Optional[Opportunity]:
-        """Update L2 demo and need analysis tasks"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update demo fields
-        for field in [
-            "demo_completed",
-            "demo_date",
-            "demo_summary",
-            "presentation_materials",
-            "qualification_meeting_completed",
-            "qualification_meeting_date",
-            "qualification_meeting_notes",
-        ]:
-            if field in demo_data and demo_data[field] is not None:
-                setattr(db_opportunity, field, demo_data[field])
-
-        db_opportunity.updated_by = updated_by
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_proposal_tasks(
-        self, opportunity_id: int, proposal_data: Dict[str, Any], updated_by: int
-    ) -> Optional[Opportunity]:
-        """Update L3 proposal and bid submission tasks"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update proposal fields
-        for field in [
-            "quotation_created",
-            "quotation_status",
-            "quotation_file_path",
-            "quotation_version",
-            "proposal_prepared",
-            "proposal_file_path",
-            "proposal_submitted",
-            "proposal_submission_date",
-            "poc_completed",
-            "poc_notes",
-            "solutions_team_approval_notes",
-        ]:
-            if field in proposal_data and proposal_data[field] is not None:
-                setattr(db_opportunity, field, proposal_data[field])
-
-        db_opportunity.updated_by = updated_by
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_negotiation_tasks(
-        self, opportunity_id: int, negotiation_data: Dict[str, Any], updated_by: int
-    ) -> Optional[Opportunity]:
-        """Update L4 negotiation tasks"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update negotiation fields
-        for field in [
-            "customer_discussion_notes",
-            "proposal_updated",
-            "updated_proposal_file_path",
-            "updated_proposal_submitted",
-            "negotiated_quotation_file_path",
-            "negotiation_rounds",
-            "commercial_approval_required",
-            "commercial_approval_status",
-        ]:
-            if field in negotiation_data and negotiation_data[field] is not None:
-                setattr(db_opportunity, field, negotiation_data[field])
-
-        db_opportunity.updated_by = updated_by
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def update_won_tasks(
-        self, opportunity_id: int, won_data: Dict[str, Any], updated_by: int
-    ) -> Optional[Opportunity]:
-        """Update L5 won stage tasks"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        # Update won fields
-        for field in [
-            "kickoff_meeting_scheduled",
-            "kickoff_meeting_date",
-            "loi_received",
-            "loi_file_path",
-            "order_verified",
-            "handoff_to_delivery",
-            "delivery_team_assigned",
-        ]:
-            if field in won_data and won_data[field] is not None:
-                setattr(db_opportunity, field, won_data[field])
-
-        # Auto-convert to customer if all tasks completed
-        if (
-            won_data.get("handoff_to_delivery")
-            and db_opportunity.loi_received
-            and db_opportunity.order_verified
-        ):
-            # TODO: Implement customer conversion logic
-            pass
-
-        db_opportunity.updated_by = updated_by
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def close_opportunity(
-        self,
-        opportunity_id: int,
-        status: str,
-        close_date: str,
-        updated_by: int,
-        notes: str = None,
-        lost_reason: str = None,
-        competitor_name: str = None,
-        drop_reason: str = None,
-    ) -> Optional[Opportunity]:
-        """Close opportunity with reason tracking"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return None
-
-        db_opportunity.status = status
-        db_opportunity.close_date = close_date
-        db_opportunity.updated_by = updated_by
-
-        # Update stage based on status
-        if status == OpportunityStatus.WON:
-            db_opportunity.stage = OpportunityStage.L5_WON
-        elif status == OpportunityStatus.LOST:
-            db_opportunity.stage = OpportunityStage.L6_LOST
-            db_opportunity.lost_reason = lost_reason
-            db_opportunity.competitor_name = competitor_name
-        elif status == OpportunityStatus.DROPPED:
-            db_opportunity.stage = OpportunityStage.L7_DROPPED
-            db_opportunity.drop_reason = drop_reason
-
-        if notes:
-            db_opportunity.notes = (
-                db_opportunity.notes or ""
-            ) + f"\n[Closed as {status}]: {notes}"
-
-        self.db.commit()
-        self.db.refresh(db_opportunity)
-        return db_opportunity
-
-    def delete_opportunity(
-        self, opportunity_id: int, deleted_by: Optional[int] = None
-    ) -> bool:
-        """Soft delete opportunity"""
-        db_opportunity = self.get_opportunity_by_id(opportunity_id)
-        if not db_opportunity:
-            return False
-
-        db_opportunity.is_active = False
-        db_opportunity.deleted_on = datetime.utcnow()
-        if deleted_by:
-            db_opportunity.deleted_by = deleted_by
-
-        self.db.commit()
-        return True
-
-    def get_opportunities(
-        self,
-        skip: int = 0,
+    def get_opportunities_list(
+        self, 
+        skip: int = 0, 
         limit: int = 100,
-        stage: str = None,
-        status: str = None,
-        search: str = None,
-    ) -> List[Opportunity]:
-        """Get all opportunities with pagination and filtering"""
-        query = (
-            self.db.query(Opportunity)
-            .options(
-                joinedload(Opportunity.company),
-                joinedload(Opportunity.contact),
-                joinedload(Opportunity.creator),
-                joinedload(Opportunity.qualification_completer),
-                joinedload(Opportunity.delivery_team_member),
-            )
-            .filter(
-                and_(Opportunity.is_active == True, Opportunity.deleted_on.is_(None))
-            )
-        )
-
-        if stage:
-            query = query.filter(Opportunity.stage == stage)
-
-        if status:
-            query = query.filter(Opportunity.status == status)
-
-        if search:
-            search_term = f"%{search}%"
-            query = (
-                query.join(Company)
-                .join(Contact)
-                .filter(
-                    or_(
-                        Opportunity.name.ilike(search_term),
-                        Opportunity.pot_id.ilike(search_term),
-                        Company.name.ilike(search_term),
-                        Contact.full_name.ilike(search_term),
-                    )
-                )
-            )
-
-        return (
-            query.order_by(Opportunity.updated_on.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-    def get_opportunities_by_company(
-        self, company_id: int, skip: int = 0, limit: int = 100
-    ) -> List[Opportunity]:
-        """Get opportunities by company"""
-        return (
-            self.db.query(Opportunity)
-            .options(joinedload(Opportunity.company), joinedload(Opportunity.contact))
-            .filter(
-                and_(
-                    Opportunity.company_id == company_id,
-                    Opportunity.is_active == True,
-                    Opportunity.deleted_on.is_(None),
-                )
-            )
-            .order_by(Opportunity.created_on.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-    def get_opportunities_by_lead(
-        self, lead_id: int, skip: int = 0, limit: int = 100
-    ) -> List[Opportunity]:
-        """Get opportunities by lead"""
-        return (
-            self.db.query(Opportunity)
-            .options(joinedload(Opportunity.company), joinedload(Opportunity.contact))
-            .filter(
-                and_(
-                    Opportunity.lead_id == lead_id,
-                    Opportunity.is_active == True,
-                    Opportunity.deleted_on.is_(None),
-                )
-            )
-            .order_by(Opportunity.created_on.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-    def get_opportunity_count(
-        self, stage: str = None, status: str = None, search: str = None
-    ) -> int:
-        """Get total count of opportunities"""
-        query = self.db.query(Opportunity).filter(
-            and_(Opportunity.is_active == True, Opportunity.deleted_on.is_(None))
-        )
-
-        if stage:
-            query = query.filter(Opportunity.stage == stage)
-
-        if status:
-            query = query.filter(Opportunity.status == status)
-
-        if search:
-            search_term = f"%{search}%"
-            query = (
-                query.join(Company)
-                .join(Contact)
-                .filter(
-                    or_(
-                        Opportunity.name.ilike(search_term),
-                        Opportunity.pot_id.ilike(search_term),
-                        Company.name.ilike(search_term),
-                        Contact.full_name.ilike(search_term),
-                    )
-                )
-            )
-
-        return query.count()
-
-    def get_pipeline_summary(self, user_id: int = None) -> dict:
-        """Get enhanced opportunity pipeline summary"""
-        query = self.db.query(Opportunity).filter(
+        status_filter: Optional[str] = None,
+        stage_filter: Optional[str] = None,
+        user_filter: Optional[int] = None,
+        search: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Get paginated list of opportunities with filters"""
+        query = self.db.query(Opportunity).options(
+            joinedload(Opportunity.lead),
+            joinedload(Opportunity.company),
+            joinedload(Opportunity.converted_by_user)
+        ).filter(
             and_(
                 Opportunity.is_active == True,
-                Opportunity.deleted_on.is_(None),
-                Opportunity.status == OpportunityStatus.OPEN,
+                Opportunity.deleted_on.is_(None)
             )
         )
 
-        if user_id:
-            query = query.filter(Opportunity.created_by == user_id)
+        # Apply filters
+        if status_filter:
+            query = query.filter(Opportunity.status == status_filter)
+        
+        if stage_filter:
+            query = query.filter(Opportunity.current_stage == stage_filter)
+        
+        if user_filter:
+            query = query.filter(Opportunity.converted_by == user_filter)
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Opportunity.company).filter(
+                or_(
+                    Opportunity.name.ilike(search_term),
+                    Opportunity.pot_id.ilike(search_term),
+                    Opportunity.company.name.ilike(search_term)
+                )
+            )
 
-        opportunities = query.all()
+        # Get total count
+        total = query.count()
 
-        total_opportunities = len(opportunities)
-        total_value = sum(opp.amount or 0 for opp in opportunities)
-        avg_scoring = (
-            sum(opp.scoring for opp in opportunities) / total_opportunities
-            if total_opportunities > 0
-            else 0
-        )
-        closing_stage_count = len(
-            [
-                opp
-                for opp in opportunities
-                if opp.stage
-                in [OpportunityStage.L4_NEGOTIATION, OpportunityStage.L5_WON]
-            ]
-        )
-
-        # Enhanced stage-wise breakdown
-        stage_breakdown = {}
-        for opp in opportunities:
-            stage = opp.stage.value
-            stage_display = opp.stage_display_name
-            if stage not in stage_breakdown:
-                stage_breakdown[stage] = {
-                    "stage": stage,
-                    "stage_display": stage_display,
-                    "count": 0,
-                    "value": 0,
-                    "percentage": opp.stage_percentage,
-                }
-            stage_breakdown[stage]["count"] += 1
-            stage_breakdown[stage]["value"] += opp.amount or 0
-
-        stage_breakdown_list = list(stage_breakdown.values())
+        # Apply pagination and ordering
+        opportunities = query.order_by(desc(Opportunity.created_on)).offset(skip).limit(limit).all()
 
         return {
-            "summary": {
-                "total_opportunities": total_opportunities,
-                "total_value": total_value,
-                "avg_scoring": round(avg_scoring, 2),
-                "closing_stage_count": closing_stage_count,
-            },
-            "stage_breakdown": stage_breakdown_list,
+            "opportunities": opportunities,
+            "total": total,
+            "skip": skip,
+            "limit": limit
         }
 
-    def get_opportunity_metrics(self, user_id: int = None) -> dict:
-        """Get enhanced opportunity metrics and analytics"""
-        query = self.db.query(Opportunity).filter(
-            and_(Opportunity.is_active == True, Opportunity.deleted_on.is_(None))
-        )
+    def update_sales_stage(
+        self, 
+        opportunity_id: int, 
+        stage: SalesStage, 
+        status: StageStatus,
+        completion_date: Optional[date] = None,
+        comments: Optional[str] = None,
+        documents: Optional[List[Dict]] = None,
+        updated_by: Optional[int] = None
+    ) -> SalesProcess:
+        """Update sales process stage"""
+        # Get the opportunity
+        opportunity = self.get_opportunity_by_id(opportunity_id)
+        if not opportunity:
+            raise ValueError(f"Opportunity {opportunity_id} not found")
 
-        if user_id:
-            query = query.filter(Opportunity.created_by == user_id)
+        # Get the sales process for this stage
+        sales_process = self.db.query(SalesProcess).filter(
+            and_(
+                SalesProcess.opportunity_id == opportunity_id,
+                SalesProcess.stage == stage
+            )
+        ).first()
 
-        opportunities = query.all()
+        if not sales_process:
+            raise ValueError(f"Sales process stage {stage} not found for opportunity {opportunity_id}")
 
-        total_opportunities = len(opportunities)
-        won_opportunities = len(
-            [opp for opp in opportunities if opp.status == OpportunityStatus.WON]
-        )
-        lost_opportunities = len(
-            [opp for opp in opportunities if opp.status == OpportunityStatus.LOST]
-        )
+        # Check if previous stages are completed (except for Win/Loss which can be set anytime)
+        if stage not in [SalesStage.WIN, SalesStage.LOSS]:
+            self._validate_stage_progression(opportunity_id, stage)
 
-        win_rate = (
-            (won_opportunities / total_opportunities * 100)
-            if total_opportunities > 0
-            else 0
-        )
+        # Update sales process
+        sales_process.status = status
+        sales_process.completion_date = completion_date
+        sales_process.comments = comments
+        sales_process.updated_by = updated_by
 
-        won_opps = [opp for opp in opportunities if opp.status == OpportunityStatus.WON]
-        avg_deal_size = (
-            sum(opp.amount or Decimal(0) for opp in won_opps) / len(won_opps)
-            if won_opps
-            else Decimal(0)
-        )
+        if documents:
+            sales_process.documents = documents
 
-        pipeline_value = sum(
-            opp.amount or Decimal(0)
-            for opp in opportunities
-            if opp.status == OpportunityStatus.OPEN
-        )
+        if status == StageStatus.COMPLETED:
+            sales_process.completed_by = updated_by
+            sales_process.stage_completion_date = completion_date or date.today()
+            
+            # Update opportunity stage and completion flags
+            opportunity.current_stage = stage
+            
+            if stage == SalesStage.L1_PROSPECT:
+                opportunity.l1_completed = True
+                opportunity.l1_completion_date = sales_process.stage_completion_date
+            elif stage == SalesStage.L2_NEED_ANALYSIS:
+                opportunity.l2_completed = True
+                opportunity.l2_completion_date = sales_process.stage_completion_date
+            elif stage == SalesStage.L3_PROPOSAL:
+                opportunity.l3_completed = True
+                opportunity.l3_completion_date = sales_process.stage_completion_date
+            elif stage == SalesStage.WIN:
+                opportunity.status = OpportunityStatus.WON
+                opportunity.won_date = sales_process.stage_completion_date
+                opportunity.probability = 100
+            elif stage == SalesStage.LOSS:
+                opportunity.status = OpportunityStatus.LOST
+                opportunity.lost_date = sales_process.stage_completion_date
+                opportunity.probability = 0
 
-        forecasted_revenue = sum(
-            (opp.amount or Decimal(0)) * (Decimal(opp.probability) / Decimal(100))
-            for opp in opportunities
-            if opp.status == OpportunityStatus.OPEN
-        )
+        self.db.commit()
+        self.db.refresh(sales_process)
+        
+        return sales_process
+
+    def _validate_stage_progression(self, opportunity_id: int, target_stage: SalesStage):
+        """Validate that previous stages are completed before moving to target stage"""
+        stage_order = {
+            SalesStage.L1_PROSPECT: 1,
+            SalesStage.L2_NEED_ANALYSIS: 2,
+            SalesStage.L3_PROPOSAL: 3,
+        }
+        
+        if target_stage not in stage_order:
+            return  # Win/Loss can be set anytime
+        
+        target_order = stage_order[target_stage]
+        
+        # Check that all previous stages are completed
+        for stage, order in stage_order.items():
+            if order < target_order:
+                process = self.db.query(SalesProcess).filter(
+                    and_(
+                        SalesProcess.opportunity_id == opportunity_id,
+                        SalesProcess.stage == stage
+                    )
+                ).first()
+                
+                if not process or process.status != StageStatus.COMPLETED:
+                    raise ValueError(f"Cannot move to {target_stage.value}. Previous stage {stage.value} must be completed first.")
+
+    def get_sales_processes(self, opportunity_id: int) -> List[SalesProcess]:
+        """Get all sales processes for an opportunity"""
+        return self.db.query(SalesProcess).filter(
+            SalesProcess.opportunity_id == opportunity_id
+        ).order_by(SalesProcess.stage_order).all()
+
+    def can_user_convert_lead(self, user_id: int, lead_id: int) -> Dict[str, Any]:
+        """Check if user can convert lead to opportunity"""
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return {"can_convert": False, "reason": "User not found"}
+
+        lead = self.db.query(Lead).filter(Lead.id == lead_id).first()
+        if not lead:
+            return {"can_convert": False, "reason": "Lead not found"}
+
+        # Check if already converted
+        if lead.converted:
+            return {"can_convert": False, "reason": "Lead already converted"}
+
+        # Check lead status
+        if lead.status != LeadStatus.QUALIFIED:
+            return {"can_convert": False, "reason": "Lead must be Qualified"}
+
+        # Check approval status
+        if not lead.reviewed or lead.review_status != ReviewStatus.APPROVED:
+            return {"can_convert": False, "reason": "Lead must be approved by Admin/Reviewer"}
+
+        # Role-based checks
+        user_role = user.role.name if user.role else "Unknown"
+        
+        if user_role in ["Admin", "Reviewer"]:
+            # Admin and Reviewers can convert directly
+            return {"can_convert": True, "requires_approval": False}
+        elif user_role == "Sales":
+            # Sales users can convert only if already approved
+            if lead.review_status == ReviewStatus.APPROVED:
+                return {"can_convert": True, "requires_approval": False}
+            else:
+                return {"can_convert": False, "reason": "Requires Admin/Reviewer approval"}
+        else:
+            return {"can_convert": False, "reason": "Insufficient permissions"}
+
+    def get_opportunity_statistics(self) -> Dict[str, Any]:
+        """Get opportunity statistics"""
+        total_opportunities = self.db.query(Opportunity).filter(
+            and_(
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
+            )
+        ).count()
+
+        won_opportunities = self.db.query(Opportunity).filter(
+            and_(
+                Opportunity.status == OpportunityStatus.WON,
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
+            )
+        ).count()
+
+        lost_opportunities = self.db.query(Opportunity).filter(
+            and_(
+                Opportunity.status == OpportunityStatus.LOST,
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
+            )
+        ).count()
+
+        # Stage-wise breakdown
+        stage_counts = {}
+        for stage in OpportunityStage:
+            count = self.db.query(Opportunity).filter(
+                and_(
+                    Opportunity.current_stage == stage,
+                    Opportunity.is_active == True,
+                    Opportunity.deleted_on.is_(None)
+                )
+            ).count()
+            stage_counts[stage.value] = count
+
+        # Calculate total value
+        total_value = self.db.query(Opportunity).filter(
+            and_(
+                Opportunity.is_active == True,
+                Opportunity.deleted_on.is_(None)
+            )
+        ).with_entities(Opportunity.amount).all()
+        
+        total_amount = sum([opp.amount for opp in total_value if opp.amount])
 
         return {
             "total_opportunities": total_opportunities,
             "won_opportunities": won_opportunities,
             "lost_opportunities": lost_opportunities,
-            "win_rate": round(win_rate, 2),
-            "avg_deal_size": float(avg_deal_size),
-            "pipeline_value": float(pipeline_value),
-            "forecasted_revenue": float(forecasted_revenue),
+            "open_opportunities": total_opportunities - won_opportunities - lost_opportunities,
+            "stage_breakdown": stage_counts,
+            "total_value": total_amount,
+            "win_rate": (won_opportunities / total_opportunities * 100) if total_opportunities > 0 else 0
         }
