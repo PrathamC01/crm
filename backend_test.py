@@ -124,13 +124,13 @@ class CRMTester:
                 
                 if response and response.status_code == 200:
                     data = response.json()
-                    if data.get("status") == True and "access_token" in data.get("data", {}):
+                    if data.get("status") == True and "token" in data.get("data", {}):
                         self.log_test(f"Authentication - {user['role']}", True, f"Login successful for {user['username']}")
                         
                         # Store admin token for subsequent tests
                         if user["role"] == "admin":
-                            self.auth_token = data["data"]["access_token"]
-                            self.current_user = data["data"]["user"]
+                            self.auth_token = data["data"]["token"]
+                            self.current_user = data["data"]
                             auth_success = True
                     else:
                         self.log_test(f"Authentication - {user['role']}", False, f"Login failed for {user['username']}: {data}")
