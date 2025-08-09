@@ -139,7 +139,7 @@ const LeadManagement = () => {
   );
 
   const renderQuickStats = () => (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
       <div className="bg-white p-6 rounded-lg shadow border">
         <div className="flex items-center">
           <div className="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -162,8 +162,36 @@ const LeadManagement = () => {
             </svg>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-500">Qualified Leads</div>
+            <div className="text-sm font-medium text-gray-500">Qualified</div>
             <div className="text-2xl font-bold text-gray-900">{stats.qualified}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Pending Review</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.pending_review || 0}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="flex items-center">
+          <div className="p-3 rounded-full bg-indigo-100 text-indigo-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-500">Approved</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.approved_for_conversion || 0}</div>
           </div>
         </div>
       </div>
@@ -192,7 +220,7 @@ const LeadManagement = () => {
           <div className="ml-4">
             <div className="text-sm font-medium text-gray-500">Total Value</div>
             <div className="text-2xl font-bold text-gray-900">
-              ₹{stats.value ? new Intl.NumberFormat('en-IN').format(stats.value) : '0'}
+              ₹{stats.total_value ? new Intl.NumberFormat('en-IN').format(stats.total_value) : '0'}
             </div>
           </div>
         </div>
