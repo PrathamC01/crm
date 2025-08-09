@@ -123,6 +123,7 @@ async def root():
                 "/api/contacts",
                 "/api/leads",
                 "/api/opportunities",
+                "/api/quotations",
                 "/api/users",
             ]
         },
