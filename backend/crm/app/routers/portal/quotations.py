@@ -19,7 +19,7 @@ from ...utils.auth import get_current_user
 from ...utils.response import create_response
 
 
-router = APIRouter()
+router = APIRouter(prefix="/api/quotations", tags=["quotations"])
 
 
 def get_db():
