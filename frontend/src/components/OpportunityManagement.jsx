@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  EnhancedOpportunityForm, 
-  EnhancedOpportunityList, 
-  EnhancedOpportunityView 
+  OpportunityForm, 
+  OpportunityList, 
+  OpportunityView 
 } from './modules/opportunity';
 
 const OpportunityManagement = () => {
@@ -62,7 +62,7 @@ const OpportunityManagement = () => {
               ? 'Fill in the comprehensive opportunity details with stage-specific information'
               : view === 'view'
               ? 'Complete opportunity information and stage progression'
-              : 'Manage your sales opportunities with enhanced tracking and stage management'
+              : 'Manage your sales opportunities with  tracking and stage management'
             }
           </p>
         </div>
@@ -91,7 +91,7 @@ const OpportunityManagement = () => {
     switch (view) {
       case 'form':
         return (
-          <EnhancedOpportunityForm
+          <OpportunityForm
             opportunity={selectedOpportunity}
             onSave={handleSave}
             onCancel={handleCancel}
@@ -99,7 +99,7 @@ const OpportunityManagement = () => {
         );
       case 'view':
         return (
-          <EnhancedOpportunityView
+          <OpportunityView
             opportunity={selectedOpportunity}
             onEdit={handleEditOpportunity}
             onClose={handleClose}
@@ -107,7 +107,7 @@ const OpportunityManagement = () => {
         );
       default:
         return (
-          <EnhancedOpportunityList
+          <OpportunityList
             onEdit={handleEditOpportunity}
             onView={handleViewOpportunity}
             onDelete={handleDelete}
