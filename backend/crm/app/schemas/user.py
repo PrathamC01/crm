@@ -31,6 +31,20 @@ class UserCreate(UserBase):
 
     @validator('password')
     def validate_password(cls, v):
+        if not v or len(v) < 6:
+            raise ValueError('Password must be at least 6 characters long')
+        return v
+
+
+class UserLogin(BaseModel):
+    email_or_username: str
+    password: str
+
+    class Config:
+        from_attributes = True
+
+    @validator('password')
+    def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         if not any(c.isupper() for c in v):
