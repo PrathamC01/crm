@@ -1,5 +1,5 @@
 """
-Enhanced Lead model with opportunity conversion workflow
+Enhanced Lead model with opportunity conversion workflow and fixed foreign keys
 """
 
 from sqlalchemy import (
@@ -130,6 +130,9 @@ class Lead(BaseModel):
     qualification_notes = Column(Text)
     lead_score = Column(Integer, default=0)
     
+    # Sales person assignment
+    sales_person_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
     # Contact Information (stored as JSON for flexibility)
     contacts = Column(JSON)  # Array of contact objects
     
@@ -155,6 +158,11 @@ class Lead(BaseModel):
     # Relationships
     company = relationship("Company", foreign_keys=[company_id], back_populates="leads")
     end_customer = relationship("Company", foreign_keys=[end_customer_id])
+    sales_person = relationship(
+        "User", 
+        foreign_keys=[sales_person_id],
+        back_populates="leads_assigned"
+    )
     conversion_requester = relationship(
         "User", 
         foreign_keys=[conversion_requested_by],
@@ -192,15 +200,19 @@ class Lead(BaseModel):
 
     @property
     def creator_name(self):
-        return self.creator.full_name if self.creator else None
+        return self.creator.full_name if self.creator and hasattr(self.creator, 'full_name') else (self.creator.name if self.creator else None)
+
+    @property
+    def sales_person_name(self):
+        return self.sales_person.full_name if self.sales_person and hasattr(self.sales_person, 'full_name') else (self.sales_person.name if self.sales_person else None)
 
     @property
     def conversion_requester_name(self):
-        return self.conversion_requester.full_name if self.conversion_requester else None
+        return self.conversion_requester.full_name if self.conversion_requester and hasattr(self.conversion_requester, 'full_name') else (self.conversion_requester.name if self.conversion_requester else None)
 
     @property
     def reviewer_name(self):
-        return self.reviewer.full_name if self.reviewer else None
+        return self.reviewer.full_name if self.reviewer and hasattr(self.reviewer, 'full_name') else (self.reviewer.name if self.reviewer else None)
 
     @property
     def can_request_conversion(self):
