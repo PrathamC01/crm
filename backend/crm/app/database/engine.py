@@ -4,6 +4,10 @@ SQLAlchemy engine and session configuration
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Database URL from environment
 DATABASE_URL = os.getenv('POSTGRES_URL')
