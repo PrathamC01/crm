@@ -107,6 +107,16 @@ class UserListResponse(BaseModel):
     skip: int
     limit: int
 
+
+class UserStats(BaseModel):
+    total_users: int = 0
+    active_users: int = 0
+    inactive_users: int = 0
+    role_breakdown: dict = {}
+
+    class Config:
+        from_attributes = True
+
 class RoleBase(BaseModel):
     name: str
     description: Optional[str] = None
