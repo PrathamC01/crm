@@ -275,10 +275,10 @@ const LeadManagement = () => {
       {/* Lead Process Guide - Only show on list view */}
       {view === 'list' && (
         <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Lead Management Process</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Lead Management & Conversion Process</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Lead Capture</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Lead Capture & Management</h4>
               <ul className="text-gray-600 space-y-1">
                 <li>• <strong>General Details:</strong> Project info, lead source, company details</li>
                 <li>• <strong>Contact Management:</strong> Decision makers and stakeholders</li>
@@ -297,16 +297,63 @@ const LeadManagement = () => {
             </div>
           </div>
           
+          {/* Conversion Workflow */}
+          <div className="mt-6 p-4 bg-purple-50 rounded-lg">
+            <h4 className="font-medium text-purple-900 mb-3">🔸 Convert to Opportunity Workflow</h4>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+              <div className="space-y-2">
+                <div className="font-medium text-purple-900">1. Lead Qualified</div>
+                <div className="text-purple-800">Lead reaches "Qualified" status through proper assessment</div>
+              </div>
+              <div className="space-y-2">
+                <div className="font-medium text-purple-900">2. Request Conversion</div>
+                <div className="text-purple-800">Sales team clicks "Convert to Opportunity" button</div>
+              </div>
+              <div className="space-y-2">
+                <div className="font-medium text-purple-900">3. Admin Review</div>
+                <div className="text-purple-800">Admin/Reviewer approves or rejects conversion request</div>
+              </div>
+              <div className="space-y-2">
+                <div className="font-medium text-purple-900">4. Create Opportunity</div>
+                <div className="text-purple-800">Approved leads get converted to opportunities with POT-ID</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Role-Based Permissions */}
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">🔐 Role-Based Permissions</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="font-medium text-blue-900">Sales/User Role:</div>
+                <ul className="text-blue-800 mt-1">
+                  <li>✅ Can request conversion (after qualification)</li>
+                  <li>✅ Can convert (only after admin approval)</li>
+                  <li>❌ Cannot approve/reject conversion requests</li>
+                </ul>
+              </div>
+              <div>
+                <div className="font-medium text-blue-900">Admin/Reviewer Role:</div>
+                <ul className="text-blue-800 mt-1">
+                  <li>✅ Can approve/reject conversion requests</li>
+                  <li>✅ Can convert without approval requirement</li>
+                  <li>✅ Access to Admin Review Panel</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-green-50 rounded-lg">
             <div className="flex items-center space-x-2">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span className="text-sm font-medium text-blue-900">Pro Tip:</span>
+              <span className="text-sm font-medium text-green-900">Pro Tip:</span>
             </div>
-            <p className="text-sm text-blue-800 mt-1">
-              Use the multi-tab form to capture comprehensive lead information including partner details, 
-              tender requirements, and competitor intelligence for better opportunity conversion rates.
+            <p className="text-sm text-green-800 mt-1">
+              Use the multi-tab form to capture comprehensive lead information. Once qualified, use the 
+              "Convert to Opportunity" workflow with proper admin review to ensure quality opportunity creation 
+              and maintain audit trails for all conversions.
             </p>
           </div>
         </div>
