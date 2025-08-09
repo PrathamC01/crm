@@ -92,3 +92,23 @@ class BusinessCardUpload(BaseModel):
         if len(v) > max_size:
             raise ValueError('File size must not exceed 5MB')
         return v
+
+
+class ContactListResponse(BaseModel):
+    contacts: list[ContactResponse]
+    total: int
+    skip: int
+    limit: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ContactStats(BaseModel):
+    total_contacts: int = 0
+    active_contacts: int = 0
+    role_breakdown: dict = {}
+    company_breakdown: dict = {}
+
+    class Config:
+        from_attributes = True
