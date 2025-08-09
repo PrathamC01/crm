@@ -6,9 +6,13 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
 from fastapi import Depends
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
 # Database URL from environment
-DATABASE_URL = os.getenv('POSTGRES_URL', 'postgresql://user:password@localhost/crm_db')
+DATABASE_URL = os.getenv('POSTGRES_URL', 'postgresql://crm:Test@localhost:5432/crm_db')
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
