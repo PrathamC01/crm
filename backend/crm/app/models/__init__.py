@@ -1,22 +1,17 @@
 """
-SQLAlchemy Models
+CRM Models initialization
 """
 
-from .base import BaseModel, Base
+from .base import Base, BaseModel
 from .user import User
-from .role import Role
+from .role import Role, RoleType
 from .department import Department
 from .company import Company
-from .contact import Contact, RoleType
+from .contact import Contact
 from .lead import Lead, LeadSource, LeadStatus, LeadPriority, ReviewStatus, LeadSubType, TenderSubType, SubmissionType
-from .opportunity import (
-    Opportunity,
-    OpportunityStage,
-    OpportunityStatus,
-    QualificationStatus,
-    GoNoGoStatus,
-    QuotationStatus,
-)
+from .opportunity import Opportunity, OpportunityStage, OpportunityStatus
+from .sales_process import SalesProcess, SalesStage, StageStatus
+from .quotation import Quotation, QuotationStatus
 
 __all__ = [
     'Base',
@@ -38,7 +33,9 @@ __all__ = [
     'Opportunity',
     'OpportunityStage',
     'OpportunityStatus',
-    'QualificationStatus',
-    'GoNoGoStatus',
+    'SalesProcess',
+    'SalesStage',
+    'StageStatus',
+    'Quotation',
     'QuotationStatus'
 ]
