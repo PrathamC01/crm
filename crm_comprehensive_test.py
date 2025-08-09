@@ -860,17 +860,8 @@ class CRMComprehensiveTester:
 
 def main():
     """Main test runner"""
-    # Use the backend URL from frontend env
+    # Use localhost since external URL is not accessible
     backend_url = "http://localhost:8001"
-    
-    try:
-        with open("/app/frontend/.env", "r") as f:
-            for line in f:
-                if line.startswith("VITE_BACKEND_URL="):
-                    backend_url = line.split("=", 1)[1].strip()
-                    break
-    except:
-        pass
     
     print(f"🔧 Using backend URL: {backend_url}")
     
