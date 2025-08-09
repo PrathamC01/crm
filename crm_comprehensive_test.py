@@ -861,7 +861,7 @@ class CRMComprehensiveTester:
 def main():
     """Main test runner"""
     # Use the backend URL from frontend env
-    backend_url = "http://10.60.90.76:8000"
+    backend_url = "http://localhost:8001"
     
     try:
         with open("/app/frontend/.env", "r") as f:
