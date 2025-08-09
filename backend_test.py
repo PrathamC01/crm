@@ -425,18 +425,8 @@ class CRMAPITester:
 
 def main():
     """Main test runner"""
-    # Try to determine the correct backend URL
+    # Use localhost:8001 for backend testing (internal container communication)
     backend_url = "http://localhost:8001"
-    
-    # Check if we can read the frontend .env to get the backend URL
-    try:
-        with open("/app/frontend/.env", "r") as f:
-            for line in f:
-                if line.startswith("VITE_BACKEND_URL="):
-                    backend_url = line.split("=", 1)[1].strip()
-                    break
-    except:
-        pass
     
     print(f"🔧 Using backend URL: {backend_url}")
     
