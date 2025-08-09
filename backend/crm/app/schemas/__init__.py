@@ -39,8 +39,8 @@ __all__ = [
     "ContactResponse", "ContactCreate", "ContactUpdate", "ContactListResponse", "ContactStats",
     
     # Lead schemas
-    "LeadResponse", "LeadCreate", "LeadUpdate", "LeadListResponse", "LeadStats",
-    "LeadStatusUpdate", "LeadConversion", "LeadSummary", "LeadStatsResponse",
+    "LeadResponse", "LeadCreate", "LeadUpdate", "LeadListResponse", "LeadStatsResponse",
+    "LeadStatusUpdate", "LeadConversion", "LeadSummary",
     
     # Opportunity schemas
     "OpportunityResponse", "OpportunityCreate", "OpportunityListResponse", "OpportunityStats",
