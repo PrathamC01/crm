@@ -5,13 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from ..models import Base, User, Role, Department, Company, Contact, RoleType
 from ..database.engine import engine
+from ..utils.auth import hash_password  # Use the proper bcrypt hashing
 from datetime import datetime
-import hashlib
-
-
-def hash_password(password: str) -> str:
-    """Simple password hashing (use proper hashing in production)"""
-    return hashlib.sha256(password.encode()).hexdigest()
 
 
 def create_tables():
