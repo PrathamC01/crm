@@ -8,18 +8,22 @@ from datetime import datetime
 from ...schemas.lead import (
     LeadCreate,
     LeadUpdate,
-    LeadResponse,
-    LeadListResponse,
-    LeadStatsResponse,
+    # LeadResponse,
+    # LeadListResponse,
+    # LeadStatsResponse,
     ConversionRequestSchema,
     ReviewDecisionSchema,
     ConvertToOpportunitySchema,
-    LeadStatus,
-    ReviewStatus
+    # LeadStatus,
+    ReviewStatus,
 )
 from ...schemas.auth import StandardResponse
 from ...schemas.opportunity import OpportunityCreate
-from ...dependencies.rbac import require_leads_read, require_leads_write, require_admin_role
+from ...dependencies.rbac import (
+    require_leads_read,
+    require_leads_write,
+    require_admin_role,
+)
 from ...services.lead_service import LeadService
 from ...services.opportunity_service import OpportunityService
 from ...dependencies.database import get_postgres_db
@@ -52,70 +56,74 @@ async def get_leads(
 ):
     """Get all leads with pagination and filtering"""
     try:
-        leads = lead_service.get_leads(skip, limit, search, status, company_id, review_status)
+        leads = lead_service.get_leads(
+            skip, limit, search, status, company_id, review_status
+        )
         total = lead_service.get_leads_count(search, status, company_id, review_status)
 
         # Transform to response models
         lead_responses = []
         for lead in leads:
             lead_dict = {
-                'id': lead.id,
-                'project_title': lead.project_title,
-                'lead_source': lead.lead_source.value,
-                'lead_sub_type': lead.lead_sub_type.value,
-                'tender_sub_type': lead.tender_sub_type.value,
-                'products_services': lead.products_services or [],
-                'company_id': lead.company_id,
-                'sub_business_type': lead.sub_business_type,
-                'end_customer_id': lead.end_customer_id,
-                'end_customer_region': lead.end_customer_region,
-                'partner_involved': lead.partner_involved,
-                'partners_data': lead.partners_data or [],
-                'tender_fee': lead.tender_fee,
-                'currency': lead.currency,
-                'submission_type': lead.submission_type.value if lead.submission_type else None,
-                'tender_authority': lead.tender_authority,
-                'tender_for': lead.tender_for,
-                'emd_required': lead.emd_required,
-                'emd_amount': lead.emd_amount,
-                'emd_currency': lead.emd_currency,
-                'bg_required': lead.bg_required,
-                'bg_amount': lead.bg_amount,
-                'bg_currency': lead.bg_currency,
-                'important_dates': lead.important_dates or [],
-                'clauses': lead.clauses or [],
-                'expected_revenue': lead.expected_revenue,
-                'revenue_currency': lead.revenue_currency,
-                'convert_to_opportunity_date': lead.convert_to_opportunity_date,
-                'competitors': lead.competitors or [],
-                'documents': lead.documents or [],
-                'status': lead.status.value,
-                'priority': lead.priority.value,
-                'qualification_notes': lead.qualification_notes,
-                'lead_score': lead.lead_score,
-                'contacts': lead.contacts or [],
-                'company_name': lead.company_name,
-                'end_customer_name': lead.end_customer_name,
-                'creator_name': lead.creator_name,
-                'conversion_requester_name': lead.conversion_requester_name,
-                'reviewer_name': lead.reviewer_name,
-                'ready_for_conversion': lead.ready_for_conversion,
-                'conversion_requested': lead.conversion_requested,
-                'conversion_request_date': lead.conversion_request_date,
-                'reviewed': lead.reviewed,
-                'review_status': lead.review_status.value,
-                'review_date': lead.review_date,
-                'review_comments': lead.review_comments,
-                'converted': lead.converted,
-                'converted_to_opportunity_id': lead.converted_to_opportunity_id,
-                'conversion_date': lead.conversion_date,
-                'conversion_notes': lead.conversion_notes,
-                'can_request_conversion': lead.can_request_conversion,
-                'can_convert_to_opportunity': lead.can_convert_to_opportunity,
-                'needs_admin_review': lead.needs_admin_review,
-                'is_active': lead.is_active,
-                'created_on': lead.created_on,
-                'updated_on': lead.updated_on,
+                "id": lead.id,
+                "project_title": lead.project_title,
+                "lead_source": lead.lead_source.value,
+                "lead_sub_type": lead.lead_sub_type.value,
+                "tender_sub_type": lead.tender_sub_type.value,
+                "products_services": lead.products_services or [],
+                "company_id": lead.company_id,
+                "sub_business_type": lead.sub_business_type,
+                "end_customer_id": lead.end_customer_id,
+                "end_customer_region": lead.end_customer_region,
+                "partner_involved": lead.partner_involved,
+                "partners_data": lead.partners_data or [],
+                "tender_fee": lead.tender_fee,
+                "currency": lead.currency,
+                "submission_type": (
+                    lead.submission_type.value if lead.submission_type else None
+                ),
+                "tender_authority": lead.tender_authority,
+                "tender_for": lead.tender_for,
+                "emd_required": lead.emd_required,
+                "emd_amount": lead.emd_amount,
+                "emd_currency": lead.emd_currency,
+                "bg_required": lead.bg_required,
+                "bg_amount": lead.bg_amount,
+                "bg_currency": lead.bg_currency,
+                "important_dates": lead.important_dates or [],
+                "clauses": lead.clauses or [],
+                "expected_revenue": lead.expected_revenue,
+                "revenue_currency": lead.revenue_currency,
+                "convert_to_opportunity_date": lead.convert_to_opportunity_date,
+                "competitors": lead.competitors or [],
+                "documents": lead.documents or [],
+                "status": lead.status.value,
+                "priority": lead.priority.value,
+                "qualification_notes": lead.qualification_notes,
+                "lead_score": lead.lead_score,
+                "contacts": lead.contacts or [],
+                "company_name": lead.company_name,
+                "end_customer_name": lead.end_customer_name,
+                "creator_name": lead.creator_name,
+                "conversion_requester_name": lead.conversion_requester_name,
+                "reviewer_name": lead.reviewer_name,
+                "ready_for_conversion": lead.ready_for_conversion,
+                "conversion_requested": lead.conversion_requested,
+                "conversion_request_date": lead.conversion_request_date,
+                "reviewed": lead.reviewed,
+                "review_status": lead.review_status.value,
+                "review_date": lead.review_date,
+                "review_comments": lead.review_comments,
+                "converted": lead.converted,
+                "converted_to_opportunity_id": lead.converted_to_opportunity_id,
+                "conversion_date": lead.conversion_date,
+                "conversion_notes": lead.conversion_notes,
+                "can_request_conversion": lead.can_request_conversion,
+                "can_convert_to_opportunity": lead.can_convert_to_opportunity,
+                "needs_admin_review": lead.needs_admin_review,
+                "is_active": lead.is_active,
+                "created_on": lead.created_on,
+                "updated_on": lead.updated_on,
             }
             lead_responses.append(lead_dict)
 
@@ -143,9 +151,7 @@ async def get_lead_stats(
     try:
         stats = lead_service.get_lead_stats()
         return StandardResponse(
-            status=True,
-            message="Lead statistics retrieved successfully",
-            data=stats
+            status=True, message="Lead statistics retrieved successfully", data=stats
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -159,25 +165,25 @@ async def get_pending_review_leads(
     """Get leads pending admin review (Admin only)"""
     try:
         leads = lead_service.get_leads_pending_review()
-        
+
         lead_responses = []
         for lead in leads:
             lead_dict = {
-                'id': lead.id,
-                'project_title': lead.project_title,
-                'company_name': lead.company_name,
-                'expected_revenue': lead.expected_revenue,
-                'conversion_request_date': lead.conversion_request_date,
-                'conversion_requester_name': lead.conversion_requester_name,
-                'status': lead.status.value,
-                'review_status': lead.review_status.value,
+                "id": lead.id,
+                "project_title": lead.project_title,
+                "company_name": lead.company_name,
+                "expected_revenue": lead.expected_revenue,
+                "conversion_request_date": lead.conversion_request_date,
+                "conversion_requester_name": lead.conversion_requester_name,
+                "status": lead.status.value,
+                "review_status": lead.review_status.value,
             }
             lead_responses.append(lead_dict)
 
         return StandardResponse(
             status=True,
             message="Pending review leads retrieved successfully",
-            data={"leads": lead_responses}
+            data={"leads": lead_responses},
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -197,63 +203,65 @@ async def get_lead(
 
         # Transform to response format (same as in get_leads)
         lead_dict = {
-            'id': lead.id,
-            'project_title': lead.project_title,
-            'lead_source': lead.lead_source.value,
-            'lead_sub_type': lead.lead_sub_type.value,
-            'tender_sub_type': lead.tender_sub_type.value,
-            'products_services': lead.products_services or [],
-            'company_id': lead.company_id,
-            'sub_business_type': lead.sub_business_type,
-            'end_customer_id': lead.end_customer_id,
-            'end_customer_region': lead.end_customer_region,
-            'partner_involved': lead.partner_involved,
-            'partners_data': lead.partners_data or [],
-            'tender_fee': lead.tender_fee,
-            'currency': lead.currency,
-            'submission_type': lead.submission_type.value if lead.submission_type else None,
-            'tender_authority': lead.tender_authority,
-            'tender_for': lead.tender_for,
-            'emd_required': lead.emd_required,
-            'emd_amount': lead.emd_amount,
-            'emd_currency': lead.emd_currency,
-            'bg_required': lead.bg_required,
-            'bg_amount': lead.bg_amount,
-            'bg_currency': lead.bg_currency,
-            'important_dates': lead.important_dates or [],
-            'clauses': lead.clauses or [],
-            'expected_revenue': lead.expected_revenue,
-            'revenue_currency': lead.revenue_currency,
-            'convert_to_opportunity_date': lead.convert_to_opportunity_date,
-            'competitors': lead.competitors or [],
-            'documents': lead.documents or [],
-            'status': lead.status.value,
-            'priority': lead.priority.value,
-            'qualification_notes': lead.qualification_notes,
-            'lead_score': lead.lead_score,
-            'contacts': lead.contacts or [],
-            'company_name': lead.company_name,
-            'end_customer_name': lead.end_customer_name,
-            'creator_name': lead.creator_name,
-            'conversion_requester_name': lead.conversion_requester_name,
-            'reviewer_name': lead.reviewer_name,
-            'ready_for_conversion': lead.ready_for_conversion,
-            'conversion_requested': lead.conversion_requested,
-            'conversion_request_date': lead.conversion_request_date,
-            'reviewed': lead.reviewed,
-            'review_status': lead.review_status.value,
-            'review_date': lead.review_date,
-            'review_comments': lead.review_comments,
-            'converted': lead.converted,
-            'converted_to_opportunity_id': lead.converted_to_opportunity_id,
-            'conversion_date': lead.conversion_date,
-            'conversion_notes': lead.conversion_notes,
-            'can_request_conversion': lead.can_request_conversion,
-            'can_convert_to_opportunity': lead.can_convert_to_opportunity,
-            'needs_admin_review': lead.needs_admin_review,
-            'is_active': lead.is_active,
-            'created_on': lead.created_on,
-            'updated_on': lead.updated_on,
+            "id": lead.id,
+            "project_title": lead.project_title,
+            "lead_source": lead.lead_source.value,
+            "lead_sub_type": lead.lead_sub_type.value,
+            "tender_sub_type": lead.tender_sub_type.value,
+            "products_services": lead.products_services or [],
+            "company_id": lead.company_id,
+            "sub_business_type": lead.sub_business_type,
+            "end_customer_id": lead.end_customer_id,
+            "end_customer_region": lead.end_customer_region,
+            "partner_involved": lead.partner_involved,
+            "partners_data": lead.partners_data or [],
+            "tender_fee": lead.tender_fee,
+            "currency": lead.currency,
+            "submission_type": (
+                lead.submission_type.value if lead.submission_type else None
+            ),
+            "tender_authority": lead.tender_authority,
+            "tender_for": lead.tender_for,
+            "emd_required": lead.emd_required,
+            "emd_amount": lead.emd_amount,
+            "emd_currency": lead.emd_currency,
+            "bg_required": lead.bg_required,
+            "bg_amount": lead.bg_amount,
+            "bg_currency": lead.bg_currency,
+            "important_dates": lead.important_dates or [],
+            "clauses": lead.clauses or [],
+            "expected_revenue": lead.expected_revenue,
+            "revenue_currency": lead.revenue_currency,
+            "convert_to_opportunity_date": lead.convert_to_opportunity_date,
+            "competitors": lead.competitors or [],
+            "documents": lead.documents or [],
+            "status": lead.status.value,
+            "priority": lead.priority.value,
+            "qualification_notes": lead.qualification_notes,
+            "lead_score": lead.lead_score,
+            "contacts": lead.contacts or [],
+            "company_name": lead.company_name,
+            "end_customer_name": lead.end_customer_name,
+            "creator_name": lead.creator_name,
+            "conversion_requester_name": lead.conversion_requester_name,
+            "reviewer_name": lead.reviewer_name,
+            "ready_for_conversion": lead.ready_for_conversion,
+            "conversion_requested": lead.conversion_requested,
+            "conversion_request_date": lead.conversion_request_date,
+            "reviewed": lead.reviewed,
+            "review_status": lead.review_status.value,
+            "review_date": lead.review_date,
+            "review_comments": lead.review_comments,
+            "converted": lead.converted,
+            "converted_to_opportunity_id": lead.converted_to_opportunity_id,
+            "conversion_date": lead.conversion_date,
+            "conversion_notes": lead.conversion_notes,
+            "can_request_conversion": lead.can_request_conversion,
+            "can_convert_to_opportunity": lead.can_convert_to_opportunity,
+            "needs_admin_review": lead.needs_admin_review,
+            "is_active": lead.is_active,
+            "created_on": lead.created_on,
+            "updated_on": lead.updated_on,
         }
 
         return StandardResponse(
@@ -280,13 +288,13 @@ async def create_lead(
         )
 
         return StandardResponse(
-            status=True, 
-            message="Lead created successfully", 
+            status=True,
+            message="Lead created successfully",
             data={
                 "id": lead.id,
                 "project_title": lead.project_title,
-                "status": lead.status.value
-            }
+                "status": lead.status.value,
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -317,7 +325,7 @@ async def update_lead(
             data={
                 "id": lead.id,
                 "project_title": lead.project_title,
-                "status": lead.status.value
+                "status": lead.status.value,
             },
         )
     except HTTPException:
@@ -327,6 +335,7 @@ async def update_lead(
 
 
 # Conversion Workflow Endpoints
+
 
 @router.post("/{lead_id}/request-conversion", response_model=StandardResponse)
 async def request_conversion(
@@ -350,8 +359,8 @@ async def request_conversion(
                 "id": lead.id,
                 "project_title": lead.project_title,
                 "conversion_requested": lead.conversion_requested,
-                "review_status": lead.review_status.value
-            }
+                "review_status": lead.review_status.value,
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -369,15 +378,16 @@ async def review_conversion_request(
     """Review and approve/reject conversion request (Admin only)"""
     try:
         lead = lead_service.review_conversion_request(
-            lead_id, 
-            current_user["id"], 
-            review_data.decision,
-            review_data.comments
+            lead_id, current_user["id"], review_data.decision, review_data.comments
         )
         if not lead:
             raise HTTPException(status_code=404, detail="Lead not found")
 
-        message = "Conversion request approved successfully" if review_data.decision == ReviewStatus.APPROVED else "Conversion request rejected"
+        message = (
+            "Conversion request approved successfully"
+            if review_data.decision == ReviewStatus.APPROVED
+            else "Conversion request rejected"
+        )
 
         return StandardResponse(
             status=True,
@@ -388,8 +398,8 @@ async def review_conversion_request(
                 "review_status": lead.review_status.value,
                 "reviewed_by": lead.reviewer_name,
                 "review_date": lead.review_date,
-                "can_convert_to_opportunity": lead.can_convert_to_opportunity
-            }
+                "can_convert_to_opportunity": lead.can_convert_to_opportunity,
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -415,47 +425,61 @@ async def convert_to_opportunity(
         # Check permissions
         user_roles = current_user.get("roles", [])
         is_admin = "admin" in user_roles or "reviewer" in user_roles
-        
+
         if not lead.can_convert_to_opportunity and not is_admin:
             raise HTTPException(
-                status_code=400, 
-                detail="This opportunity needs to be reviewed by an Admin before it can be converted."
+                status_code=400,
+                detail="This opportunity needs to be reviewed by an Admin before it can be converted.",
             )
 
         # Create opportunity from lead
-        opportunity_name = conversion_data.opportunity_name or f"{lead.project_title} Opportunity"
-        
+        opportunity_name = (
+            conversion_data.opportunity_name or f"{lead.project_title} Opportunity"
+        )
+
         # Get primary contact (decision maker or first contact)
         contacts = lead.contacts or []
         primary_contact = None
         for contact in contacts:
-            if contact.get('decision_maker'):
+            if contact.get("decision_maker"):
                 primary_contact = contact
                 break
         if not primary_contact and contacts:
             primary_contact = contacts[0]
-            
+
         if not primary_contact:
-            raise HTTPException(status_code=400, detail="Lead must have at least one contact to convert to opportunity")
+            raise HTTPException(
+                status_code=400,
+                detail="Lead must have at least one contact to convert to opportunity",
+            )
 
         # Create opportunity data
         opportunity_data = {
             "lead_id": lead.id,
             "company_id": lead.company_id,
-            "contact_id": primary_contact.get('contact_id') if primary_contact.get('contact_id') else None,  # This would need to be mapped
+            "contact_id": (
+                primary_contact.get("contact_id")
+                if primary_contact.get("contact_id")
+                else None
+            ),  # This would need to be mapped
             "name": opportunity_name,
             "amount": lead.expected_revenue,
-            "notes": f"Converted from lead: {lead.project_title}\n" + (conversion_data.notes or ""),
+            "notes": f"Converted from lead: {lead.project_title}\n"
+            + (conversion_data.notes or ""),
             "close_date": lead.convert_to_opportunity_date,
             "stage": "L1_Prospect",
-            "status": "Open"
+            "status": "Open",
         }
 
         # Create the opportunity
-        opportunity = opportunity_service.create_opportunity(opportunity_data, current_user["id"])
+        opportunity = opportunity_service.create_opportunity(
+            opportunity_data, current_user["id"]
+        )
 
         # Update lead as converted
-        lead_service.mark_as_converted(lead_id, opportunity.id, current_user["id"], conversion_data.notes)
+        lead_service.mark_as_converted(
+            lead_id, opportunity.id, current_user["id"], conversion_data.notes
+        )
 
         return StandardResponse(
             status=True,
@@ -464,8 +488,8 @@ async def convert_to_opportunity(
                 "lead_id": lead.id,
                 "opportunity_id": opportunity.id,
                 "opportunity_pot_id": opportunity.pot_id,
-                "opportunity_name": opportunity.name
-            }
+                "opportunity_name": opportunity.name,
+            },
         )
     except HTTPException:
         raise
@@ -512,24 +536,24 @@ async def upload_lead_document(
         lead = lead_service.get_lead_by_id(lead_id)
         if not lead:
             raise HTTPException(status_code=404, detail="Lead not found")
-        
+
         # Save file (implement actual file storage logic here)
         file_path = f"/uploads/leads/{lead.id}/{document_type}_{file.filename}"
-        
+
         # Add document to lead
         document_data = {
             "document_type": document_type,
             "quotation_name": quotation_name,
             "file_path": file_path,
-            "description": description
+            "description": description,
         }
-        
+
         lead_service.add_document(lead_id, document_data, current_user["id"])
 
         return StandardResponse(
             status=True,
             message="Document uploaded successfully",
-            data={"file_path": file_path, "document_type": document_type}
+            data={"file_path": file_path, "document_type": document_type},
         )
     except HTTPException:
         raise
