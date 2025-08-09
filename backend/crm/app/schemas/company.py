@@ -113,7 +113,7 @@ class CompanyListResponse(BaseModel):
     limit: Optional[int] = None
 
     class Config:
-        orm_mode = True  # Crucial!
+        from_attributes = True
 
 
 class CompanyStats(BaseModel):
