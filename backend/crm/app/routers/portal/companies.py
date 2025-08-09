@@ -84,7 +84,7 @@ async def create_company(
     """Create new company"""
     try:
         company = company_service.create_company(company_data, current_user["id"])
-        company_response = CompanyResponse.from_orm(company)
+        company_response = CompanyResponse.model_validate(company)
 
         return StandardResponse(
             status=True, message="Company created successfully", data=company_response
