@@ -8,16 +8,7 @@ from .role import Role
 from .department import Department
 from .company import Company
 from .contact import Contact, RoleType
-from .lead import (
-    Lead,
-    LeadSource,
-    LeadStatus,
-    LeadPriority,
-    ReviewStatus,
-    LeadSubType,
-    TenderSubType,
-    SubmissionType
-)
+from .lead import Lead, LeadSource, LeadStatus, LeadPriority, ReviewStatus, LeadSubType, TenderSubType, SubmissionType
 from .opportunity import (
     Opportunity,
     OpportunityStage,
@@ -28,26 +19,26 @@ from .opportunity import (
 )
 
 __all__ = [
-    "Base",
-    "BaseModel",
-    "User",
-    "Role",
-    "Department",
-    "Company",
-    "Contact",
-    "RoleType",
-    "ReviewStatus",
-    "Lead",
-    "LeadSubType",
-    "LeadSource",
-    "TenderSubType",
-    "LeadStatus",
-    "LeadPriority",
-    "Opportunity",
-    "OpportunityStage",
-    "OpportunityStatus",
-    "QualificationStatus",
-    "GoNoGoStatus",
-    "QuotationStatus",
-    "SubmissionType"
+    'Base',
+    'BaseModel',
+    'User',
+    'Role',
+    'Department',
+    'Company',
+    'Contact',
+    'RoleType',
+    'Lead',
+    'LeadSource',
+    'LeadStatus',
+    'LeadPriority',
+    'ReviewStatus',
+    'LeadSubType',
+    'TenderSubType', 
+    'SubmissionType',
+    'Opportunity',
+    'OpportunityStage',
+    'OpportunityStatus',
+    'QualificationStatus',
+    'GoNoGoStatus',
+    'QuotationStatus'
 ]

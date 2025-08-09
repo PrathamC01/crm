@@ -21,6 +21,7 @@ class LeadStatus(str, Enum):
     NEW = "New"
     CONTACTED = "Contacted"
     QUALIFIED = "Qualified"
+    ACTIVE = "Active"
     UNQUALIFIED = "Unqualified"
     CONVERTED = "Converted"
     REJECTED = "Rejected"
@@ -289,6 +290,26 @@ class ReviewDecisionSchema(BaseModel):
 class ConvertToOpportunitySchema(BaseModel):
     opportunity_name: Optional[str] = None
     notes: Optional[str] = None
+
+
+class LeadStatusUpdate(BaseModel):
+    status: LeadStatus
+    notes: Optional[str] = None
+
+
+class LeadConversion(BaseModel):
+    lead_id: int
+    opportunity_name: str
+    conversion_notes: Optional[str] = None
+
+
+class LeadSummary(BaseModel):
+    id: int
+    project_title: str
+    company_name: str
+    status: LeadStatus
+    expected_revenue: Decimal
+    created_on: datetime
 
 
 class LeadStatsResponse(BaseModel):

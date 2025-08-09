@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../../../utils/api';
-import ConversionButton from './ConversionButton';
-import AdminReviewPanel from './AdminReviewPanel';
+import React, { useState, useEffect } from "react";
+import { apiRequest } from "../../../utils/api";
+import ConversionButton from "./ConversionButton";
+import AdminReviewPanel from "./AdminReviewPanel";
 
 const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [reviewStatusFilter, setReviewStatusFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [reviewStatusFilter, setReviewStatusFilter] = useState("");
   const [filteredLeads, setFilteredLeads] = useState([]);
 
   useEffect(() => {
     // Get current user info (this would come from your auth context)
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       // Decode token or fetch user info
-      setCurrentUser({ 
-        id: 1, 
-        name: 'Current User', 
-        roles: ['admin'] // This should come from actual auth
+      setCurrentUser({
+        id: 1,
+        name: "Current User",
+        roles: ["admin"], // This should come from actual auth
       });
     }
   }, []);
@@ -30,63 +30,70 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
 
     if (search) {
       const searchTerm = search.toLowerCase();
-      filtered = filtered.filter(lead =>
-        lead.project_title?.toLowerCase().includes(searchTerm) ||
-        lead.company_name?.toLowerCase().includes(searchTerm) ||
-        lead.tender_authority?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        (lead) =>
+          lead.project_title?.toLowerCase().includes(searchTerm) ||
+          lead.company_name?.toLowerCase().includes(searchTerm) ||
+          lead.tender_authority?.toLowerCase().includes(searchTerm)
       );
     }
 
     if (statusFilter) {
-      filtered = filtered.filter(lead => lead.status === statusFilter);
+      filtered = filtered.filter((lead) => lead.status === statusFilter);
     }
 
     if (reviewStatusFilter) {
-      filtered = filtered.filter(lead => lead.review_status === reviewStatusFilter);
+      filtered = filtered.filter(
+        (lead) => lead.review_status === reviewStatusFilter
+      );
     }
 
     setFilteredLeads(filtered);
   }, [leads, search, statusFilter, reviewStatusFilter]);
 
   const formatCurrency = (amount) => {
-    if (!amount) return 'Not specified';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    if (!amount) return "Not specified";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      'New': 'bg-blue-100 text-blue-800',
-      'Contacted': 'bg-yellow-100 text-yellow-800',
-      'Qualified': 'bg-green-100 text-green-800',
-      'Unqualified': 'bg-red-100 text-red-800',
-      'Converted': 'bg-purple-100 text-purple-800',
-      'Rejected': 'bg-gray-100 text-gray-800'
+      New: "bg-blue-100 text-blue-800",
+      Contacted: "bg-yellow-100 text-yellow-800",
+      Qualified: "bg-green-100 text-green-800",
+      Unqualified: "bg-red-100 text-red-800",
+      Converted: "bg-purple-100 text-purple-800",
+      Rejected: "bg-gray-100 text-gray-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   const getReviewStatusColor = (status) => {
     const colors = {
-      'Pending': 'bg-yellow-100 text-yellow-800',
-      'Approved': 'bg-green-100 text-green-800',
-      'Rejected': 'bg-red-100 text-red-800'
+      Pending: "bg-yellow-100 text-yellow-800",
+      Approved: "bg-green-100 text-green-800",
+      Rejected: "bg-red-100 text-red-800",
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
-  const isAdmin = currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('reviewer');
+  const isAdmin =
+    currentUser?.roles?.includes("admin") ||
+    currentUser?.roles?.includes("reviewer");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-5">
       {/* Header with Admin Panel Button */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Lead List</h3>
+          <h3 className="text-lg font-medium text-gray-900 text-left">
+            Lead List
+          </h3>
           <p className="text-sm text-gray-600">
             Showing {filteredLeads.length} of {leads?.length || 0} leads
           </p>
@@ -96,8 +103,18 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
             onClick={() => setShowAdminPanel(true)}
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>Admin Review Panel</span>
           </button>
@@ -113,7 +130,7 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-        
+
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -181,7 +198,9 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
             ) : filteredLeads.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                  {search || statusFilter || reviewStatusFilter ? 'No leads found matching your criteria' : 'No leads found'}
+                  {search || statusFilter || reviewStatusFilter
+                    ? "No leads found matching your criteria"
+                    : "No leads found"}
                 </td>
               </tr>
             ) : (
@@ -189,7 +208,9 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                 <tr key={lead.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{lead.project_title}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {lead.project_title}
+                      </div>
                       <div className="text-sm text-gray-500">
                         Source: {lead.lead_source} | Type: {lead.lead_sub_type}
                       </div>
@@ -198,18 +219,27 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                       </div>
                       {lead.convert_to_opportunity_date && (
                         <div className="text-xs text-blue-600">
-                          Target: {new Date(lead.convert_to_opportunity_date).toLocaleDateString()}
+                          Target:{" "}
+                          {new Date(
+                            lead.convert_to_opportunity_date
+                          ).toLocaleDateString()}
                         </div>
                       )}
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{lead.company_name}</div>
-                      <div className="text-sm text-gray-500">{lead.end_customer_name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {lead.company_name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {lead.end_customer_name}
+                      </div>
                       {lead.tender_authority && (
-                        <div className="text-xs text-gray-400">{lead.tender_authority}</div>
+                        <div className="text-xs text-gray-400">
+                          {lead.tender_authority}
+                        </div>
                       )}
                     </div>
                   </td>
@@ -219,15 +249,23 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                       <div className="text-sm font-medium text-gray-900">
                         {formatCurrency(lead.expected_revenue)}
                       </div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lead.status)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                          lead.status
+                        )}`}
+                      >
                         {lead.status}
                       </span>
                       {lead.priority && (
-                        <div className={`text-xs inline-flex px-2 py-1 rounded-full ${
-                          lead.priority === 'High' ? 'bg-red-100 text-red-800' :
-                          lead.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
+                        <div
+                          className={`text-xs inline-flex px-2 py-1 rounded-full ${
+                            lead.priority === "High"
+                              ? "bg-red-100 text-red-800"
+                              : lead.priority === "Medium"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
                           {lead.priority}
                         </div>
                       )}
@@ -239,7 +277,9 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                       {/* Conversion Status */}
                       {lead.converted ? (
                         <div className="space-y-1">
-                          <div className="text-xs text-green-600 font-medium">✓ Converted</div>
+                          <div className="text-xs text-green-600 font-medium">
+                            ✓ Converted
+                          </div>
                           {lead.converted_to_opportunity_id && (
                             <div className="text-xs text-gray-500">
                               Opp ID: #{lead.converted_to_opportunity_id}
@@ -247,31 +287,39 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                           )}
                           {lead.conversion_date && (
                             <div className="text-xs text-gray-500">
-                              {new Date(lead.conversion_date).toLocaleDateString()}
+                              {new Date(
+                                lead.conversion_date
+                              ).toLocaleDateString()}
                             </div>
                           )}
                         </div>
-                      ) : lead.status === 'Qualified' ? (
+                      ) : lead.status === "Qualified" ? (
                         <div className="space-y-1">
                           {/* Review Status */}
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getReviewStatusColor(lead.review_status)}`}>
-                            {lead.review_status === 'Pending' ? 'Pending Review' : lead.review_status}
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getReviewStatusColor(
+                              lead.review_status
+                            )}`}
+                          >
+                            {lead.review_status === "Pending"
+                              ? "Pending Review"
+                              : lead.review_status}
                           </span>
-                          
+
                           {/* Conversion Request Status */}
                           {lead.conversion_requested && (
                             <div className="text-xs text-blue-600">
                               ⏳ Conversion Requested
                             </div>
                           )}
-                          
+
                           {/* Can Convert Status */}
                           {lead.can_convert_to_opportunity && (
                             <div className="text-xs text-green-600">
                               ✅ Ready to Convert
                             </div>
                           )}
-                          
+
                           {/* Needs Review */}
                           {lead.needs_admin_review && (
                             <div className="text-xs text-orange-600">
@@ -287,11 +335,13 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                           )}
                         </div>
                       ) : (
-                        <div className="text-xs text-gray-500">Not qualified yet</div>
+                        <div className="text-xs text-gray-500">
+                          Not qualified yet
+                        </div>
                       )}
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div className="flex flex-col space-y-2">
                       {/* Regular Actions */}
@@ -333,7 +383,9 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
 
       {/* Legend */}
       <div className="bg-white p-4 rounded-lg shadow border">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Conversion Workflow Legend</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">
+          Conversion Workflow Legend
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

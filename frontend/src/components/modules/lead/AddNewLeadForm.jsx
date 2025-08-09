@@ -1,63 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../../../utils/api';
+import React, { useState, useEffect } from "react";
+import { apiRequest } from "../../../utils/api";
 
 const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const [formData, setFormData] = useState({
-    // Tab 1: General Lead Details
-    project_title: '',
-    lead_source: '',
-    lead_sub_type: '',
-    tender_sub_type: '',
-    products_services: [],
-    company_id: '',
-    sub_business_type: '',
-    end_customer_id: '',
-    end_customer_region: '',
-    partner_involved: false,
-    partners: [],
-    
-    // Tab 2: Contact Details
-    contacts: [],
-    
-    // Tab 3: Tender Details
-    tender_fee: '',
-    currency: 'INR',
-    submission_type: '',
-    tender_authority: '',
-    tender_for: '',
-    emd_required: false,
-    emd_amount: '',
-    emd_currency: 'INR',
-    bg_required: false,
-    bg_amount: '',
-    bg_currency: 'INR',
-    important_dates: [],
-    clauses: [],
-    
-    // Tab 4: Other Details
-    expected_revenue: '',
-    revenue_currency: 'INR',
-    convert_to_opportunity_date: '',
-    competitors: [],
-    documents: []
-  });
+  const [formData, setFormData] = useState(
+    //   {
+    //   // Tab 1: General Lead Details
+    //   project_title: "",
+    //   lead_source: "",
+    //   lead_sub_type: "",
+    //   tender_sub_type: "",
+    //   products_services: [],
+    //   company_id: "",
+    //   sub_business_type: "",
+    //   end_customer_id: "",
+    //   end_customer_region: "",
+    //   partner_involved: false,
+    //   partners: [],
+
+    //   // Tab 2: Contact Details
+    //   contacts: [],
+
+    //   // Tab 3: Tender Details
+    //   tender_fee: "",
+    //   currency: "INR",
+    //   submission_type: "",
+    //   tender_authority: "",
+    //   tender_for: "",
+    //   emd_required: false,
+    //   emd_amount: 0,
+    //   emd_currency: "INR",
+    //   bg_required: false,
+    //   bg_amount: 0,
+    //   bg_currency: "INR",
+    //   important_dates: [],
+    //   clauses: [],
+
+    //   // Tab 4: Other Details
+    //   expected_revenue: "",
+    //   revenue_currency: "INR",
+    //   convert_to_opportunity_date: "",
+    //   competitors: [],
+    //   documents: [],
+    // }
+    {
+      project_title: "Test Project",
+      lead_source: "Direct Marketing",
+      lead_sub_type: "Pre-Tender",
+      tender_sub_type: "Limited Tender",
+      products_services: ["Hardware Support"],
+      company_id: "1",
+      sub_business_type: "Upgrade",
+      end_customer_id: "1",
+      end_customer_region: "East",
+      partner_involved: false,
+      partners: [],
+      contacts: [
+        {
+          id: 1754719365385,
+          designation: "Test",
+          salutation: "Mr.",
+          first_name: "Prathmesh",
+          middle_name: "",
+          last_name: "Chavan",
+          email: "prathamesh.c@esds.co.in",
+          primary_phone: "8878794568",
+          decision_maker: true,
+          decision_maker_percentage: "10",
+          comments: "",
+        },
+      ],
+      tender_fee: "19000",
+      currency: "INR",
+      submission_type: "Online",
+      tender_authority: "TEST",
+      tender_for: "TEST",
+      emd_required: false,
+      emd_amount: 0,
+      emd_currency: "INR",
+      bg_required: false,
+      bg_amount: 0,
+      bg_currency: "INR",
+      important_dates: [
+        {
+          label: "Tender Publish Date",
+          key: "tender_publish_date",
+          value: "2025-08-09",
+        },
+        {
+          label: "Query Submission Date",
+          key: "query_submission_date",
+          value: "2025-08-09",
+        },
+        {
+          label: "Pre-Bid Meeting Date",
+          key: "pre_bid_meeting_date",
+          value: "2025-08-10",
+        },
+        {
+          label: "Tender Submission Date",
+          key: "tender_submission_date",
+          value: "2025-08-07",
+        },
+        {
+          label: "Technical Opening Date",
+          key: "technical_opening_date",
+          value: "2025-08-13",
+        },
+        {
+          label: "Presentation Date",
+          key: "presentation_date",
+          value: "2025-08-23",
+        },
+      ],
+      clauses: [],
+      expected_revenue: "190000",
+      revenue_currency: "INR",
+      convert_to_opportunity_date: "2025-08-02",
+      competitors: [],
+      documents: [],
+      status: "Draft",
+    }
+  );
 
   const [dropdownData, setDropdownData] = useState({
     companies: [],
     products: [],
     partners: [],
-    competitors: []
+    competitors: [],
   });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const tabs = [
-    { id: 0, name: 'General Details', icon: '📋', fields: ['project_title', 'lead_source', 'company_id'] },
-    { id: 1, name: 'Contact Details', icon: '👥', fields: ['contacts'] },
-    { id: 2, name: 'Tender Details', icon: '📄', fields: ['tender_fee', 'tender_authority'] },
-    { id: 3, name: 'Other Details', icon: '💰', fields: ['expected_revenue'] }
+    {
+      id: 0,
+      name: "General Details",
+      icon: "📋",
+      fields: ["project_title", "lead_source", "company_id"],
+    },
+    { id: 1, name: "Contact Details", icon: "👥", fields: ["contacts"] },
+    {
+      id: 2,
+      name: "Tender Details",
+      icon: "📄",
+      fields: ["tender_fee", "tender_authority"],
+    },
+    { id: 3, name: "Other Details", icon: "💰", fields: ["expected_revenue"] },
   ];
 
   useEffect(() => {
@@ -66,16 +156,36 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
       setFormData({ ...lead });
     } else {
       // Initialize with default structures
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         important_dates: [
-          { label: 'Tender Publish Date', key: 'tender_publish_date', value: '' },
-          { label: 'Query Submission Date', key: 'query_submission_date', value: '' },
-          { label: 'Pre-Bid Meeting Date', key: 'pre_bid_meeting_date', value: '' },
-          { label: 'Tender Submission Date', key: 'tender_submission_date', value: '' },
-          { label: 'Technical Opening Date', key: 'technical_opening_date', value: '' },
-          { label: 'Presentation Date', key: 'presentation_date', value: '' }
-        ]
+          {
+            label: "Tender Publish Date",
+            key: "tender_publish_date",
+            value: "",
+          },
+          {
+            label: "Query Submission Date",
+            key: "query_submission_date",
+            value: "",
+          },
+          {
+            label: "Pre-Bid Meeting Date",
+            key: "pre_bid_meeting_date",
+            value: "",
+          },
+          {
+            label: "Tender Submission Date",
+            key: "tender_submission_date",
+            value: "",
+          },
+          {
+            label: "Technical Opening Date",
+            key: "technical_opening_date",
+            value: "",
+          },
+          { label: "Presentation Date", key: "presentation_date", value: "" },
+        ],
       }));
     }
   }, [lead]);
@@ -83,37 +193,37 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
   const fetchDropdownData = async () => {
     try {
       const [companiesRes, productsRes] = await Promise.all([
-        apiRequest('/api/companies'),
-        apiRequest('/api/products')
+        apiRequest("/api/companies"),
+        apiRequest("/api/products"),
       ]);
 
       setDropdownData({
         companies: companiesRes.status ? companiesRes.data.companies || [] : [],
         products: productsRes.status ? productsRes.data.products || [] : [],
         partners: [], // Mock data for now
-        competitors: [] // Mock data for now
+        competitors: [], // Mock data for now
       });
     } catch (err) {
-      console.error('Failed to fetch dropdown data:', err);
+      console.error("Failed to fetch dropdown data:", err);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const validateTab = (tabIndex) => {
     const newErrors = {};
     const tab = tabs[tabIndex];
-    
-    tab.fields.forEach(field => {
-      if (field === 'contacts' && formData.contacts.length === 0) {
-        newErrors.contacts = 'At least one contact is required';
-      } else if (!formData[field] || formData[field] === '') {
-        newErrors[field] = `${field.replace('_', ' ')} is required`;
+
+    tab.fields.forEach((field) => {
+      if (field === "contacts" && formData.contacts.length === 0) {
+        newErrors.contacts = "At least one contact is required";
+      } else if (!formData[field] || formData[field] === "") {
+        newErrors[field] = `${field.replace("_", " ")} is required`;
       }
     });
 
@@ -132,21 +242,24 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
     setLoading(true);
     try {
-      const endpoint = lead ? `/api/leads/${lead.id}` : '/api/leads';
-      const method = lead ? 'PUT' : 'POST';
-      
+      const endpoint = lead ? `/api/leads/${lead.id}` : "/api/leads";
+      const method = lead ? "PUT" : "POST";
+
       const response = await apiRequest(endpoint, {
         method,
-        body: JSON.stringify({ ...formData, status: isDraft ? 'Draft' : 'Active' })
+        body: JSON.stringify({
+          ...formData,
+          status: isDraft ? "Draft" : "Active",
+        }),
       });
 
       if (response.status) {
         onSave(response.data);
       } else {
-        setErrors({ submit: response.message || 'Operation failed' });
+        setErrors({ submit: response.message || "Operation failed" });
       }
     } catch (err) {
-      setErrors({ submit: 'Network error occurred' });
+      setErrors({ submit: "Network error occurred" });
     } finally {
       setLoading(false);
     }
@@ -176,13 +289,19 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             <input
               type="text"
               value={formData.project_title}
-              onChange={(e) => handleInputChange('project_title', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("project_title", e.target.value)
+              }
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.project_title ? 'border-red-300' : 'border-gray-300'
+                errors.project_title ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="Enter project title"
             />
-            {errors.project_title && <p className="text-red-500 text-sm mt-1">{errors.project_title}</p>}
+            {errors.project_title && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.project_title}
+              </p>
+            )}
           </div>
 
           <div>
@@ -191,9 +310,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </label>
             <select
               value={formData.lead_source}
-              onChange={(e) => handleInputChange('lead_source', e.target.value)}
+              onChange={(e) => handleInputChange("lead_source", e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.lead_source ? 'border-red-300' : 'border-gray-300'
+                errors.lead_source ? "border-red-300" : "border-gray-300"
               }`}
             >
               <option value="">Select Lead Source</option>
@@ -203,7 +322,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <option value="Event">Event</option>
               <option value="Other">Other</option>
             </select>
-            {errors.lead_source && <p className="text-red-500 text-sm mt-1">{errors.lead_source}</p>}
+            {errors.lead_source && (
+              <p className="text-red-500 text-sm mt-1">{errors.lead_source}</p>
+            )}
           </div>
 
           <div>
@@ -212,7 +333,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </label>
             <select
               value={formData.lead_sub_type}
-              onChange={(e) => handleInputChange('lead_sub_type', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("lead_sub_type", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Lead Sub Type</option>
@@ -227,7 +350,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </label>
             <select
               value={formData.tender_sub_type}
-              onChange={(e) => handleInputChange('tender_sub_type', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("tender_sub_type", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Tender Sub Type</option>
@@ -245,22 +370,33 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             <select
               multiple
               value={formData.products_services}
-              onChange={(e) => handleInputChange('products_services', Array.from(e.target.selectedOptions, option => option.value))}
+              onChange={(e) =>
+                handleInputChange(
+                  "products_services",
+                  Array.from(e.target.selectedOptions, (option) => option.value)
+                )
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24"
             >
-              <option value="Additional Services: RAM">Additional Services: RAM</option>
+              <option value="Additional Services: RAM">
+                Additional Services: RAM
+              </option>
               <option value="Hardware Support">Hardware Support</option>
               <option value="Software Services">Software Services</option>
               <option value="Consulting">Consulting</option>
             </select>
-            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple options</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Hold Ctrl/Cmd to select multiple options
+            </p>
           </div>
         </div>
       </div>
 
       {/* Company Details Section */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Company Details</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Company Details
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -268,26 +404,32 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </label>
             <select
               value={formData.company_id}
-              onChange={(e) => handleInputChange('company_id', e.target.value)}
+              onChange={(e) => handleInputChange("company_id", e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.company_id ? 'border-red-300' : 'border-gray-300'
+                errors.company_id ? "border-red-300" : "border-gray-300"
               }`}
             >
               <option value="">Select Company</option>
-              {dropdownData.companies.map(company => (
+              {dropdownData.companies.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name} - {company.city}
                 </option>
               ))}
             </select>
-            {errors.company_id && <p className="text-red-500 text-sm mt-1">{errors.company_id}</p>}
+            {errors.company_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.company_id}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sub Business Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Sub Business Type
+            </label>
             <select
               value={formData.sub_business_type}
-              onChange={(e) => handleInputChange('sub_business_type', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("sub_business_type", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Sub Business Type</option>
@@ -301,7 +443,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
       {/* End Customer Details Section */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">End Customer / Billing Customer</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          End Customer / Billing Customer
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -309,11 +453,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </label>
             <select
               value={formData.end_customer_id}
-              onChange={(e) => handleInputChange('end_customer_id', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("end_customer_id", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select End Customer</option>
-              {dropdownData.companies.map(company => (
+              {dropdownData.companies.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name} - {company.city}
                 </option>
@@ -322,10 +468,14 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Customer Region</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              End Customer Region
+            </label>
             <select
               value={formData.end_customer_region}
-              onChange={(e) => handleInputChange('end_customer_region', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("end_customer_region", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Region</option>
@@ -341,17 +491,23 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
       {/* Partner Details Section */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Partner Details</h3>
-        
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Partner Details
+        </h3>
+
         <div className="mb-4">
           <label className="flex items-center">
             <input
               type="checkbox"
               checked={formData.partner_involved}
-              onChange={(e) => handleInputChange('partner_involved', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("partner_involved", e.target.checked)
+              }
               className="mr-2"
             />
-            <span className="text-sm font-medium text-gray-700">Partner Involved</span>
+            <span className="text-sm font-medium text-gray-700">
+              Partner Involved
+            </span>
           </label>
         </div>
 
@@ -359,7 +515,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Partner Type
+                </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Select Partner Type</option>
                   <option value="Channel">Channel</option>
@@ -369,14 +527,18 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Partner Name
+                </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Select Partner</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Billing Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Billing Type
+                </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Select Billing Type</option>
                   <option value="Client Billing">Client Billing</option>
@@ -385,7 +547,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Engagement Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Partner Engagement Type
+                </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Select Engagement Type</option>
                   <option value="ORC">ORC</option>
@@ -395,7 +559,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expected ORC</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Expected ORC
+                </label>
                 <input
                   type="number"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -404,7 +570,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Terms
+                </label>
                 <textarea
                   rows="2"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -425,31 +593,60 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <table className="min-w-full bg-white border border-gray-300 rounded-lg">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Partner Type</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Engagement Type</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Payment Terms</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Billing Type</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Expected ORC</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Partner Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Name
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Engagement Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Payment Terms
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Billing Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Expected ORC
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.partners.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-4 py-8 text-center text-gray-500">No partners added yet</td>
+                      <td
+                        colSpan="7"
+                        className="px-4 py-8 text-center text-gray-500"
+                      >
+                        No partners added yet
+                      </td>
                     </tr>
                   ) : (
                     formData.partners.map((partner, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 border-t">{partner.type}</td>
                         <td className="px-4 py-2 border-t">{partner.name}</td>
-                        <td className="px-4 py-2 border-t">{partner.engagement_type}</td>
-                        <td className="px-4 py-2 border-t">{partner.payment_terms}</td>
-                        <td className="px-4 py-2 border-t">{partner.billing_type}</td>
-                        <td className="px-4 py-2 border-t">{partner.expected_orc}</td>
                         <td className="px-4 py-2 border-t">
-                          <button className="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                          {partner.engagement_type}
+                        </td>
+                        <td className="px-4 py-2 border-t">
+                          {partner.payment_terms}
+                        </td>
+                        <td className="px-4 py-2 border-t">
+                          {partner.billing_type}
+                        </td>
+                        <td className="px-4 py-2 border-t">
+                          {partner.expected_orc}
+                        </td>
+                        <td className="px-4 py-2 border-t">
+                          <button className="text-red-600 hover:text-red-900 text-sm">
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -468,36 +665,36 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
     const addContact = () => {
       const newContact = {
         id: Date.now(),
-        designation: '',
-        salutation: '',
-        first_name: '',
-        middle_name: '',
-        last_name: '',
-        email: '',
-        primary_phone: '',
+        designation: "",
+        salutation: "",
+        first_name: "",
+        middle_name: "",
+        last_name: "",
+        email: "",
+        primary_phone: "",
         decision_maker: false,
         decision_maker_percentage: 0,
-        comments: ''
+        comments: "",
       };
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        contacts: [...prev.contacts, newContact]
+        contacts: [...prev.contacts, newContact],
       }));
     };
 
     const removeContact = (id) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        contacts: prev.contacts.filter(contact => contact.id !== id)
+        contacts: prev.contacts.filter((contact) => contact.id !== id),
       }));
     };
 
     const updateContact = (id, field, value) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        contacts: prev.contacts.map(contact =>
+        contacts: prev.contacts.map((contact) =>
           contact.id === id ? { ...contact, [field]: value } : contact
-        )
+        ),
       }));
     };
 
@@ -514,42 +711,79 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
           </button>
         </div>
 
-        {errors.contacts && <p className="text-red-500 text-sm">{errors.contacts}</p>}
+        {errors.contacts && (
+          <p className="text-red-500 text-sm">{errors.contacts}</p>
+        )}
 
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sr. No.</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Salutation</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">First Name*</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Middle Name</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Name*</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email*</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Phone*</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Decision Maker</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">DM %</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Comments</th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Sr. No.
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Designation
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Salutation
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  First Name*
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Middle Name
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Last Name*
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Email*
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Phone*
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Decision Maker
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  DM %
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Comments
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {formData.contacts.length === 0 ? (
                 <tr>
-                  <td colSpan="12" className="px-4 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="12"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
                     No contacts added yet. Click "Add Contact" to get started.
                   </td>
                 </tr>
               ) : (
                 formData.contacts.map((contact, index) => (
                   <tr key={contact.id}>
-                    <td className="px-2 py-2 border-t text-center">{index + 1}</td>
+                    <td className="px-2 py-2 border-t text-center">
+                      {index + 1}
+                    </td>
                     <td className="px-2 py-2 border-t">
                       <input
                         type="text"
                         value={contact.designation}
-                        onChange={(e) => updateContact(contact.id, 'designation', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "designation",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="Designation"
                       />
@@ -557,7 +791,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                     <td className="px-2 py-2 border-t">
                       <select
                         value={contact.salutation}
-                        onChange={(e) => updateContact(contact.id, 'salutation', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "salutation",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                       >
                         <option value="">Select</option>
@@ -571,7 +811,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="text"
                         value={contact.first_name}
-                        onChange={(e) => updateContact(contact.id, 'first_name', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "first_name",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="First Name"
                         required
@@ -581,7 +827,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="text"
                         value={contact.middle_name}
-                        onChange={(e) => updateContact(contact.id, 'middle_name', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "middle_name",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="Middle Name"
                       />
@@ -590,7 +842,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="text"
                         value={contact.last_name}
-                        onChange={(e) => updateContact(contact.id, 'last_name', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(contact.id, "last_name", e.target.value)
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="Last Name"
                         required
@@ -600,7 +854,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="email"
                         value={contact.email}
-                        onChange={(e) => updateContact(contact.id, 'email', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(contact.id, "email", e.target.value)
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="Email"
                         required
@@ -610,7 +866,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="tel"
                         value={contact.primary_phone}
-                        onChange={(e) => updateContact(contact.id, 'primary_phone', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "primary_phone",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         placeholder="Phone"
                         required
@@ -620,7 +882,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="checkbox"
                         checked={contact.decision_maker}
-                        onChange={(e) => updateContact(contact.id, 'decision_maker', e.target.checked)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "decision_maker",
+                            e.target.checked
+                          )
+                        }
                         className="rounded"
                       />
                     </td>
@@ -628,7 +896,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <input
                         type="number"
                         value={contact.decision_maker_percentage}
-                        onChange={(e) => updateContact(contact.id, 'decision_maker_percentage', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(
+                            contact.id,
+                            "decision_maker_percentage",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         min="0"
                         max="100"
@@ -638,7 +912,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                     <td className="px-2 py-2 border-t">
                       <textarea
                         value={contact.comments}
-                        onChange={(e) => updateContact(contact.id, 'comments', e.target.value)}
+                        onChange={(e) =>
+                          updateContact(contact.id, "comments", e.target.value)
+                        }
                         className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                         rows="2"
                         placeholder="Comments"
@@ -668,37 +944,37 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
     const addClause = () => {
       const newClause = {
         id: Date.now(),
-        clause_type: '',
-        criteria_description: ''
+        clause_type: "",
+        criteria_description: "",
       };
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        clauses: [...prev.clauses, newClause]
+        clauses: [...prev.clauses, newClause],
       }));
     };
 
     const removeClause = (id) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        clauses: prev.clauses.filter(clause => clause.id !== id)
+        clauses: prev.clauses.filter((clause) => clause.id !== id),
       }));
     };
 
     const updateClause = (id, field, value) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        clauses: prev.clauses.map(clause =>
+        clauses: prev.clauses.map((clause) =>
           clause.id === id ? { ...clause, [field]: value } : clause
-        )
+        ),
       }));
     };
 
     const updateImportantDate = (key, value) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        important_dates: prev.important_dates.map(date =>
+        important_dates: prev.important_dates.map((date) =>
           date.key === key ? { ...date, value } : date
-        )
+        ),
       }));
     };
 
@@ -706,7 +982,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
       <div className="space-y-8">
         {/* Tender Information Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Tender Information</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Tender Information
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -715,13 +993,17 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <input
                 type="number"
                 value={formData.tender_fee}
-                onChange={(e) => handleInputChange('tender_fee', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("tender_fee", e.target.value)
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.tender_fee ? 'border-red-300' : 'border-gray-300'
+                  errors.tender_fee ? "border-red-300" : "border-gray-300"
                 }`}
                 placeholder="Enter tender fee"
               />
-              {errors.tender_fee && <p className="text-red-500 text-sm mt-1">{errors.tender_fee}</p>}
+              {errors.tender_fee && (
+                <p className="text-red-500 text-sm mt-1">{errors.tender_fee}</p>
+              )}
             </div>
 
             <div>
@@ -730,7 +1012,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </label>
               <select
                 value={formData.currency}
-                onChange={(e) => handleInputChange('currency', e.target.value)}
+                onChange={(e) => handleInputChange("currency", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="INR">INR</option>
@@ -740,10 +1022,14 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Submission Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Submission Type
+              </label>
               <select
                 value={formData.submission_type}
-                onChange={(e) => handleInputChange('submission_type', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("submission_type", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Submission Type</option>
@@ -760,13 +1046,19 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <input
                 type="text"
                 value={formData.tender_authority}
-                onChange={(e) => handleInputChange('tender_authority', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("tender_authority", e.target.value)
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.tender_authority ? 'border-red-300' : 'border-gray-300'
+                  errors.tender_authority ? "border-red-300" : "border-gray-300"
                 }`}
                 placeholder="Enter tender authority"
               />
-              {errors.tender_authority && <p className="text-red-500 text-sm mt-1">{errors.tender_authority}</p>}
+              {errors.tender_authority && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.tender_authority}
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -776,7 +1068,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <input
                 type="text"
                 value={formData.tender_for}
-                onChange={(e) => handleInputChange('tender_for', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("tender_for", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter what the tender is for"
               />
@@ -788,23 +1082,31 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                 <input
                   type="checkbox"
                   checked={formData.emd_required}
-                  onChange={(e) => handleInputChange('emd_required', e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("emd_required", e.target.checked)
+                  }
                   className="mr-2"
                 />
-                <span className="text-sm font-medium text-gray-700">EMD Required</span>
+                <span className="text-sm font-medium text-gray-700">
+                  EMD Required
+                </span>
               </label>
               {formData.emd_required && (
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     value={formData.emd_amount}
-                    onChange={(e) => handleInputChange('emd_amount', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("emd_amount", Number(e.target.value))
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="EMD Amount"
                   />
                   <select
                     value={formData.emd_currency}
-                    onChange={(e) => handleInputChange('emd_currency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("emd_currency", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="INR">INR</option>
@@ -821,23 +1123,31 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                 <input
                   type="checkbox"
                   checked={formData.bg_required}
-                  onChange={(e) => handleInputChange('bg_required', e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange("bg_required", e.target.checked)
+                  }
                   className="mr-2"
                 />
-                <span className="text-sm font-medium text-gray-700">BG Required</span>
+                <span className="text-sm font-medium text-gray-700">
+                  BG Required
+                </span>
               </label>
               {formData.bg_required && (
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     value={formData.bg_amount}
-                    onChange={(e) => handleInputChange('bg_amount', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("bg_amount", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="BG Amount"
                   />
                   <select
                     value={formData.bg_currency}
-                    onChange={(e) => handleInputChange('bg_currency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("bg_currency", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="INR">INR</option>
@@ -852,7 +1162,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
         {/* Important Dates Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Important Dates</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Important Dates
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {formData.important_dates.map((dateItem) => (
               <div key={dateItem.key}>
@@ -862,7 +1174,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                 <input
                   type="date"
                   value={dateItem.value}
-                  onChange={(e) => updateImportantDate(dateItem.key, e.target.value)}
+                  onChange={(e) =>
+                    updateImportantDate(dateItem.key, e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -873,7 +1187,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
         {/* Clauses Details Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Clauses Details</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Clauses Details
+            </h3>
             <button
               type="button"
               onClick={addClause}
@@ -887,15 +1203,26 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Clause Type</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Criteria Description</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Clause Type
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Criteria Description
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {formData.clauses.length === 0 ? (
                   <tr>
-                    <td colSpan="3" className="px-4 py-8 text-center text-gray-500">No clauses added yet</td>
+                    <td
+                      colSpan="3"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No clauses added yet
+                    </td>
                   </tr>
                 ) : (
                   formData.clauses.map((clause) => (
@@ -904,7 +1231,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                         <input
                           type="text"
                           value={clause.clause_type}
-                          onChange={(e) => updateClause(clause.id, 'clause_type', e.target.value)}
+                          onChange={(e) =>
+                            updateClause(
+                              clause.id,
+                              "clause_type",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-2 py-1 border border-gray-300 rounded"
                           placeholder="Enter clause type"
                         />
@@ -912,7 +1245,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                       <td className="px-4 py-2 border-t">
                         <textarea
                           value={clause.criteria_description}
-                          onChange={(e) => updateClause(clause.id, 'criteria_description', e.target.value)}
+                          onChange={(e) =>
+                            updateClause(
+                              clause.id,
+                              "criteria_description",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-2 py-1 border border-gray-300 rounded"
                           rows="2"
                           placeholder="Enter criteria description"
@@ -941,32 +1280,34 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
   // Tab 4: Other Details
   const renderOtherDetails = () => {
     const addCompetitor = () => {
-      const competitor = prompt('Enter competitor name:');
-      const description = prompt('Enter description:');
-      
+      const competitor = prompt("Enter competitor name:");
+      const description = prompt("Enter description:");
+
       if (competitor) {
         const newCompetitor = {
           id: Date.now(),
           name: competitor,
-          description: description || ''
+          description: description || "",
         };
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          competitors: [...prev.competitors, newCompetitor]
+          competitors: [...prev.competitors, newCompetitor],
         }));
       }
     };
 
     const addDocument = () => {
       // This would typically handle file upload
-      console.log('Document upload functionality would be implemented here');
+      console.log("Document upload functionality would be implemented here");
     };
 
     return (
       <div className="space-y-8">
         {/* Revenue Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue Information</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Revenue Information
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -975,13 +1316,19 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               <input
                 type="number"
                 value={formData.expected_revenue}
-                onChange={(e) => handleInputChange('expected_revenue', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("expected_revenue", e.target.value)
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.expected_revenue ? 'border-red-300' : 'border-gray-300'
+                  errors.expected_revenue ? "border-red-300" : "border-gray-300"
                 }`}
                 placeholder="Enter expected revenue"
               />
-              {errors.expected_revenue && <p className="text-red-500 text-sm mt-1">{errors.expected_revenue}</p>}
+              {errors.expected_revenue && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.expected_revenue}
+                </p>
+              )}
             </div>
 
             <div>
@@ -990,7 +1337,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               </label>
               <select
                 value={formData.revenue_currency}
-                onChange={(e) => handleInputChange('revenue_currency', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("revenue_currency", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="INR">INR</option>
@@ -1001,12 +1350,18 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Convert to Opportunity Date <span className="text-red-500">*</span>
+                Convert to Opportunity Date{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
                 value={formData.convert_to_opportunity_date}
-                onChange={(e) => handleInputChange('convert_to_opportunity_date', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange(
+                    "convert_to_opportunity_date",
+                    e.target.value
+                  )
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -1016,7 +1371,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
         {/* Competitor Info Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Competitor Information</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Competitor Information
+            </h3>
             <button
               type="button"
               onClick={addCompetitor}
@@ -1030,28 +1387,45 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Competitor Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Competitor Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Description
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {formData.competitors.length === 0 ? (
                   <tr>
-                    <td colSpan="3" className="px-4 py-8 text-center text-gray-500">No competitors added yet</td>
+                    <td
+                      colSpan="3"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No competitors added yet
+                    </td>
                   </tr>
                 ) : (
                   formData.competitors.map((competitor) => (
                     <tr key={competitor.id}>
                       <td className="px-4 py-2 border-t">{competitor.name}</td>
-                      <td className="px-4 py-2 border-t">{competitor.description}</td>
+                      <td className="px-4 py-2 border-t">
+                        {competitor.description}
+                      </td>
                       <td className="px-4 py-2 border-t">
                         <button
                           type="button"
-                          onClick={() => setFormData(prev => ({
-                            ...prev,
-                            competitors: prev.competitors.filter(c => c.id !== competitor.id)
-                          }))}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              competitors: prev.competitors.filter(
+                                (c) => c.id !== competitor.id
+                              ),
+                            }))
+                          }
                           className="text-red-600 hover:text-red-900 text-sm"
                         >
                           Remove
@@ -1068,7 +1442,9 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
         {/* Upload Documents Section */}
         <div className="bg-gray-50 p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Upload Documents</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Upload Documents
+            </h3>
             <button
               type="button"
               onClick={addDocument}
@@ -1080,18 +1456,24 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Document Type
+              </label>
               <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 <option value="">Select Document Type</option>
                 <option value="Tender Document">Tender Document</option>
-                <option value="Technical Specification">Technical Specification</option>
+                <option value="Technical Specification">
+                  Technical Specification
+                </option>
                 <option value="Commercial Terms">Commercial Terms</option>
                 <option value="Other">Other</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quotation Name
+              </label>
               <input
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -1100,17 +1482,24 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Upload File</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Upload File
+              </label>
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.jpg,.png,.xls,.xlsx,.zip,.eml,.msg"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">Max size: 10 MB. Accepted: pdf, doc, docx, jpg, png, xls, xlsx, zip, eml, msg</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Max size: 10 MB. Accepted: pdf, doc, docx, jpg, png, xls, xlsx,
+                zip, eml, msg
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
               <textarea
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -1123,25 +1512,42 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Document Type</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Document Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Document Type
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Document Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Description
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {formData.documents.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">No documents uploaded yet</td>
+                    <td
+                      colSpan="4"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No documents uploaded yet
+                    </td>
                   </tr>
                 ) : (
                   formData.documents.map((document, index) => (
                     <tr key={index}>
                       <td className="px-4 py-2 border-t">{document.type}</td>
                       <td className="px-4 py-2 border-t">{document.name}</td>
-                      <td className="px-4 py-2 border-t">{document.description}</td>
                       <td className="px-4 py-2 border-t">
-                        <button className="text-red-600 hover:text-red-900 text-sm">Remove</button>
+                        {document.description}
+                      </td>
+                      <td className="px-4 py-2 border-t">
+                        <button className="text-red-600 hover:text-red-900 text-sm">
+                          Remove
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -1156,11 +1562,16 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 0: return renderGeneralDetails();
-      case 1: return renderContactDetails();
-      case 2: return renderTenderDetails();
-      case 3: return renderOtherDetails();
-      default: return renderGeneralDetails();
+      case 0:
+        return renderGeneralDetails();
+      case 1:
+        return renderContactDetails();
+      case 2:
+        return renderTenderDetails();
+      case 3:
+        return renderOtherDetails();
+      default:
+        return renderGeneralDetails();
     }
   };
 
@@ -1169,7 +1580,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-2xl font-bold text-gray-900">
-          {lead ? 'Edit Lead' : 'Add New Lead'}
+          {lead ? "Edit Lead" : "Add New Lead"}
         </h2>
       </div>
 
@@ -1182,15 +1593,13 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
               onClick={() => handleTabChange(index)}
               className={`flex items-center space-x-2 py-2 px-4 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === index
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
               <span>{tab.icon}</span>
               <span>{tab.name}</span>
-              {index < activeTab && (
-                <span className="text-green-500">✓</span>
-              )}
+              {index < activeTab && <span className="text-green-500">✓</span>}
             </button>
           ))}
         </div>
@@ -1203,7 +1612,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
             {errors.submit}
           </div>
         )}
-        
+
         {renderTabContent()}
       </div>
 
@@ -1229,7 +1638,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
           >
             Cancel
           </button>
-          
+
           <button
             type="button"
             onClick={() => handleSubmit(true)}
@@ -1260,7 +1669,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
                   Submitting...
                 </div>
               ) : (
-                'Submit'
+                "Submit"
               )}
             </button>
           )}

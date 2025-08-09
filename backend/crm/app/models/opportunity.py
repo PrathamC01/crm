@@ -174,16 +174,16 @@ class Opportunity(BaseModel):
     contact = relationship("Contact", back_populates="opportunities")
     qualification_completer = relationship(
         "User",
-        foreign_keys=[qualification_completed_by],
-        backref="qualifications_completed",
+        foreign_keys=[qualification_completed_by]
     )
     delivery_team_member = relationship(
-        "User", foreign_keys=[delivery_team_assigned], backref="opportunities_assigned"
+        "User", foreign_keys=[delivery_team_assigned]
     )
     creator = relationship(
         "User",
         foreign_keys="Opportunity.created_by",
         back_populates="opportunities_created",
+        overlaps="qualification_completer,delivery_team_member"
     )
     updater = relationship(
         "User",
@@ -208,7 +208,7 @@ class Opportunity(BaseModel):
 
     @property
     def lead_name(self):
-        return self.lead.name if self.lead else None
+        return self.lead.project_title if self.lead else None
 
     @property
     def contact_name(self):

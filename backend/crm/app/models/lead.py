@@ -1,5 +1,5 @@
 """
-Enhanced Lead model with opportunity conversion workflow
+Enhanced Lead model with opportunity conversion workflow and fixed foreign keys
 """
 
 from sqlalchemy import (
@@ -31,6 +31,7 @@ class LeadSource(str, Enum):
 
 class LeadStatus(str, Enum):
     NEW = "New"
+    ACTIVE = "Active"
     CONTACTED = "Contacted"
     QUALIFIED = "Qualified"
     UNQUALIFIED = "Unqualified"
@@ -130,6 +131,9 @@ class Lead(BaseModel):
     qualification_notes = Column(Text)
     lead_score = Column(Integer, default=0)
     
+    # Sales person assignment
+    sales_person_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
     # Contact Information (stored as JSON for flexibility)
     contacts = Column(JSON)  # Array of contact objects
     
@@ -148,38 +152,42 @@ class Lead(BaseModel):
     
     # Conversion Tracking
     converted = Column(Boolean, default=False)
-    converted_to_opportunity_id = Column(Integer, ForeignKey("opportunities.id"))
+    # Remove circular dependency - will be updated when opportunity is created
+    converted_to_opportunity_id = Column(String(10))  # Will store POT-ID instead of FK
     conversion_date = Column(DateTime)
     conversion_notes = Column(Text)
 
     # Relationships
     company = relationship("Company", foreign_keys=[company_id], back_populates="leads")
     end_customer = relationship("Company", foreign_keys=[end_customer_id])
+    
+    sales_person = relationship(
+        "User", 
+        foreign_keys=[sales_person_id],
+        back_populates="leads_assigned"
+    )
     conversion_requester = relationship(
         "User", 
-        foreign_keys=[conversion_requested_by],
-        backref="conversion_requests"
+        foreign_keys=[conversion_requested_by]
     )
     reviewer = relationship(
         "User", 
-        foreign_keys=[reviewed_by],
-        backref="reviewed_leads"
+        foreign_keys=[reviewed_by]
     )
-    converted_opportunity = relationship(
-        "Opportunity", 
-        foreign_keys=[converted_to_opportunity_id],
-        backref="source_lead"
-    )
+    
     creator = relationship(
         "User",
         foreign_keys="Lead.created_by",
         back_populates="leads_created",
+        overlaps="conversion_requester,reviewer"
     )
     updater = relationship(
         "User",
         foreign_keys="Lead.updated_by",
         back_populates="leads_updated",
     )
+    
+    # One-to-many with opportunities (a lead can have multiple opportunities over time)
     opportunities = relationship("Opportunity", back_populates="lead")
 
     @property
@@ -192,15 +200,19 @@ class Lead(BaseModel):
 
     @property
     def creator_name(self):
-        return self.creator.full_name if self.creator else None
+        return self.creator.full_name if self.creator and hasattr(self.creator, 'full_name') else (self.creator.name if self.creator else None)
+
+    @property
+    def sales_person_name(self):
+        return self.sales_person.full_name if self.sales_person and hasattr(self.sales_person, 'full_name') else (self.sales_person.name if self.sales_person else None)
 
     @property
     def conversion_requester_name(self):
-        return self.conversion_requester.full_name if self.conversion_requester else None
+        return self.conversion_requester.full_name if self.conversion_requester and hasattr(self.conversion_requester, 'full_name') else (self.conversion_requester.name if self.conversion_requester else None)
 
     @property
     def reviewer_name(self):
-        return self.reviewer.full_name if self.reviewer else None
+        return self.reviewer.full_name if self.reviewer and hasattr(self.reviewer, 'full_name') else (self.reviewer.name if self.reviewer else None)
 
     @property
     def can_request_conversion(self):

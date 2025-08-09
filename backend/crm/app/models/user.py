@@ -1,5 +1,5 @@
 """
-SQLAlchemy User model
+SQLAlchemy User model with fixed foreign key relationships
 """
 
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer
@@ -62,6 +62,10 @@ class User(BaseModel):
     opportunities_updated = relationship(
         "Opportunity", foreign_keys="Opportunity.updated_by", back_populates="updater"
     )
+
+    @property
+    def full_name(self):
+        return self.name
 
     def __repr__(self):
         return f"<User(id={self.id}, name={self.name}, email={self.email}), role={self.role}, department={self.department})>"
