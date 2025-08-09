@@ -1,388 +1,247 @@
 """
-Opportunity related schemas with enhanced stage-specific fields
+Enhanced Opportunity schemas with Lead-based creation workflow
 """
 
 from pydantic import BaseModel, validator
-from typing import Optional, Literal, Dict, Any, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
-from ..utils.validators import (
-    validate_amount_with_justification,
-    validate_opportunity_stage_transition,
-)
 
 
-class OpportunityStage(str, Enum):
+class OpportunityStageEnum(str, Enum):
     L1_PROSPECT = "L1_Prospect"
-    L1_QUALIFICATION = "L1_Qualification"
     L2_NEED_ANALYSIS = "L2_Need_Analysis"
     L3_PROPOSAL = "L3_Proposal"
-    L4_NEGOTIATION = "L4_Negotiation"
-    L5_WON = "L5_Won"
-    L6_LOST = "L6_Lost"
-    L7_DROPPED = "L7_Dropped"
+    WIN = "Win"
+    LOSS = "Loss"
 
 
-class OpportunityStatus(str, Enum):
+class OpportunityStatusEnum(str, Enum):
     OPEN = "Open"
     WON = "Won"
     LOST = "Lost"
-    DROPPED = "Dropped"
+    CONVERTED_FROM_LEAD = "Converted_From_Lead"
 
 
-class QualificationStatus(str, Enum):
-    QUALIFIED = "Qualified"
-    NOT_NOW = "Not_Now"
-    DISQUALIFIED = "Disqualified"
+class SalesStageEnum(str, Enum):
+    L1_PROSPECT = "L1_Prospect"
+    L2_NEED_ANALYSIS = "L2_Need_Analysis"
+    L3_PROPOSAL = "L3_Proposal"
+    WIN = "Win"
+    LOSS = "Loss"
 
 
-class GoNoGoStatus(str, Enum):
-    GO = "Go"
-    NO_GO = "No_Go"
-    PENDING = "Pending"
+class StageStatusEnum(str, Enum):
+    OPEN = "Open"
+    IN_PROGRESS = "In Progress"
+    COMPLETED = "Completed"
+    SKIPPED = "Skipped"
 
 
-class ProposalStatus(str, Enum):
-    DRAFT = "Draft"
-    SUBMITTED = "Submitted"
-    APPROVED = "Approved"
-    REJECTED = "Rejected"
-
-
-class QuotationStatus(str, Enum):
-    DRAFT = "Draft"
-    SUBMITTED = "Submitted"
-    APPROVED = "Approved"
-    REVISION_REQUIRED = "Revision_Required"
-
-
-class OpportunityBase(BaseModel):
-    lead_id: Optional[int] = None
-    company_id: int
-    contact_id: int
-    name: str
-    stage: OpportunityStage = OpportunityStage.L1_PROSPECT
-    amount: Optional[Decimal] = None
-    scoring: int = 0
-    bom_id: Optional[int] = None
-    costing: Optional[Decimal] = None
-    status: OpportunityStatus = OpportunityStatus.OPEN
-    justification: Optional[str] = None
-    close_date: Optional[date] = None
-    probability: int = 10
+# Sales Process Schemas
+class SalesProcessBase(BaseModel):
+    stage: SalesStageEnum
+    status: StageStatusEnum
+    stage_completion_date: Optional[date] = None
+    comments: Optional[str] = None
     notes: Optional[str] = None
-
-    # L1 - Qualification Fields
-    requirement_gathering_notes: Optional[str] = None
-    go_no_go_status: GoNoGoStatus = GoNoGoStatus.PENDING
-    qualification_completed_by: Optional[int] = None
-    qualification_status: Optional[QualificationStatus] = None
-    qualification_scorecard: Optional[Dict[str, Any]] = None
-
-    # L2 - Need Analysis / Demo Fields
-    demo_completed: bool = False
-    demo_date: Optional[datetime] = None
-    demo_summary: Optional[str] = None
-    presentation_materials: Optional[List[Dict[str, str]]] = None
-    qualification_meeting_completed: bool = False
-    qualification_meeting_date: Optional[datetime] = None
-    qualification_meeting_notes: Optional[str] = None
-
-    # L3 - Proposal / Bid Submission Fields
-    quotation_created: bool = False
-    quotation_status: QuotationStatus = QuotationStatus.DRAFT
-    quotation_file_path: Optional[str] = None
-    quotation_version: int = 1
-    proposal_prepared: bool = False
-    proposal_file_path: Optional[str] = None
-    proposal_submitted: bool = False
-    proposal_submission_date: Optional[datetime] = None
-    poc_completed: bool = False
-    poc_notes: Optional[str] = None
-    solutions_team_approval_notes: Optional[str] = None
-
-    # L4 - Negotiation Fields
-    customer_discussion_notes: Optional[str] = None
-    proposal_updated: bool = False
-    updated_proposal_file_path: Optional[str] = None
-    updated_proposal_submitted: bool = False
-    negotiated_quotation_file_path: Optional[str] = None
-    negotiation_rounds: int = 0
-    commercial_approval_required: bool = False
-    commercial_approval_status: Optional[str] = None
-
-    # L5 - Won Fields
-    kickoff_meeting_scheduled: bool = False
-    kickoff_meeting_date: Optional[datetime] = None
-    loi_received: bool = False
-    loi_file_path: Optional[str] = None
-    order_verified: bool = False
-    handoff_to_delivery: bool = False
-    delivery_team_assigned: Optional[int] = None
-
-    # Lost/Dropped Fields
-    lost_reason: Optional[str] = None
-    competitor_name: Optional[str] = None
-    follow_up_date: Optional[date] = None
-    drop_reason: Optional[str] = None
-    reactivate_date: Optional[date] = None
-
-    @validator("name")
-    def validate_name(cls, v):
-        if not v or len(v.strip()) < 3:
-            raise ValueError("Opportunity name must be at least 3 characters long")
-        return v.strip()
-
-    @validator("scoring")
-    def validate_scoring(cls, v):
-        if v < 0 or v > 100:
-            raise ValueError("Scoring must be between 0 and 100")
-        return v
-
-    @validator("probability")
-    def validate_probability(cls, v):
-        if v < 0 or v > 100:
-            raise ValueError("Probability must be between 0 and 100")
-        return v
-
-    @validator("amount")
-    def validate_amount(cls, v):
-        if v is not None and v < 0:
-            raise ValueError("Amount cannot be negative")
-        return v
-
-    @validator("costing")
-    def validate_costing(cls, v):
-        if v is not None and v < 0:
-            raise ValueError("Costing cannot be negative")
-        return v
-
-    @validator("justification", always=True)
-    def validate_amount_justification(cls, v, values):
-        if "amount" in values and values["amount"]:
-            amount_float = float(values["amount"])
-            is_valid, error_msg = validate_amount_with_justification(amount_float, v)
-            if not is_valid:
-                raise ValueError(error_msg)
-        return v
-
-
-class OpportunityCreate(OpportunityBase):
-    pass
-
-
-class OpportunityUpdate(BaseModel):
-    lead_id: Optional[int] = None
-    company_id: Optional[int] = None
-    contact_id: Optional[int] = None
-    name: Optional[str] = None
-    stage: Optional[OpportunityStage] = None
-    amount: Optional[Decimal] = None
-    scoring: Optional[int] = None
-    bom_id: Optional[int] = None
-    costing: Optional[Decimal] = None
-    status: Optional[OpportunityStatus] = None
-    justification: Optional[str] = None
-    close_date: Optional[date] = None
-    probability: Optional[int] = None
-    notes: Optional[str] = None
-
-    # L1 - Qualification Fields
-    requirement_gathering_notes: Optional[str] = None
-    go_no_go_status: Optional[GoNoGoStatus] = None
-    qualification_completed_by: Optional[int] = None
-    qualification_status: Optional[QualificationStatus] = None
-    qualification_scorecard: Optional[Dict[str, Any]] = None
-
-    # L2 - Need Analysis / Demo Fields
-    demo_completed: Optional[bool] = None
-    demo_date: Optional[datetime] = None
-    demo_summary: Optional[str] = None
-    presentation_materials: Optional[List[Dict[str, str]]] = None
-    qualification_meeting_completed: Optional[bool] = None
-    qualification_meeting_date: Optional[datetime] = None
-    qualification_meeting_notes: Optional[str] = None
-
-    # L3 - Proposal / Bid Submission Fields
-    quotation_created: Optional[bool] = None
-    quotation_status: Optional[QuotationStatus] = None
-    quotation_file_path: Optional[str] = None
-    quotation_version: Optional[int] = None
-    proposal_prepared: Optional[bool] = None
-    proposal_file_path: Optional[str] = None
-    proposal_submitted: Optional[bool] = None
-    proposal_submission_date: Optional[datetime] = None
-    poc_completed: Optional[bool] = None
-    poc_notes: Optional[str] = None
-    solutions_team_approval_notes: Optional[str] = None
-
-    # L4 - Negotiation Fields
-    customer_discussion_notes: Optional[str] = None
-    proposal_updated: Optional[bool] = None
-    updated_proposal_file_path: Optional[str] = None
-    updated_proposal_submitted: Optional[bool] = None
-    negotiated_quotation_file_path: Optional[str] = None
-    negotiation_rounds: Optional[int] = None
-    commercial_approval_required: Optional[bool] = None
-    commercial_approval_status: Optional[str] = None
-
-    # L5 - Won Fields
-    kickoff_meeting_scheduled: Optional[bool] = None
-    kickoff_meeting_date: Optional[datetime] = None
-    loi_received: Optional[bool] = None
-    loi_file_path: Optional[str] = None
-    order_verified: Optional[bool] = None
-    handoff_to_delivery: Optional[bool] = None
-    delivery_team_assigned: Optional[int] = None
-
-    # Lost/Dropped Fields
-    lost_reason: Optional[str] = None
-    competitor_name: Optional[str] = None
-    follow_up_date: Optional[date] = None
-    drop_reason: Optional[str] = None
-    reactivate_date: Optional[date] = None
-
-    @validator("scoring")
-    def validate_scoring(cls, v):
-        if v is not None and (v < 0 or v > 100):
-            raise ValueError("Scoring must be between 0 and 100")
-        return v
-
-    @validator("probability")
-    def validate_probability(cls, v):
-        if v is not None and (v < 0 or v > 100):
-            raise ValueError("Probability must be between 0 and 100")
-        return v
-
-    @validator("amount")
-    def validate_amount(cls, v):
-        if v is not None and v < 0:
-            raise ValueError("Amount cannot be negative")
-        return v
-
-
-class OpportunityResponse(OpportunityBase):
-    id: int
-    pot_id: str
-    company_name: Optional[str] = None
-    contact_name: Optional[str] = None
-    contact_email: Optional[str] = None
-    lead_source: Optional[str] = None
-    created_by_name: Optional[str] = None
-    qualification_completer_name: Optional[str] = None
-    delivery_team_member_name: Optional[str] = None
-    is_active: bool
-    created_on: datetime
-    updated_on: Optional[datetime] = None
-    stage_percentage: int
-    stage_display_name: str
+    documents: Optional[List[Dict[str, Any]]] = []
+    stage_data: Optional[Dict[str, Any]] = {}
 
     class Config:
         from_attributes = True
-        orm_mode = True
+        use_enum_values = True
+
+
+class SalesProcessCreate(SalesProcessBase):
+    opportunity_id: int
+
+
+class SalesProcessUpdate(BaseModel):
+    status: StageStatusEnum
+    completion_date: Optional[date] = None
+    comments: Optional[str] = None
+    documents: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        from_attributes = True
+        use_enum_values = True
+
+
+class SalesProcessResponse(SalesProcessBase):
+    id: int
+    opportunity_id: int
+    stage_order: int
+    completed_by: Optional[int] = None
+    completion_notes: Optional[str] = None
+    created_on: datetime
+    updated_on: datetime
+    
+    # Computed properties
+    stage_display_name: Optional[str] = None
+    can_proceed_to_next: Optional[bool] = None
+    is_final_stage: Optional[bool] = None
+
+    class Config:
+        from_attributes = True
+        use_enum_values = True
+
+
+# Opportunity Schemas  
+class OpportunityBase(BaseModel):
+    name: str
+    amount: Optional[Decimal] = None
+    currency: Optional[str] = "INR"
+    probability: Optional[int] = 10
+    close_date: Optional[date] = None
+    notes: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class OpportunityCreate(OpportunityBase):
+    """
+    Note: Direct opportunity creation is not allowed.
+    Opportunities can only be created by converting leads.
+    This schema is kept for potential internal use only.
+    """
+    lead_id: int  # Required - enforces Lead-based creation
+
+    @validator('lead_id')
+    def lead_id_required(cls, v):
+        if not v:
+            raise ValueError('Opportunities can only be created by converting a Lead')
+        return v
+
+
+class OpportunityResponse(BaseModel):
+    id: int
+    pot_id: str
+    lead_id: int
+    name: str
+    company_id: int
+    contact_id: Optional[int] = None
+    current_stage: OpportunityStageEnum
+    status: OpportunityStatusEnum
+    amount: Optional[Decimal] = None
+    currency: str = "INR"
+    probability: int = 10
+    close_date: Optional[date] = None
+    conversion_date: datetime
+    
+    # Lead data preservation
+    lead_data: Optional[Dict[str, Any]] = {}
+    partner_involved: bool = False
+    partners_data: Optional[List[Dict[str, Any]]] = []
+    products_services: Optional[List[str]] = []
+    tender_details: Optional[Dict[str, Any]] = {}
+    competitors: Optional[List[Dict[str, Any]]] = []
+    documents: Optional[List[Dict[str, Any]]] = []
+    notes: Optional[str] = None
+    
+    # Conversion tracking
+    converted_by: int
+    approval_status: str = "Approved"
+    approved_by: Optional[int] = None
+    approved_date: Optional[datetime] = None
+    
+    # Sales process tracking
+    l1_completed: bool = False
+    l1_completion_date: Optional[date] = None
+    l2_completed: bool = False
+    l2_completion_date: Optional[date] = None
+    l3_completed: bool = False
+    l3_completion_date: Optional[date] = None
+    
+    # Final outcome
+    won_date: Optional[date] = None
+    lost_date: Optional[date] = None
+    lost_reason: Optional[str] = None
+    win_reason: Optional[str] = None
+    
+    # Timestamps
+    created_on: datetime
+    updated_on: datetime
+    
+    # Relationships (basic info only to avoid circular references)
+    company_name: Optional[str] = None
+    lead_name: Optional[str] = None
+    contact_name: Optional[str] = None
+    converted_by_name: Optional[str] = None
+    approved_by_name: Optional[str] = None
+    
+    # Computed properties
+    stage_percentage: Optional[int] = None
+    can_create_quotations: Optional[bool] = None
+    quotations_count: Optional[int] = None
+    active_quotations_count: Optional[int] = None
+    
+    # Related data
+    sales_processes: Optional[List[SalesProcessResponse]] = []
+
+    class Config:
+        from_attributes = True
+        use_enum_values = True
+
+
+class OpportunityListItem(BaseModel):
+    id: int
+    pot_id: str
+    name: str
+    company_name: Optional[str] = None
+    current_stage: OpportunityStageEnum
+    status: OpportunityStatusEnum
+    amount: Optional[Decimal] = None
+    currency: str = "INR"
+    probability: int = 10
+    close_date: Optional[date] = None
+    conversion_date: datetime
+    converted_by_name: Optional[str] = None
+    stage_percentage: Optional[int] = None
+    quotations_count: Optional[int] = None
+    created_on: datetime
+
+    class Config:
+        from_attributes = True
+        use_enum_values = True
 
 
 class OpportunityListResponse(BaseModel):
-    opportunities: List[OpportunityResponse]
+    opportunities: List[OpportunityListItem]
     total: int
     skip: int
     limit: int
 
-
-class OpportunityStageUpdate(BaseModel):
-    """Schema for updating opportunity stage with stage-specific fields"""
-
-    stage: OpportunityStage
-    notes: Optional[str] = None
-    probability: Optional[int] = None
-
-    # Stage-specific update fields
-    stage_specific_data: Optional[Dict[str, Any]] = None
-
-    @validator("probability")
-    def validate_probability(cls, v):
-        if v is not None and (v < 0 or v > 100):
-            raise ValueError("Probability must be between 0 and 100")
-        return v
+    class Config:
+        from_attributes = True
 
 
-class OpportunityCloseRequest(BaseModel):
-    """Schema for closing opportunity"""
+class OpportunityStats(BaseModel):
+    total_opportunities: int = 0
+    won_opportunities: int = 0
+    lost_opportunities: int = 0
+    open_opportunities: int = 0
+    stage_breakdown: Dict[str, int] = {}
+    total_value: Decimal = Decimal('0')
+    win_rate: float = 0.0
 
-    status: Literal["Won", "Lost", "Dropped"]
-    close_date: date
-    notes: Optional[str] = None
-    lost_reason: Optional[str] = None
-    competitor_name: Optional[str] = None
-    drop_reason: Optional[str] = None
-
-
-class OpportunityPipelineSummary(BaseModel):
-    """Opportunity pipeline summary"""
-
-    total_opportunities: int
-    total_value: Decimal
-    avg_scoring: Optional[float] = None
-    closing_stage_count: int
-    stage_breakdown: List[Dict[str, Any]]
+    class Config:
+        from_attributes = True
 
 
-class OpportunityMetrics(BaseModel):
-    """Opportunity metrics and analytics"""
+class LeadConversionEligibility(BaseModel):
+    can_convert: bool
+    requires_approval: bool = False
+    reason: Optional[str] = None
 
-    total_opportunities: int
-    won_opportunities: int
-    lost_opportunities: int
-    win_rate: float
-    avg_deal_size: Optional[Decimal] = None
-    avg_sales_cycle: Optional[float] = None  # in days
-    pipeline_value: Decimal
-    forecasted_revenue: Decimal
+    class Config:
+        from_attributes = True
 
 
-# Stage-specific task schemas
-class QualificationTaskUpdate(BaseModel):
-    requirement_gathering_notes: Optional[str] = None
-    go_no_go_status: Optional[GoNoGoStatus] = None
-    qualification_status: Optional[QualificationStatus] = None
-    qualification_scorecard: Optional[Dict[str, Any]] = None
-    completed_by: Optional[int] = None
+class ConvertLeadRequest(BaseModel):
+    conversion_notes: Optional[str] = None
 
-
-class DemoTaskUpdate(BaseModel):
-    demo_completed: Optional[bool] = None
-    demo_date: Optional[datetime] = None
-    demo_summary: Optional[str] = None
-    presentation_materials: Optional[List[Dict[str, str]]] = None
-    qualification_meeting_completed: Optional[bool] = None
-    qualification_meeting_date: Optional[datetime] = None
-    qualification_meeting_notes: Optional[str] = None
-
-
-class ProposalTaskUpdate(BaseModel):
-    quotation_created: Optional[bool] = None
-    quotation_status: Optional[QuotationStatus] = None
-    proposal_prepared: Optional[bool] = None
-    proposal_submitted: Optional[bool] = None
-    proposal_submission_date: Optional[datetime] = None
-    poc_completed: Optional[bool] = None
-    poc_notes: Optional[str] = None
-
-
-class NegotiationTaskUpdate(BaseModel):
-    customer_discussion_notes: Optional[str] = None
-    proposal_updated: Optional[bool] = None
-    updated_proposal_submitted: Optional[bool] = None
-    negotiation_rounds: Optional[int] = None
-    commercial_approval_required: Optional[bool] = None
-    commercial_approval_status: Optional[str] = None
-
-
-class WonTaskUpdate(BaseModel):
-    kickoff_meeting_scheduled: Optional[bool] = None
-    kickoff_meeting_date: Optional[datetime] = None
-    loi_received: Optional[bool] = None
-    order_verified: Optional[bool] = None
-    handoff_to_delivery: Optional[bool] = None
-    delivery_team_assigned: Optional[int] = None
+    class Config:
+        from_attributes = True

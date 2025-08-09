@@ -2,104 +2,53 @@
 Pydantic schemas for CRM application
 """
 
-from .auth import LoginRequest, UserResponse, StandardResponse, TokenData, TokenResponse
-from .user import (
-    UserCreate,
-    UserUpdate,
-    UserPasswordUpdate,
-    UserResponse as EnhancedUserResponse,
-    UserListResponse,
-    RoleCreate,
-    RoleUpdate,
-    RoleResponse,
-    DepartmentCreate,
-    DepartmentUpdate,
-    DepartmentResponse,
-    UserPermissions,
-)
-from .company import CompanyCreate, CompanyUpdate, CompanyResponse, CompanyListResponse
-from .contact import (
-    ContactCreate,
-    ContactUpdate,
-    ContactResponse,
-    ContactListResponse,
-    BusinessCardUpload,
-)
+from .user import UserResponse, UserCreate, UserUpdate, UserLogin, UserStats
+from .role import RoleResponse, RoleCreate, RoleUpdate
+from .department import DepartmentResponse, DepartmentCreate, DepartmentUpdate
+from .company import CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse, CompanyStats
+from .contact import ContactResponse, ContactCreate, ContactUpdate, ContactListResponse, ContactStats
 from .lead import (
-    LeadCreate,
-    LeadUpdate,
-    LeadResponse,
-    LeadListResponse,
-    # LeadConversion,
-    # LeadSummary,
-    LeadSource,
-    LeadStatus,
-    LeadPriority,
+    LeadResponse, LeadCreate, LeadUpdate, LeadListResponse, LeadStats,
+    LeadStatusUpdate, LeadConversion, LeadSummary, LeadStatsResponse
 )
 from .opportunity import (
-    OpportunityCreate,
-    OpportunityUpdate,
-    OpportunityResponse,
-    OpportunityListResponse,
-    OpportunityStageUpdate,
-    OpportunityCloseRequest,
-    OpportunityPipelineSummary,
-    OpportunityMetrics,
-    OpportunityStage,
-    OpportunityStatus,
+    OpportunityResponse, OpportunityCreate, OpportunityListResponse, OpportunityStats,
+    SalesProcessResponse, SalesProcessCreate, SalesProcessUpdate,
+    LeadConversionEligibility, ConvertLeadRequest, OpportunityListItem
+)
+from .quotation import (
+    QuotationResponse, QuotationCreate, QuotationUpdate, QuotationListResponse, QuotationStats,
+    QuotationSubmissionRequest, QuotationApprovalRequest, QuotationRejectionRequest,
+    QuotationRevisionRequest, QuotationListItem, LineItem
 )
 
 __all__ = [
-    # Auth schemas
-    "LoginRequest",
-    "UserResponse",
-    "StandardResponse",
-    "TokenData",
-    "TokenResponse",
     # User schemas
-    "UserCreate",
-    "UserUpdate",
-    "UserPasswordUpdate",
-    "EnhancedUserResponse",
-    "UserListResponse",
-    "RoleCreate",
-    "RoleUpdate",
-    "RoleResponse",
-    "DepartmentCreate",
-    "DepartmentUpdate",
-    "DepartmentResponse",
-    "UserPermissions",
+    "UserResponse", "UserCreate", "UserUpdate", "UserLogin", "UserStats",
+    
+    # Role schemas
+    "RoleResponse", "RoleCreate", "RoleUpdate",
+    
+    # Department schemas
+    "DepartmentResponse", "DepartmentCreate", "DepartmentUpdate",
+    
     # Company schemas
-    "CompanyCreate",
-    "CompanyUpdate",
-    "CompanyResponse",
-    "CompanyListResponse",
+    "CompanyResponse", "CompanyCreate", "CompanyUpdate", "CompanyListResponse", "CompanyStats",
+    
     # Contact schemas
-    "ContactCreate",
-    "ContactUpdate",
-    "ContactResponse",
-    "ContactListResponse",
-    "BusinessCardUpload",
+    "ContactResponse", "ContactCreate", "ContactUpdate", "ContactListResponse", "ContactStats",
+    
     # Lead schemas
-    "LeadCreate",
-    "LeadUpdate",
-    "LeadResponse",
-    "LeadListResponse",
-    # "LeadStatusUpdate",
-    # "LeadConversion",
-    # "LeadSummary",
-    "LeadSource",
-    "LeadStatus",
-    "LeadPriority",
+    "LeadResponse", "LeadCreate", "LeadUpdate", "LeadListResponse", "LeadStats",
+    "LeadStatusUpdate", "LeadConversion", "LeadSummary", "LeadStatsResponse",
+    
     # Opportunity schemas
-    "OpportunityCreate",
-    "OpportunityUpdate",
-    "OpportunityResponse",
-    "OpportunityListResponse",
-    "OpportunityStageUpdate",
-    "OpportunityCloseRequest",
-    "OpportunityPipelineSummary",
-    "OpportunityMetrics",
-    "OpportunityStage",
-    "OpportunityStatus",
+    "OpportunityResponse", "OpportunityCreate", "OpportunityListResponse", "OpportunityStats",
+    "SalesProcessResponse", "SalesProcessCreate", "SalesProcessUpdate",
+    "LeadConversionEligibility", "ConvertLeadRequest", "OpportunityListItem",
+    
+    # Quotation schemas
+    "QuotationResponse", "QuotationCreate", "QuotationUpdate", "QuotationListResponse", "QuotationStats",
+    "QuotationSubmissionRequest", "QuotationApprovalRequest", "QuotationRejectionRequest",
+    "QuotationRevisionRequest", "QuotationListItem", "LineItem"
 ]
