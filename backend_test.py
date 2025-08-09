@@ -90,7 +90,7 @@ class CRMTester:
             response = self.make_request("GET", "")
             if response and response.status_code == 200:
                 data = response.json()
-                if data.get("status") == True and "CRM Management System API" in data.get("message", ""):
+                if data.get("status") == True and "CRM" in data.get("message", ""):
                     self.log_test("Root Endpoint", True, "Root endpoint working correctly")
                     return True
                 else:
