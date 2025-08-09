@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 from fastapi import Request
 
-async def log_activity(mongo_db, user_id: str, action: str, details: Optional[Dict[str, Any]] = None, request: Optional[Request] = None):
+async def log_activity(mongo_db, user_id: int, action: str, details: Optional[Dict[str, Any]] = None, request: Optional[Request] = None):
     """Log user activity to MongoDB"""
     try:
         if mongo_db is not None:
@@ -39,7 +39,7 @@ async def log_request(mongo_db, method: str, url: str, status_code: int,
     except Exception as e:
         print(f"Failed to log request: {e}")
 
-async def log_error(mongo_db, error_id: str, url: str, method: str, error_details: Dict[str, Any]):
+async def log_error(mongo_db, error_id: int, url: str, method: str, error_details: Dict[str, Any]):
     """Log error to MongoDB"""
     try:
         if mongo_db is not None:

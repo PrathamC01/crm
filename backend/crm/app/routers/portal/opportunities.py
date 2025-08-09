@@ -79,8 +79,8 @@ async def get_opportunities(
     search: Optional[str] = None,
     stage: Optional[str] = None,
     status: Optional[str] = None,
-    company_id: Optional[str] = None,
-    lead_id: Optional[str] = None,
+    company_id: Optional[int] = None,
+    lead_id: Optional[int] = None,
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -109,13 +109,16 @@ async def get_opportunities(
                 "limit": limit,
             },
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.get("/{opportunity_id}", response_model=StandardResponse)
 async def get_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -128,8 +131,11 @@ async def get_opportunity(
             message="Opportunity retrieved successfully",
             data=transform_opportunity(opportunity),
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.post("/", response_model=StandardResponse)
@@ -155,13 +161,16 @@ async def create_opportunity(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.put("/{opportunity_id}", response_model=StandardResponse)
 async def update_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     opportunity_data: OpportunityUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -187,13 +196,16 @@ async def update_opportunity(
         )
     except HTTPException:
         raise
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.patch("/{opportunity_id}/stage", response_model=StandardResponse)
 async def update_opportunity_stage(
-    opportunity_id: str,
+    opportunity_id: int,
     stage_data: OpportunityStageUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -221,14 +233,17 @@ async def update_opportunity_stage(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 # Dynamic stage-specific endpoint handler
 def generate_stage_patch_handler(service_method, success_message):
     async def handler(
-        opportunity_id: str,
+        opportunity_id: int,
         data: dict,
         current_user: dict = Depends(require_opportunities_write),
         opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -299,7 +314,7 @@ router.add_api_route(
 
 @router.patch("/{opportunity_id}/close", response_model=StandardResponse)
 async def close_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     close_data: OpportunityCloseRequest,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -326,13 +341,16 @@ async def close_opportunity(
                 "stage": opportunity.stage.value,
             },
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.delete("/{opportunity_id}", response_model=StandardResponse)
 async def delete_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -343,13 +361,16 @@ async def delete_opportunity(
         if not deleted:
             raise HTTPException(status_code=404, detail="Opportunity not found")
         return StandardResponse(status=True, message="Opportunity deleted successfully")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.get("/pipeline/summary", response_model=StandardResponse)
 async def get_pipeline_summary(
-    user_id: Optional[str] = None,
+    user_id: Optional[int] = None,
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -358,13 +379,16 @@ async def get_pipeline_summary(
         return StandardResponse(
             status=True, message="Pipeline summary retrieved successfully", data=summary
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.get("/analytics/metrics", response_model=StandardResponse)
 async def get_opportunity_metrics(
-    user_id: Optional[str] = None,
+    user_id: Optional[int] = None,
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -375,13 +399,16 @@ async def get_opportunity_metrics(
             message="Opportunity metrics retrieved successfully",
             data=metrics,
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e
 
 
 @router.post("/{opportunity_id}/upload", response_model=StandardResponse)
 async def upload_opportunity_document(
-    opportunity_id: str,
+    opportunity_id: int,
     file: UploadFile = File(...),
     document_type: str = Query(
         ..., description="Type of document: quotation, proposal, loi, etc."
@@ -420,5 +447,8 @@ async def upload_opportunity_document(
             message="Document uploaded successfully",
             data={"file_path": file_path, "document_type": document_type},
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(e)
+        raise e

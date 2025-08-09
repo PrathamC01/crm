@@ -27,7 +27,7 @@ async def get_contacts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     search: Optional[str] = Query(None),
-    company_id: Optional[str] = Query(None),
+    company_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_contacts_read),
     contact_service: ContactService = Depends(get_contact_service),
 ):
@@ -61,7 +61,7 @@ async def get_contacts(
 
 @router.get("/{contact_id}", response_model=StandardResponse)
 async def get_contact(
-    contact_id: str,
+    contact_id: int,
     current_user: dict = Depends(require_contacts_read),
     contact_service: ContactService = Depends(get_contact_service),
 ):
@@ -103,7 +103,7 @@ async def create_contact(
 
 @router.put("/{contact_id}", response_model=StandardResponse)
 async def update_contact(
-    contact_id: str,
+    contact_id: int,
     contact_data: ContactUpdate,
     current_user: dict = Depends(require_contacts_write),
     contact_service: ContactService = Depends(get_contact_service),
@@ -125,7 +125,7 @@ async def update_contact(
 
 @router.delete("/{contact_id}", response_model=StandardResponse)
 async def delete_contact(
-    contact_id: str,
+    contact_id: int,
     current_user: dict = Depends(require_contacts_write),
     contact_service: ContactService = Depends(get_contact_service),
 ):
@@ -144,7 +144,7 @@ async def delete_contact(
 
 @router.get("/company/{company_id}/decision-makers", response_model=StandardResponse)
 async def get_decision_makers(
-    company_id: str,
+    company_id: int,
     current_user: dict = Depends(require_contacts_read),
     contact_service: ContactService = Depends(get_contact_service),
 ):

@@ -54,7 +54,7 @@ async def get_companies(
 
 @router.get("/{company_id}", response_model=StandardResponse)
 async def get_company(
-    company_id: str,
+    company_id: int,
     current_user: dict = Depends(require_companies_read),
     company_service: CompanyService = Depends(get_company_service),
 ):
@@ -94,7 +94,7 @@ async def create_company(
 
 @router.put("/{company_id}", response_model=StandardResponse)
 async def update_company(
-    company_id: str,
+    company_id: int,
     company_data: CompanyUpdate,
     current_user: dict = Depends(require_companies_write),
     company_service: CompanyService = Depends(get_company_service),
@@ -108,15 +108,16 @@ async def update_company(
             raise HTTPException(status_code=404, detail="Company not found")
 
         return StandardResponse(status=True, message="Company updated successfully")
-    except HTTPException:
-        raise
+    except HTTPException as he:
+        print(he)
+        raise he
     except Exception as e:
         print(e)
 
 
 @router.delete("/{company_id}", response_model=StandardResponse)
 async def delete_company(
-    company_id: str,
+    company_id: int,
     current_user: dict = Depends(require_companies_write),
     company_service: CompanyService = Depends(get_company_service),
 ):

@@ -32,8 +32,8 @@ async def get_leads(
     limit: int = Query(100, ge=1, le=500),
     search: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    company_id: Optional[str] = Query(None),
-    sales_person_id: Optional[str] = Query(None),
+    company_id: Optional[int] = Query(None),
+    sales_person_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_leads_read),
     lead_service: LeadService = Depends(get_lead_service),
 ):
@@ -76,7 +76,7 @@ async def get_leads(
 
 @router.get("/{lead_id}", response_model=StandardResponse)
 async def get_lead(
-    lead_id: str,
+    lead_id: int,
     current_user: dict = Depends(require_leads_read),
     lead_service: LeadService = Depends(get_lead_service),
 ):
@@ -114,7 +114,7 @@ async def create_lead(
 
 @router.put("/{lead_id}", response_model=StandardResponse)
 async def update_lead(
-    lead_id: str,
+    lead_id: int,
     lead_data: LeadUpdate,
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
@@ -161,7 +161,7 @@ async def update_lead_status(
 
 @router.post("/{lead_id}/convert", response_model=StandardResponse)
 async def convert_lead_to_opportunity(
-    lead_id: str,
+    lead_id: int,
     conversion_data: LeadConversion,
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
@@ -186,7 +186,7 @@ async def convert_lead_to_opportunity(
 
 @router.delete("/{lead_id}", response_model=StandardResponse)
 async def delete_lead(
-    lead_id: str,
+    lead_id: int,
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
 ):
@@ -205,7 +205,7 @@ async def delete_lead(
 
 @router.get("/summary/statistics", response_model=StandardResponse)
 async def get_lead_summary(
-    sales_person_id: Optional[str] = Query(None),
+    sales_person_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_leads_read),
     lead_service: LeadService = Depends(get_lead_service),
 ):

@@ -39,8 +39,8 @@ async def get_opportunities(
     search: Optional[str] = Query(None),
     stage: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    company_id: Optional[str] = Query(None),
-    lead_id: Optional[str] = Query(None),
+    company_id: Optional[int] = Query(None),
+    lead_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -163,7 +163,7 @@ async def get_opportunities(
 
 @router.get("/{opportunity_id}", response_model=StandardResponse)
 async def get_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -297,7 +297,7 @@ async def create_opportunity(
 
 @router.put("/{opportunity_id}", response_model=StandardResponse)
 async def update_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     opportunity_data: OpportunityUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -331,7 +331,7 @@ async def update_opportunity(
 
 @router.patch("/{opportunity_id}/stage", response_model=StandardResponse)
 async def update_opportunity_stage(
-    opportunity_id: str,
+    opportunity_id: int,
     stage_data: OpportunityStageUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -370,7 +370,7 @@ async def update_opportunity_stage(
 # Stage-specific task update endpoints
 @router.patch("/{opportunity_id}/qualification", response_model=StandardResponse)
 async def update_qualification_tasks(
-    opportunity_id: str,
+    opportunity_id: int,
     qualification_data: QualificationTaskUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -394,7 +394,7 @@ async def update_qualification_tasks(
 
 @router.patch("/{opportunity_id}/demo", response_model=StandardResponse)
 async def update_demo_tasks(
-    opportunity_id: str,
+    opportunity_id: int,
     demo_data: DemoTaskUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -418,7 +418,7 @@ async def update_demo_tasks(
 
 @router.patch("/{opportunity_id}/proposal", response_model=StandardResponse)
 async def update_proposal_tasks(
-    opportunity_id: str,
+    opportunity_id: int,
     proposal_data: ProposalTaskUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -442,7 +442,7 @@ async def update_proposal_tasks(
 
 @router.patch("/{opportunity_id}/negotiation", response_model=StandardResponse)
 async def update_negotiation_tasks(
-    opportunity_id: str,
+    opportunity_id: int,
     negotiation_data: NegotiationTaskUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -466,7 +466,7 @@ async def update_negotiation_tasks(
 
 @router.patch("/{opportunity_id}/won-tasks", response_model=StandardResponse)
 async def update_won_tasks(
-    opportunity_id: str,
+    opportunity_id: int,
     won_data: WonTaskUpdate,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -490,7 +490,7 @@ async def update_won_tasks(
 
 @router.patch("/{opportunity_id}/close", response_model=StandardResponse)
 async def close_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     close_data: OpportunityCloseRequest,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
@@ -527,7 +527,7 @@ async def close_opportunity(
 
 @router.delete("/{opportunity_id}", response_model=StandardResponse)
 async def delete_opportunity(
-    opportunity_id: str,
+    opportunity_id: int,
     current_user: dict = Depends(require_opportunities_write),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -548,7 +548,7 @@ async def delete_opportunity(
 
 @router.get("/pipeline/summary", response_model=StandardResponse)
 async def get_pipeline_summary(
-    user_id: Optional[str] = Query(None),
+    user_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -565,7 +565,7 @@ async def get_pipeline_summary(
 
 @router.get("/analytics/metrics", response_model=StandardResponse)
 async def get_opportunity_metrics(
-    user_id: Optional[str] = Query(None),
+    user_id: Optional[int] = Query(None),
     current_user: dict = Depends(require_opportunities_read),
     opportunity_service: OpportunityService = Depends(get_opportunity_service),
 ):
@@ -585,7 +585,7 @@ async def get_opportunity_metrics(
 # File upload endpoint for documents
 @router.post("/{opportunity_id}/upload", response_model=StandardResponse)
 async def upload_opportunity_document(
-    opportunity_id: str,
+    opportunity_id: int,
     file: UploadFile = File(...),
     document_type: str = Query(..., description="Type of document: quotation, proposal, loi, etc."),
     current_user: dict = Depends(require_opportunities_write),

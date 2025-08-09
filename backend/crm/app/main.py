@@ -2,9 +2,10 @@
 FastAPI main application with SQLAlchemy
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 
 # Import routers
@@ -75,6 +76,21 @@ async def global_exception_handler(request, exc):
             "data": None,
             "error": str(exc),
         },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = {}
+    for err in exc.errors():
+        loc = err["loc"]
+        field = loc[-1]  # last part of the location (e.g., "company_id")
+        message = err["msg"]
+        errors[field] = message
+
+    return JSONResponse(
+        status_code=422,
+        content={"status": False, "message": "Validation Failed", "error": errors},
     )
 
 
