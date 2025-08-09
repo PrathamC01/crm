@@ -1,0 +1,926 @@
+{
+  "authentication": {
+    "login": {
+      "method": "POST",
+      "endpoint": "/api/login",
+      "description": "Authenticate user and return JWT token",
+      "request_body": {
+        "email_or_username": "admin",
+        "password": "admin123"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Login successful",
+        "data": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMyIsInVzZXJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQGNvbXBhbnkuY29tIiwiZXhwIjoxNzU0ODMxNTIxfQ.4hGvLhEer38e2QFoaqcKKuifyCZiQKOFkNa0aXuW9dQ"
+        },
+        "error": null
+      }
+    },
+    "logout": {
+      "method": "POST", 
+      "endpoint": "/api/logout",
+      "description": "Logout endpoint (client-side token removal)",
+      "request_body": {},
+      "response_example": {
+        "status": true,
+        "message": "Logout successful", 
+        "data": null,
+        "error": null
+      }
+    },
+    "dashboard": {
+      "method": "GET",
+      "endpoint": "/api/dashboard",
+      "description": "Get authenticated user dashboard information",
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Dashboard data retrieved successfully",
+        "data": {
+          "id": 13,
+          "name": "Admin User",
+          "email": "admin@company.com",
+          "username": "admin",
+          "role": "admin",
+          "department": "Management",
+          "is_active": true
+        },
+        "error": null
+      }
+    }
+  },
+  "companies": {
+    "list_companies": {
+      "method": "GET",
+      "endpoint": "/api/companies/",
+      "description": "Get all companies with pagination and search",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "null (optional, max: 500)",
+        "search": "null (optional, search term)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Companies retrieved successfully",
+        "data": {
+          "companies": [
+            {
+              "name": "Tech Corp Ltd",
+              "gst_number": "29ABCDE1234F1Z1",
+              "pan_number": "ABCDE1234F",
+              "parent_company_id": null,
+              "industry_category": "Technology",
+              "address": "123 Tech Street",
+              "city": "Bangalore",
+              "state": "Karnataka",
+              "country": "India",
+              "postal_code": "560001",
+              "website": "https://www.techcorp.com",
+              "description": "Leading technology company",
+              "id": 9,
+              "is_active": true,
+              "created_on": "2025-08-09T13:09:22.875668",
+              "updated_on": "2025-08-09T13:09:22.875670",
+              "parent_company_name": null
+            }
+          ],
+          "total": 3,
+          "skip": 0,
+          "limit": null
+        },
+        "error": null
+      }
+    },
+    "get_company": {
+      "method": "GET",
+      "endpoint": "/api/companies/{company_id}",
+      "description": "Get company by ID",
+      "path_parameters": {
+        "company_id": "9"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Company retrieved successfully",
+        "data": {
+          "name": "Tech Corp Ltd",
+          "gst_number": "29ABCDE1234F1Z1",
+          "pan_number": "ABCDE1234F",
+          "industry_category": "Technology",
+          "id": 9
+        },
+        "error": null
+      }
+    },
+    "create_company": {
+      "method": "POST",
+      "endpoint": "/api/companies/",
+      "description": "Create new company",
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "name": "New Company Ltd",
+        "gst_number": "29NEWCO1234F1Z5",
+        "pan_number": "NEWCO1234A",
+        "industry_category": "Technology",
+        "address": "123 New Street",
+        "city": "Delhi",
+        "state": "Delhi",
+        "country": "India",
+        "postal_code": "110001",
+        "website": "www.newcompany.com",
+        "description": "New technology company"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Company created successfully",
+        "data": {
+          "name": "New Company Ltd",
+          "gst_number": "29NEWCO1234F1Z5",
+          "pan_number": "NEWCO1234A",
+          "id": 12
+        },
+        "error": null
+      }
+    },
+    "update_company": {
+      "method": "PUT",
+      "endpoint": "/api/companies/{company_id}",
+      "description": "Update company information",
+      "path_parameters": {
+        "company_id": "12"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "description": "Updated company description"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Company updated successfully",
+        "data": {
+          "id": 12,
+          "name": "New Company Ltd",
+          "description": "Updated company description"
+        },
+        "error": null
+      }
+    }
+  },
+  "contacts": {
+    "list_contacts": {
+      "method": "GET",
+      "endpoint": "/api/contacts/",
+      "description": "Get all contacts with pagination and search",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "100 (optional, default: 100)",
+        "search": "null (optional, search term)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Contacts retrieved successfully",
+        "data": {
+          "contacts": [
+            {
+              "full_name": "John Smith",
+              "designation": "CTO",
+              "email": "john.smith@techcorp.com",
+              "phone_number": "+919876543210",
+              "company_id": 9,
+              "role_type": "Decision Maker",
+              "id": 1,
+              "business_card_path": null,
+              "company_name": "Tech Corp Ltd",
+              "is_active": true,
+              "created_on": "2025-08-09T13:09:22.879299",
+              "updated_on": "2025-08-09T13:09:22.879301"
+            }
+          ],
+          "total": 2,
+          "skip": 0,
+          "limit": 100
+        },
+        "error": null
+      }
+    },
+    "get_contact": {
+      "method": "GET",
+      "endpoint": "/api/contacts/{contact_id}",
+      "description": "Get contact by ID",
+      "path_parameters": {
+        "contact_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Contact retrieved successfully",
+        "data": {
+          "full_name": "John Smith",
+          "designation": "CTO",
+          "email": "john.smith@techcorp.com",
+          "company_id": 9,
+          "id": 1
+        },
+        "error": null
+      }
+    },
+    "create_contact": {
+      "method": "POST",
+      "endpoint": "/api/contacts/",
+      "description": "Create new contact",
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "full_name": "Jane Manager",
+        "designation": "Manager",
+        "email": "jane@company.com",
+        "phone_number": "+919876543211",
+        "company_id": 9,
+        "role_type": "DECISION_MAKER"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Contact created successfully",
+        "data": {
+          "id": 3,
+          "full_name": "Jane Manager",
+          "email": "jane@company.com",
+          "company_id": 9
+        },
+        "error": null
+      }
+    }
+  },
+  "leads": {
+    "list_leads": {
+      "method": "GET",
+      "endpoint": "/api/leads/",
+      "description": "Get all leads with pagination and filtering",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "100 (optional, default: 100)",
+        "search": "null (optional, search term)",
+        "status": "null (optional, filter by status)",
+        "company_id": "null (optional, filter by company)",
+        "review_status": "null (optional, filter by review status)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Leads retrieved successfully",
+        "data": {
+          "leads": [],
+          "total": 0,
+          "skip": 0,
+          "limit": 100
+        },
+        "error": null
+      }
+    },
+    "get_lead": {
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "description": "Get lead by ID with complete information",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead retrieved successfully",
+        "data": {
+          "id": 1,
+          "project_title": "CRM Integration Project",
+          "lead_source": "Direct Marketing",
+          "company_id": 9,
+          "status": "New",
+          "priority": "High"
+        },
+        "error": null
+      }
+    },
+    "create_lead": {
+      "method": "POST",
+      "endpoint": "/api/leads/",
+      "description": "Create new lead with comprehensive details",
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "project_title": "New AI Integration Project",
+        "lead_source": "Referral",
+        "lead_sub_type": "Pre-Tender",
+        "tender_sub_type": "Open Tender",
+        "products_services": ["AI Software", "Integration Services"],
+        "company_id": 9,
+        "end_customer_id": 10,
+        "tender_fee": 75000.00,
+        "currency": "INR",
+        "expected_revenue": 3500000.00,
+        "revenue_currency": "INR",
+        "status": "New",
+        "priority": "Medium",
+        "qualification_notes": "High potential client with clear AI requirements"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead created successfully",
+        "data": {
+          "id": 1,
+          "project_title": "New AI Integration Project",
+          "status": "New"
+        },
+        "error": null
+      }
+    },
+    "update_lead": {
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "description": "Update lead information",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "status": "Qualified",
+        "qualification_notes": "Updated after client meeting"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead updated successfully",
+        "data": {
+          "id": 1,
+          "project_title": "New AI Integration Project",
+          "status": "Qualified"
+        },
+        "error": null
+      }
+    },
+    "delete_lead": {
+      "method": "DELETE",
+      "endpoint": "/api/leads/{lead_id}",
+      "description": "Soft delete lead",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead deleted successfully",
+        "data": null,
+        "error": null
+      }
+    },
+    "get_lead_stats": {
+      "method": "GET",
+      "endpoint": "/api/leads/stats",
+      "description": "Get lead statistics and counts",
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead statistics retrieved successfully",
+        "data": {
+          "total": 0,
+          "new": 0,
+          "contacted": 0,
+          "qualified": 0,
+          "converted": 0,
+          "pending_review": 0,
+          "approved_for_conversion": 0,
+          "total_value": 0
+        },
+        "error": null
+      }
+    },
+    "get_pending_review_leads": {
+      "method": "GET",
+      "endpoint": "/api/leads/pending-review",
+      "description": "Get leads pending admin review (Admin only)",
+      "headers_required": {
+        "Authorization": "Bearer <admin_token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Pending review leads retrieved successfully",
+        "data": {
+          "leads": []
+        },
+        "error": null
+      }
+    },
+    "request_conversion": {
+      "method": "POST",
+      "endpoint": "/api/leads/{lead_id}/request-conversion",
+      "description": "Request conversion of qualified lead to opportunity",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "notes": "Lead is fully qualified and ready for conversion"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Conversion request submitted successfully. Waiting for admin review.",
+        "data": {
+          "id": 1,
+          "project_title": "New AI Integration Project",
+          "conversion_requested": true,
+          "review_status": "Pending"
+        },
+        "error": null
+      }
+    },
+    "review_conversion": {
+      "method": "POST",
+      "endpoint": "/api/leads/{lead_id}/review",
+      "description": "Review and approve/reject conversion request (Admin only)",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <admin_token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "decision": "Approved",
+        "comments": "Lead meets all criteria for conversion"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Conversion request approved successfully",
+        "data": {
+          "id": 1,
+          "project_title": "New AI Integration Project",
+          "review_status": "Approved",
+          "can_convert_to_opportunity": true
+        },
+        "error": null
+      }
+    },
+    "convert_to_opportunity": {
+      "method": "POST",
+      "endpoint": "/api/leads/{lead_id}/convert-to-opportunity",
+      "description": "Convert approved lead to opportunity",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "opportunity_name": "AI Integration Opportunity",
+        "notes": "Converted from qualified lead"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead converted to opportunity successfully",
+        "data": {
+          "lead_id": 1,
+          "opportunity_id": 1,
+          "opportunity_pot_id": "POT-1234",
+          "opportunity_name": "AI Integration Opportunity"
+        },
+        "error": null
+      }
+    },
+    "upload_document": {
+      "method": "POST",
+      "endpoint": "/api/leads/{lead_id}/upload",
+      "description": "Upload lead-related documents",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "query_parameters": {
+        "document_type": "RFP (required)",
+        "quotation_name": "Quotation name (optional)",
+        "description": "Document description (optional)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "request_body_type": "multipart/form-data",
+      "request_body": {
+        "file": "<uploaded_file>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Document uploaded successfully",
+        "data": {
+          "file_path": "/uploads/leads/1/RFP_document.pdf",
+          "document_type": "RFP"
+        },
+        "error": null
+      }
+    }
+  },
+  "opportunities": {
+    "list_opportunities": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/",
+      "description": "Get paginated list of opportunities with filters",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "100 (optional, default: 100)", 
+        "status_filter": "null (optional)",
+        "stage_filter": "null (optional)",
+        "user_filter": "null (optional)",
+        "search": "null (optional)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Opportunities retrieved successfully", 
+        "data": {
+          "opportunities": [],
+          "total": 0
+        },
+        "error": null
+      }
+    },
+    "get_opportunity": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/{opportunity_id}",
+      "description": "Get opportunity by ID with all related data",
+      "path_parameters": {
+        "opportunity_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Opportunity retrieved successfully",
+        "data": {
+          "opportunity": {
+            "id": 1,
+            "pot_id": "POT-1234",
+            "name": "AI Integration Opportunity",
+            "amount": 3500000.00,
+            "stage": "L1_Prospect",
+            "status": "Open"
+          }
+        },
+        "error": null
+      }
+    },
+    "get_opportunity_by_pot_id": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/pot/{pot_id}",
+      "description": "Get opportunity by POT ID",
+      "path_parameters": {
+        "pot_id": "POT-1234"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Opportunity retrieved successfully",
+        "data": {
+          "opportunity": {
+            "id": 1,
+            "pot_id": "POT-1234",
+            "name": "AI Integration Opportunity"
+          }
+        },
+        "error": null
+      }
+    },
+    "check_conversion_eligibility": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/check-conversion-eligibility/{lead_id}",
+      "description": "Check if user can convert specific lead to opportunity",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Conversion eligibility checked",
+        "data": {
+          "can_convert": true,
+          "reason": "Lead is approved for conversion"
+        },
+        "error": null
+      }
+    },
+    "convert_from_lead": {
+      "method": "POST",
+      "endpoint": "/api/opportunities/convert-from-lead/{lead_id}",
+      "description": "Convert a qualified and approved lead to opportunity (primary creation method)",
+      "path_parameters": {
+        "lead_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "conversion_notes": "Ready for opportunity management"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Lead successfully converted to opportunity",
+        "data": {
+          "opportunity": {
+            "id": 1,
+            "pot_id": "POT-1234",
+            "lead_id": 1
+          }
+        },
+        "error": null
+      }
+    },
+    "update_sales_stage": {
+      "method": "PUT",
+      "endpoint": "/api/opportunities/{opportunity_id}/sales-process/stage/{stage}",
+      "description": "Update sales process stage",
+      "path_parameters": {
+        "opportunity_id": "1",
+        "stage": "L2_Need_Analysis"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "status": "Completed",
+        "completion_date": "2024-12-31",
+        "comments": "Need analysis completed successfully",
+        "documents": []
+      },
+      "response_example": {
+        "status": true,
+        "message": "Sales stage updated successfully",
+        "data": {
+          "sales_process": {
+            "stage": "L2_Need_Analysis",
+            "status": "Completed"
+          }
+        },
+        "error": null
+      }
+    },
+    "get_sales_processes": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/{opportunity_id}/sales-processes",
+      "description": "Get all sales processes for an opportunity",
+      "path_parameters": {
+        "opportunity_id": "1"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Sales processes retrieved successfully",
+        "data": {
+          "sales_processes": []
+        },
+        "error": null
+      }
+    },
+    "get_statistics": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/statistics/overview",
+      "description": "Get opportunity statistics (Admin/Reviewer only)",
+      "headers_required": {
+        "Authorization": "Bearer <admin_token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Opportunity statistics retrieved successfully",
+        "data": {
+          "total_opportunities": 0,
+          "total_value": 0,
+          "won_opportunities": 0,
+          "pipeline_stages": {}
+        },
+        "error": null
+      }
+    }
+  },
+  "users": {
+    "list_users": {
+      "method": "GET",
+      "endpoint": "/api/users/",
+      "description": "Get all users with pagination",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "100 (optional, default: 100)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Users retrieved successfully",
+        "data": {
+          "users": [
+            {
+              "id": 13,
+              "name": "Admin User",
+              "email": "admin@company.com",
+              "username": "admin",
+              "role_name": "admin",
+              "department_name": "Management",
+              "is_active": true,
+              "created_on": "2025-08-09T13:09:22.871408",
+              "last_login": "2025-08-09T13:13:12.252907"
+            }
+          ],
+          "total": 3,
+          "skip": 0,
+          "limit": 100
+        },
+        "error": null
+      }
+    }
+  },
+  "quotations": {
+    "list_quotations": {
+      "method": "GET",
+      "endpoint": "/api/quotations/",
+      "description": "Get all quotations with pagination and filtering",
+      "query_parameters": {
+        "skip": "0 (optional, default: 0)",
+        "limit": "100 (optional, default: 100)",
+        "status": "null (optional, filter by status)",
+        "opportunity_id": "null (optional, filter by opportunity)"
+      },
+      "headers_required": {
+        "Authorization": "Bearer <token>"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Quotations retrieved successfully",
+        "data": {
+          "quotations": [],
+          "total": 0
+        },
+        "error": null
+      }
+    },
+    "create_quotation": {
+      "method": "POST",
+      "endpoint": "/api/quotations/",
+      "description": "Create new quotation for opportunity",
+      "headers_required": {
+        "Authorization": "Bearer <token>",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "opportunity_id": 1,
+        "quotation_number": "QUO-2025-001",
+        "version": "1.0",
+        "total_amount": 3500000.00,
+        "currency": "INR",
+        "valid_until": "2025-12-31",
+        "notes": "Initial quotation for AI integration project"
+      },
+      "response_example": {
+        "status": true,
+        "message": "Quotation created successfully",
+        "data": {
+          "id": 1,
+          "quotation_number": "QUO-2025-001",
+          "total_amount": 3500000.00,
+          "status": "Draft"
+        },
+        "error": null
+      }
+    }
+  },
+  "health_endpoints": {
+    "health_check": {
+      "method": "GET",
+      "endpoint": "/health",
+      "description": "Detailed health check endpoint",
+      "response_example": {
+        "status": true,
+        "message": "CRM API is healthy",
+        "data": {
+          "service": "crm-api",
+          "version": "1.0.0"
+        },
+        "error": null
+      }
+    },
+    "api_health": {
+      "method": "GET",
+      "endpoint": "/api/",
+      "description": "API health check endpoint",
+      "response_example": {
+        "status": true,
+        "message": "CRM Authentication API is running",
+        "data": null,
+        "error": null
+      }
+    },
+    "root": {
+      "method": "GET",
+      "endpoint": "/",
+      "description": "Root health endpoint",
+      "response_example": {
+        "status": true,
+        "message": "CRM Authentication API is running",
+        "data": null,
+        "error": null
+      }
+    }
+  },
+  "missing_apis_needed_by_frontend": {
+    "leads_summary_statistics": {
+      "method": "GET",
+      "endpoint": "/api/leads/summary/statistics",
+      "description": "Get lead summary statistics for dashboard (MISSING - needs to be implemented)",
+      "status": "MISSING",
+      "expected_response": {
+        "status": true,
+        "message": "Lead summary statistics retrieved",
+        "data": {
+          "total_leads": 10,
+          "new_leads": 3,
+          "qualified_leads": 5,
+          "conversion_rate": 50.0
+        },
+        "error": null
+      }
+    },
+    "opportunities_pipeline_summary": {
+      "method": "GET",
+      "endpoint": "/api/opportunities/pipeline/summary",
+      "description": "Get opportunities pipeline summary for dashboard (MISSING - needs to be implemented)",
+      "status": "MISSING",
+      "expected_response": {
+        "status": true,
+        "message": "Pipeline summary retrieved",
+        "data": {
+          "summary": {
+            "total_opportunities": 8,
+            "total_value": 15000000
+          }
+        },
+        "error": null
+      }
+    }
+  },
+  "notes": {
+    "authentication": "All endpoints except health checks and login require a valid JWT token in the Authorization header",
+    "response_format": "All API responses follow the StandardResponse format with status, message, data, and error fields",
+    "error_handling": "Failed requests return appropriate HTTP status codes with error details in the response",
+    "pagination": "List endpoints support pagination with skip and limit parameters",
+    "validation": "Request data is validated according to Pydantic schemas",
+    "roles": {
+      "admin": "Full access to all endpoints including user management and lead review",
+      "reviewer": "Can review and approve lead conversions",
+      "sales": "Can manage leads, opportunities, and quotations assigned to them"
+    },
+    "known_issues": [
+      "Some Pydantic v2 migration issues may cause validation errors in complex response models",
+      "Quotations API router needs proper prefix configuration",
+      "Frontend expects additional statistics endpoints that are not implemented"
+    ]
+  }
+}
