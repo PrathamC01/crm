@@ -26,6 +26,7 @@ __all__ = [
     'LeadSource',
     'LeadStatus',
     'LeadPriority',
+    'ReviewStatus',
     'Opportunity',
     'OpportunityStage',
     'OpportunityStatus',
