@@ -181,7 +181,7 @@ class CRMTester:
             # Test CREATE
             company_data = {
                 "name": "Test Company Ltd",
-                "gst_number": "29TESTCO1234F1Z1",
+                "gst_number": "29TESTC1234F1Z5",
                 "pan_number": "TESTCO1234",
                 "industry_category": "Technology",
                 "address": "123 Test Street",
