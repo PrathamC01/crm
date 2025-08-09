@@ -10,7 +10,8 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '127.0.0.1',
-      '30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com'
+      'lead-manager-6.preview.emergentagent.com',
+      '45ef8d04-cd5e-471a-9a5d-2989f488e28b.preview.emergentagent.com'
     ]
   },
 })
