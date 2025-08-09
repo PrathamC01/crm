@@ -64,7 +64,7 @@ async def get_company(
         if not company:
             raise HTTPException(status_code=404, detail="Company not found")
 
-        company_response = CompanyResponse.from_orm(company)
+        company_response = CompanyResponse.model_validate(company)
         return StandardResponse(
             status=True, message="Company retrieved successfully", data=company_response
         )
