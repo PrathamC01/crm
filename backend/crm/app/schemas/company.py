@@ -115,3 +115,13 @@ class CompanyListResponse(BaseModel):
 
     class Config:
         orm_mode = True  # Crucial!
+
+
+class CompanyStats(BaseModel):
+    total_companies: int = 0
+    active_companies: int = 0
+    inactive_companies: int = 0
+    industry_breakdown: dict = {}
+
+    class Config:
+        from_attributes = True
