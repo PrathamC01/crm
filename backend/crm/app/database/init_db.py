@@ -5,8 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from ..models import (
     Base, User, Role, Department, Company, Contact, Lead, Opportunity, 
-    SalesProcess, Quotation, RoleType
+    SalesProcess, Quotation
 )
+from ..models.role import RoleType as UserRoleType
+from ..models.contact import RoleType as ContactRoleType
 from ..models.lead import LeadSource, LeadStatus, LeadPriority, LeadSubType, TenderSubType, SubmissionType
 from ..models.opportunity import OpportunityStage, OpportunityStatus
 from ..models.sales_process import SalesStage, StageStatus
@@ -125,7 +127,7 @@ def seed_initial_data():
             email="john.smith@techcorp.com",
             phone_number="+91-98765-43210",
             company_id=company1.id,
-            role_type=RoleType.DECISION_MAKER,
+            role_type=ContactRoleType.DECISION_MAKER,
             created_by=admin_user.id
         )
         
@@ -135,7 +137,7 @@ def seed_initial_data():
             email="jane.doe@bizsolve.com",
             phone_number="+91-87654-32109",
             company_id=company2.id,
-            role_type=RoleType.DECISION_MAKER,
+            role_type=ContactRoleType.DECISION_MAKER,
             created_by=admin_user.id
         )
         
