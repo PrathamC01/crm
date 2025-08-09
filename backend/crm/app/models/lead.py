@@ -151,13 +151,15 @@ class Lead(BaseModel):
     
     # Conversion Tracking
     converted = Column(Boolean, default=False)
-    converted_to_opportunity_id = Column(Integer, ForeignKey("opportunities.id"))
+    # Remove circular dependency - will be updated when opportunity is created
+    converted_to_opportunity_id = Column(String(10))  # Will store POT-ID instead of FK
     conversion_date = Column(DateTime)
     conversion_notes = Column(Text)
 
     # Relationships
     company = relationship("Company", foreign_keys=[company_id], back_populates="leads")
     end_customer = relationship("Company", foreign_keys=[end_customer_id])
+    
     sales_person = relationship(
         "User", 
         foreign_keys=[sales_person_id],
@@ -165,29 +167,26 @@ class Lead(BaseModel):
     )
     conversion_requester = relationship(
         "User", 
-        foreign_keys=[conversion_requested_by],
-        backref="conversion_requests"
+        foreign_keys=[conversion_requested_by]
     )
     reviewer = relationship(
         "User", 
-        foreign_keys=[reviewed_by],
-        backref="reviewed_leads"
+        foreign_keys=[reviewed_by]
     )
-    converted_opportunity = relationship(
-        "Opportunity", 
-        foreign_keys=[converted_to_opportunity_id],
-        backref="source_lead"
-    )
+    
     creator = relationship(
         "User",
         foreign_keys="Lead.created_by",
         back_populates="leads_created",
+        overlaps="conversion_requester,reviewer"
     )
     updater = relationship(
         "User",
         foreign_keys="Lead.updated_by",
         back_populates="leads_updated",
     )
+    
+    # One-to-many with opportunities (a lead can have multiple opportunities over time)
     opportunities = relationship("Opportunity", back_populates="lead")
 
     @property

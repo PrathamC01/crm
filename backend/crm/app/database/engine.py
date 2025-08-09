@@ -8,16 +8,21 @@ import os
 # Database URL from environment with SQLite fallback for local development
 DATABASE_URL = os.getenv('POSTGRES_URL')
 
-# If PostgreSQL is not available, use SQLite for local development
-if not DATABASE_URL or 'localhost:5432' in DATABASE_URL:
-    # Use SQLite for local development
+# If no PostgreSQL URL provided, use SQLite for local development
+if not DATABASE_URL:
     DATABASE_URL = 'sqlite:///./crm_database.db'
+    print(f"No POSTGRES_URL found, using SQLite: {DATABASE_URL}")
+
+# Check if we're using SQLite or PostgreSQL
+if DATABASE_URL.startswith('sqlite'):
+    print(f"Using SQLite database: {DATABASE_URL}")
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},  # Only for SQLite
         echo=False  # Set to True for SQL debugging
     )
 else:
+    print(f"Using PostgreSQL database: {DATABASE_URL}")
     # Use PostgreSQL for production
     engine = create_engine(
         DATABASE_URL,
@@ -30,3 +35,5 @@ else:
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+print("✅ Database engine configured successfully")
