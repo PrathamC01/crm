@@ -11,7 +11,7 @@ from datetime import datetime, date
 from decimal import Decimal
 
 # Configuration
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8001"
 API_BASE = f"{BASE_URL}/api"
 
 class CRMTester:
