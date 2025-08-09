@@ -5,24 +5,24 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Database URL from environment with SQLite fallback for local development
+# Database URL from environment
 DATABASE_URL = os.getenv('POSTGRES_URL')
 
-# If no PostgreSQL URL provided, use SQLite for local development
 if not DATABASE_URL:
-    DATABASE_URL = 'sqlite:///./crm_database.db'
-    print(f"No POSTGRES_URL found, using SQLite: {DATABASE_URL}")
+    raise ValueError("POSTGRES_URL environment variable is required")
+
+print(f"Using database: {DATABASE_URL}")
 
 # Check if we're using SQLite or PostgreSQL
 if DATABASE_URL.startswith('sqlite'):
-    print(f"Using SQLite database: {DATABASE_URL}")
+    print("⚠️  Using SQLite database")
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},  # Only for SQLite
         echo=False  # Set to True for SQL debugging
     )
 else:
-    print(f"Using PostgreSQL database: {DATABASE_URL}")
+    print("✅ Using PostgreSQL database")
     # Use PostgreSQL for production
     engine = create_engine(
         DATABASE_URL,
