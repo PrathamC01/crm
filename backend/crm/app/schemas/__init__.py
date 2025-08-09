@@ -8,8 +8,8 @@ from .department import DepartmentResponse, DepartmentCreate, DepartmentUpdate
 from .company import CompanyResponse, CompanyCreate, CompanyUpdate, CompanyListResponse, CompanyStats
 from .contact import ContactResponse, ContactCreate, ContactUpdate, ContactListResponse, ContactStats
 from .lead import (
-    LeadResponse, LeadCreate, LeadUpdate, LeadListResponse, LeadStats,
-    LeadStatusUpdate, LeadConversion, LeadSummary, LeadStatsResponse
+    LeadResponse, LeadCreate, LeadUpdate, LeadListResponse, LeadStatsResponse,
+    LeadStatusUpdate, LeadConversion, LeadSummary
 )
 from .opportunity import (
     OpportunityResponse, OpportunityCreate, OpportunityListResponse, OpportunityStats,
