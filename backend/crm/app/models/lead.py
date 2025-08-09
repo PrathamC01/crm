@@ -187,8 +187,8 @@ class Lead(BaseModel):
         back_populates="leads_updated",
     )
     
-    # One-to-many with opportunities (a lead can have multiple opportunities over time)
-    opportunities = relationship("Opportunity", back_populates="lead")
+    # One-to-many with opportunities (a lead can theoretically have multiple opportunities, but business rule limits to one)
+    opportunities = relationship("Opportunity", back_populates="lead", cascade="all, delete-orphan")
 
     @property
     def company_name(self):
