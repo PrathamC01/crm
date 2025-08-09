@@ -103,6 +103,7 @@ app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(leads.router)
 app.include_router(opportunities.router)
+app.include_router(quotations.router)
 app.include_router(users.router)
 
 
