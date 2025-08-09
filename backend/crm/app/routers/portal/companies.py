@@ -39,7 +39,7 @@ async def get_companies(
         companies = company_service.get_companies(skip, limit, search)
         total = company_service.get_company_count(search)
         company_response_list = [
-            CompanyResponse.from_orm(company) for company in companies
+            CompanyResponse.model_validate(company) for company in companies
         ]
         return StandardResponse(
             status=True,
