@@ -1,12 +1,20 @@
 """
-Database initialization script with sample data
+Database initialization script with sample data for enhanced CRM
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from ..models import Base, User, Role, Department, Company, Contact, RoleType
+from ..models import (
+    Base, User, Role, Department, Company, Contact, Lead, Opportunity, 
+    SalesProcess, Quotation, RoleType
+)
+from ..models.lead import LeadSource, LeadStatus, LeadPriority, LeadSubType, TenderSubType, SubmissionType
+from ..models.opportunity import OpportunityStage, OpportunityStatus
+from ..models.sales_process import SalesStage, StageStatus
+from ..models.quotation import QuotationStatus
 from ..database.engine import engine
 from ..utils.auth import hash_password  # Use the proper bcrypt hashing
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 
 
 def create_tables():
