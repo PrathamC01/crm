@@ -39,7 +39,9 @@ class CompanyService:
             self.db.refresh(db_company)
             return db_company
         except Exception as e:
-            print(e)
+            self.db.rollback()
+            print(f"Error creating company: {e}")
+            raise e
 
     def get_company_by_id(self, company_id: int) -> Optional[Company]:
         """Get company by ID"""
