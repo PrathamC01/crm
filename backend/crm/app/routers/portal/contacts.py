@@ -157,7 +157,7 @@ async def get_decision_makers(
             message="Decision makers retrieved successfully",
             data={
                 "decision_makers": [
-                    ContactResponse.from_orm(contact) for contact in contacts
+                    ContactResponse.model_validate(contact) for contact in contacts
                 ]
             },
         )
