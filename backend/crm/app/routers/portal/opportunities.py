@@ -20,7 +20,7 @@ from ...utils.auth import get_current_user
 from ...utils.response import create_response
 
 
-router = APIRouter()
+router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
 
 
 def get_db():
