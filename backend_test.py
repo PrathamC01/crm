@@ -66,7 +66,9 @@ class CRMTester:
     def test_health_check(self):
         """Test basic health endpoint"""
         try:
-            response = self.make_request("GET", "/health")
+            # Try the health endpoint without /api prefix
+            url = f"{BASE_URL}/health"
+            response = self.session.get(url)
             if response and response.status_code == 200:
                 data = response.json()
                 if data.get("status") == True:
