@@ -33,7 +33,7 @@ class Settings:
     ALLOWED_ORIGINS: list = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://e0f940a6-447f-4f0a-91f3-5fb8e5eb3c0e.preview.emergentagent.com",
+        "https://1954b659-9fec-470e-856a-093e708cbdff.preview.emergentagent.com",
         "http://30ac7fac-5c43-4846-ac99-edfa626ede7e.preview.emergentagent.com",
     ]
 
