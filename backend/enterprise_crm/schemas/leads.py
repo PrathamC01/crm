@@ -37,7 +37,7 @@ class PriorityEnum(str, Enum):
 class ContactCreate(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=200)
     designation: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    email: Optional[str] = Field(None, pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
     phone_number: Optional[str] = Field(None, max_length=20)
     company_id: int
     decision_maker: Optional[str] = Field(None, max_length=50)
@@ -46,7 +46,7 @@ class ContactCreate(BaseModel):
 class ContactUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=1, max_length=200)
     designation: Optional[str] = Field(None, max_length=100)
-    email: Optional[str] = Field(None, regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    email: Optional[str] = Field(None, pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
     phone_number: Optional[str] = Field(None, max_length=20)
     decision_maker: Optional[str] = Field(None, max_length=50)
     notes: Optional[str] = None
