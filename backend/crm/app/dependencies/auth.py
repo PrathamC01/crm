@@ -86,11 +86,44 @@ async def get_current_user(
         "username": user.username,
         "role_id": user.role_id,
         "role_name": user.role.name if user.role else "User",
-        "permissions": user.role.permissions if user.role else "User",
+        "permissions": _convert_permissions(user.role.permissions if user.role else []),
         "department_id": user.department_id,
         "department_name": user.department.name if user.department else "Unknown",
         "session_id": session_id,
     }
+
+
+def _convert_permissions(old_permissions):
+    """Convert old permission format to new format"""
+    if not old_permissions:
+        return []
+    
+    # Handle special permissions
+    if "all" in old_permissions:
+        return ["*", "all", "leads:read", "leads:write", "leads:all", "opportunities:read", "opportunities:write", "opportunities:all", "masters:read", "masters:write", "masters:all", "dashboard:read", "companies:read", "companies:all", "contacts:read", "contacts:all"]
+    
+    # Convert old format to new format
+    new_permissions = []
+    for perm in old_permissions:
+        if perm == "leads_read":
+            new_permissions.extend(["leads:read", "companies:read", "companies:all", "contacts:read", "contacts:all"])
+        elif perm == "leads_write":
+            new_permissions.extend(["leads:write", "leads:all", "companies:read", "companies:all", "contacts:read", "contacts:all"])
+        elif perm == "opportunities_read":
+            new_permissions.extend(["opportunities:read", "companies:read", "companies:all", "contacts:read", "contacts:all"])
+        elif perm == "opportunities_write":
+            new_permissions.extend(["opportunities:write", "opportunities:all", "companies:read", "companies:all", "contacts:read", "contacts:all"])
+        elif perm == "leads_review":
+            new_permissions.extend(["leads:read", "leads:review"])
+        elif perm == "leads_approve":
+            new_permissions.extend(["leads:read", "leads:approve"])
+        elif perm in ["leads_read", "leads_write", "opportunities_read", "opportunities_write"]:
+            # Sales role gets companies and contacts access too
+            new_permissions.extend(["companies:read", "companies:all", "contacts:read", "contacts:all"])
+        else:
+            new_permissions.append(perm)
+    
+    return new_permissions
 
 
 async def get_optional_user(

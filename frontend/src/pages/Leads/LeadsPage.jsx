@@ -3,12 +3,14 @@ import { apiMethods } from '../../utils/api';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import LeadForm from '../../components/leads/LeadForm';
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [editingLead, setEditingLead] = useState(null);
   const [stats, setStats] = useState({});
   const [filters, setFilters] = useState({
     status: '',
@@ -149,6 +151,26 @@ const LeadsPage = () => {
     setSelectedLead(lead);
   };
 
+  const handleEditLead = (lead) => {
+    setEditingLead(lead);
+  };
+
+  const handleConvertLead = async (lead) => {
+    if (lead.status === 'Qualified') {
+      try {
+        // Call conversion API
+        const response = await apiMethods.leads.convertToOpportunity(lead.id);
+        if (response.data?.status) {
+          alert('Lead converted to opportunity successfully!');
+          fetchLeads(); // Refresh the list
+        }
+      } catch (error) {
+        console.error('Error converting lead:', error);
+        alert('Failed to convert lead to opportunity');
+      }
+    }
+  };
+
   const handleCreateLead = () => {
     setShowCreateModal(true);
   };
@@ -160,14 +182,14 @@ const LeadsPage = () => {
       className: 'text-blue-600 hover:text-blue-900'
     },
     {
+      label: 'Edit',
+      onClick: handleEditLead,
+      className: 'text-green-600 hover:text-green-900'
+    },
+    {
       label: 'Convert',
-      onClick: (lead) => {
-        if (lead.status === 'Qualified') {
-          // Handle conversion to opportunity
-          console.log('Converting lead to opportunity:', lead.id);
-        }
-      },
-      className: 'text-green-600 hover:text-green-900',
+      onClick: handleConvertLead,
+      className: 'text-purple-600 hover:text-purple-900',
       show: (lead) => lead.status === 'Qualified'
     }
   ];
@@ -299,30 +321,34 @@ const LeadsPage = () => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Create New Lead"
-        size="lg"
+        size="large"
       >
-        <div className="p-6">
-          <p className="text-gray-600 mb-4">
-            Lead creation form will be implemented here. This modal demonstrates the UI structure.
-          </p>
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                // Handle form submission
-                setShowCreateModal(false);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Create Lead
-            </button>
-          </div>
-        </div>
+        <LeadForm
+          onSave={(newLead) => {
+            setShowCreateModal(false);
+            fetchLeads(); // Refresh the leads list
+          }}
+          onCancel={() => setShowCreateModal(false)}
+        />
+      </Modal>
+
+      {/* Edit Lead Modal */}
+      <Modal
+        isOpen={!!editingLead}
+        onClose={() => setEditingLead(null)}
+        title="Edit Lead"
+        size="large"
+      >
+        {editingLead && (
+          <LeadForm
+            lead={editingLead}
+            onSave={(updatedLead) => {
+              setEditingLead(null);
+              fetchLeads(); // Refresh the leads list
+            }}
+            onCancel={() => setEditingLead(null)}
+          />
+        )}
       </Modal>
 
       {/* Lead Detail Modal */}
