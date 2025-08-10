@@ -607,7 +607,7 @@ class CRMBackendTester:
             }
             try:
                 response = self.make_request("PUT", f"/api/opportunities/{opportunity_id}/sales-process/stage/L2_Need_Analysis", 
-                                           headers=self.session_headers, data=stage_update_data)
+                                           headers=self.auth_headers, data=stage_update_data)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status") or data.get("success"):
