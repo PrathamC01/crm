@@ -8,6 +8,7 @@ from typing import Any
 from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
+from enum import Enum
 
 
 def json_safe(obj: Any) -> Any:
