@@ -12,14 +12,14 @@ class Settings(BaseSettings):
     # Database - Use SQLite for development
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./enterprise_crm.db")
     
-    # Redis
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
+    # Redis - Use localhost for testing
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
     REDIS_DB: int = int(os.getenv("REDIS_DB", 0))
     
-    # MinIO
-    MINIO_ENDPOINT: str = os.getenv("MINIO_ENDPOINT", "minio:9000")
+    # MinIO - Use localhost for testing
+    MINIO_ENDPOINT: str = os.getenv("MINIO_ENDPOINT", "localhost:9000")
     MINIO_ACCESS_KEY: str = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
     MINIO_SECRET_KEY: str = os.getenv("MINIO_SECRET_KEY", "minioadmin123")
     MINIO_SECURE: bool = os.getenv("MINIO_SECURE", "false").lower() == "true"
