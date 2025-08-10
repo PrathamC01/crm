@@ -56,20 +56,15 @@ async def get_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     """Get company by ID"""
-    try:
-        company = company_service.get_company_by_id(company_id)
-        if not company:
-            raise HTTPException(status_code=404, detail="Company not found")
+    company = company_service.get_company_by_id(company_id)
+    if not company:
+        from ...exceptions.custom_exceptions import NotFoundError
+        raise NotFoundError("Company", company_id)
 
-        company_response = CompanyResponse.model_validate(company)
-        return StandardResponse(
-            status=True, message="Company retrieved successfully", data=company_response
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail=str(e))
+    company_response = CompanyResponse.model_validate(company)
+    return StandardResponse(
+        status=True, message="Company retrieved successfully", data=company_response
+    )
 
 
 @router.post("/", response_model=StandardResponse)
