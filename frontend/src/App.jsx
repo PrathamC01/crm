@@ -1,102 +1,90 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import CRM from './components/CRM';
-import './App.css';
+import { AuthProvider } from './contexts/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import LoginPage from './pages/Auth/LoginPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Dashboard Pages
+import DashboardOverview from './pages/Dashboard/DashboardOverview';
+import SalesDashboard from './pages/Dashboard/SalesDashboard';
+import PresalesDashboard from './pages/Dashboard/PresalesDashboard';
+import ProductDashboard from './pages/Dashboard/ProductDashboard';
+
+// Masters Pages
+import ProductsPage from './pages/Masters/ProductsPage';
+import UOMsPage from './pages/Masters/UOMsPage';
+import PriceListsPage from './pages/Masters/PriceListsPage';
+import UsersPage from './pages/Masters/UsersPage';
+import DepartmentsPage from './pages/Masters/DepartmentsPage';
+import RolesPage from './pages/Masters/RolesPage';
+
+// Leads Pages
+import LeadsPage from './pages/Leads/LeadsPage';
+import MyLeadsPage from './pages/Leads/MyLeadsPage';
+import LeadReportsPage from './pages/Leads/LeadReportsPage';
+
+// Opportunities Pages  
+import OpportunitiesPage from './pages/Opportunities/OpportunitiesPage';
+import MyOpportunitiesPage from './pages/Opportunities/MyOpportunitiesPage';
+import QuotationsPage from './pages/Quotations/QuotationsPage';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Verify token validity by calling dashboard endpoint
-      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'}/api/dashboard`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status) {
-          setIsAuthenticated(true);
-        } else {
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleLogin = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route 
-            path="/login" 
-            element={
-              isAuthenticated ? 
-              <Navigate to="/crm" replace /> : 
-              <Login onLogin={handleLogin} />
-            } 
-          />
-          <Route 
-            path="/dashboard" 
-            element={
-              isAuthenticated ? 
-              <Dashboard onLogout={handleLogout} /> : 
-              <Navigate to="/login" replace />
-            } 
-          />
-          {/* CRM nested routes */}
-          <Route 
-            path="/crm/*" 
-            element={
-              isAuthenticated ? 
-              <CRM onLogout={handleLogout} /> : 
-              <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/" 
-            element={
-              <Navigate to={isAuthenticated ? "/crm" : "/login"} replace />
-            } 
-          />
-        </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
+              {/* Dashboard Routes */}
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardOverview />} />
+              <Route path="dashboard/sales" element={<SalesDashboard />} />
+              <Route path="dashboard/presales" element={<PresalesDashboard />} />
+              <Route path="dashboard/product" element={<ProductDashboard />} />
+              
+              {/* Masters Routes */}
+              <Route path="masters">
+                <Route index element={<Navigate to="/masters/products" replace />} />
+                <Route path="products" element={<ProductsPage />} />
+                <Route path="uoms" element={<UOMsPage />} />
+                <Route path="pricelists" element={<PriceListsPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="departments" element={<DepartmentsPage />} />
+                <Route path="roles" element={<RolesPage />} />
+              </Route>
+              
+              {/* Leads Routes */}
+              <Route path="leads">
+                <Route index element={<LeadsPage />} />
+                <Route path="my" element={<MyLeadsPage />} />
+                <Route path="reports" element={<LeadReportsPage />} />
+              </Route>
+              
+              {/* Opportunities Routes */}
+              <Route path="opportunities">
+                <Route index element={<OpportunitiesPage />} />
+                <Route path="my" element={<MyOpportunitiesPage />} />
+              </Route>
+              
+              {/* Quotations */}
+              <Route path="quotations" element={<QuotationsPage />} />
+            </Route>
+            
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
