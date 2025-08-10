@@ -294,8 +294,8 @@ class MastersAPITester:
         try:
             # Test creating a valid UOM
             uom_data = {
-                "code": f"TEST_UOM_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                "name": "Test Unit of Measure",
+                "uom_code": f"TEST_UOM_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "uom_name": "Test Unit of Measure",
                 "description": "Test UOM for API testing",
                 "is_active": True
             }
