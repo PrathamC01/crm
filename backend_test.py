@@ -126,7 +126,7 @@ class CRMBackendTester:
         
         # Test session info
         try:
-            response = self.make_request("GET", "/api/session/info", headers=self.session_headers)
+            response = self.make_request("GET", "/api/session/info", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and data.get("data"):
@@ -144,7 +144,7 @@ class CRMBackendTester:
         
         # Test session refresh
         try:
-            response = self.make_request("POST", "/api/session/refresh", headers=self.session_headers)
+            response = self.make_request("POST", "/api/session/refresh", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and "refresh" in data.get("message", "").lower():
@@ -158,7 +158,7 @@ class CRMBackendTester:
         
         # Test logout
         try:
-            response = self.make_request("POST", "/api/logout", headers=self.session_headers)
+            response = self.make_request("POST", "/api/logout", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and "logout" in data.get("message", "").lower():
