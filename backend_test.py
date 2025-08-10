@@ -449,7 +449,7 @@ class CRMBackendTester:
             }
             try:
                 response = self.make_request("PUT", f"/api/leads/{created_lead_id}", 
-                                           headers=self.session_headers, data=update_data)
+                                           headers=self.auth_headers, data=update_data)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status"):
