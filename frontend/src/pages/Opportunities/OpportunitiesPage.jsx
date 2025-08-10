@@ -358,7 +358,7 @@ const OpportunitiesPage = () => {
             columns={opportunityColumns}
             data={opportunities}
             actions={actions}
-            emptyMessage="No opportunities found. Convert qualified leads to create opportunities."
+            emptyMessage="No opportunities found. Convert leads to opportunities or create one directly."
           />
         )}
       </div>
