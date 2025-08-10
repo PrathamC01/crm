@@ -323,8 +323,8 @@ class MastersService:
             "cat5_configuration": product.cat5_configuration,
             "sku_code": product.sku_code,
             "description": product.description,
-            "created_at": product.created_at,
-            "updated_at": product.updated_at,
+            "created_at": product.created_on,  # Map to existing field
+            "updated_at": product.updated_on,  # Map to existing field
             "is_active": product.is_active,
             "uoms": uoms
         }
