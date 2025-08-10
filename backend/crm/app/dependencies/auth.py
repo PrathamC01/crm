@@ -39,6 +39,7 @@ async def get_current_user(
     """
     # Check session in Redis
     session_data = redis_client.get_session(session_id)
+    # print(session_data)
     if not session_data:
         # Allow mock testing
         if session_id.startswith("test_"):
@@ -62,12 +63,13 @@ async def get_current_user(
         )
 
     # Get user details from DB
-    user = (
-        db.query(User)
-        .filter(User.id == session_data["user_id"], User.is_active == True)
-        .first()
-    )
-
+    # user = (
+    #     db.query(User)
+    #     .filter(User.id == session_data["user_id"], User.is_active == True)
+    #     .first()
+    # )
+    user = get_user_service(db=db).get_user_by_id(session_data.get("user_id"))
+    # print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,6 +86,7 @@ async def get_current_user(
         "username": user.username,
         "role_id": user.role_id,
         "role_name": user.role.name if user.role else "User",
+        "permissions": user.role.permissions if user.role else "User",
         "department_id": user.department_id,
         "department_name": user.department.name if user.department else "Unknown",
         "session_id": session_id,

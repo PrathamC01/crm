@@ -68,4 +68,4 @@ class User(BaseModel):
         return self.name
 
     def __repr__(self):
-        return f"<User(id={self.id}, name={self.name}, email={self.email}), role={self.role}, department={self.department})>"
+        return f"<User(id={self.id}, name={self.name}, email={self.email}), role={self.role}, permissions={self.role.permissions}, department={self.department})>"

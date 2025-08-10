@@ -1,24 +1,24 @@
-import React, { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import React, { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
-const Modal = ({ 
-  show, 
-  onClose, 
-  title, 
-  children, 
-  size = 'normal',
-  showCloseButton = true 
+const Modal = ({
+  show = false,
+  onClose,
+  title,
+  children,
+  size = "normal",
+  showCloseButton = true,
 }) => {
   const sizeClasses = {
-    small: 'max-w-md',
-    normal: 'max-w-2xl',
-    large: 'max-w-4xl',
-    full: 'max-w-6xl'
+    small: "max-w-md",
+    normal: "max-w-2xl",
+    large: "max-w-4xl",
+    full: "max-w-6xl",
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition appear show={show} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
@@ -43,7 +43,9 @@ const Modal = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all`}>
+              <Dialog.Panel
+                className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all`}
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Dialog.Title
@@ -65,9 +67,7 @@ const Modal = ({
                 </div>
 
                 {/* Content */}
-                <div className="mt-4">
-                  {children}
-                </div>
+                <div className="mt-4">{children}</div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

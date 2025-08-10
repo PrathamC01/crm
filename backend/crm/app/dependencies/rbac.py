@@ -73,7 +73,7 @@ async def require_permission(
     """
     user_permissions = current_user.get("permissions", [])
 
-    # Super admin has all permissions  
+    # Super admin has all permissions
     if "all" in user_permissions or "*" in user_permissions:
         return current_user
 
@@ -94,16 +94,16 @@ async def require_any_permission(
     """
     user_permissions = current_user.get("permissions", [])
     required_permissions = permissions + ["*"]  # Don't modify the original list
-    
+
     # Super admin has all permissions
     if "all" in user_permissions or "*" in user_permissions:
         return current_user
-
+    print(current_user)
     print(f"User permissions: {user_permissions}")
     print(f"Required permissions: {required_permissions}")
     has_permission = any(perm in user_permissions for perm in required_permissions)
     print(f"Has permission: {has_permission}")
-    
+
     if not has_permission:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
