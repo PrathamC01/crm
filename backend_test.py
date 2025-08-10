@@ -295,7 +295,7 @@ class CRMBackendTester:
         
         # Test get departments
         try:
-            response = self.make_request("GET", "/api/masters/departments", headers=self.session_headers)
+            response = self.make_request("GET", "/api/masters/departments", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and "data" in data:
