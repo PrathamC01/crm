@@ -293,6 +293,306 @@ class CRMBackendTester:
         except Exception as e:
             self.log_test("Masters - Get Roles", False, f"Request failed: {str(e)}")
 
+    def test_leads_api(self):
+        """Test Leads API endpoints"""
+        print("\n=== Testing Leads API ===")
+        
+        # Sample lead data for testing
+        lead_data = {
+            "project_title": "Enterprise CRM Implementation Project",
+            "lead_source": "Direct Marketing",
+            "lead_sub_type": "Pre-Tender",
+            "tender_sub_type": "Open Tender",
+            "products_services": ["CRM Software", "Implementation Services"],
+            "company_id": 1,
+            "sub_business_type": "Technology Solutions",
+            "end_customer_id": 1,
+            "end_customer_region": "North India",
+            "partner_involved": False,
+            "partners_data": [],
+            "tender_fee": 50000.00,
+            "currency": "INR",
+            "submission_type": "Online",
+            "tender_authority": "Government of India",
+            "tender_for": "Ministry of Technology",
+            "emd_required": True,
+            "emd_amount": 100000.00,
+            "emd_currency": "INR",
+            "bg_required": True,
+            "bg_amount": 500000.00,
+            "bg_currency": "INR",
+            "important_dates": [
+                {
+                    "label": "Submission Deadline",
+                    "key": "submission_date",
+                    "value": "2024-12-31"
+                }
+            ],
+            "clauses": [
+                {
+                    "clause_type": "Technical",
+                    "criteria_description": "Must have 5+ years experience"
+                }
+            ],
+            "expected_revenue": 5000000.00,
+            "revenue_currency": "INR",
+            "convert_to_opportunity_date": "2024-12-15",
+            "competitors": [
+                {
+                    "name": "Competitor A",
+                    "description": "Major competitor in CRM space"
+                }
+            ],
+            "documents": [],
+            "status": "New",
+            "priority": "High",
+            "qualification_notes": "High potential client with immediate requirements",
+            "lead_score": 85,
+            "contacts": [
+                {
+                    "designation": "IT Director",
+                    "salutation": "Mr.",
+                    "first_name": "Rajesh",
+                    "middle_name": "Kumar",
+                    "last_name": "Sharma",
+                    "email": "rajesh.sharma@testcompany.com",
+                    "primary_phone": "+91-9876543210",
+                    "decision_maker": True,
+                    "decision_maker_percentage": 80,
+                    "comments": "Primary decision maker for IT purchases"
+                }
+            ]
+        }
+        
+        created_lead_id = None
+        
+        # Test 1: Create Lead
+        try:
+            response = self.make_request("POST", "/api/leads/", headers=self.session_headers, data=lead_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") and data.get("data", {}).get("id"):
+                    created_lead_id = data["data"]["id"]
+                    self.log_test("Leads - Create Lead", True, "Lead created successfully")
+                else:
+                    self.log_test("Leads - Create Lead", False, "Invalid create response", data)
+            else:
+                self.log_test("Leads - Create Lead", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Leads - Create Lead", False, f"Request failed: {str(e)}")
+        
+        # Test 2: Get All Leads
+        try:
+            response = self.make_request("GET", "/api/leads/?skip=0&limit=10", headers=self.session_headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") and "data" in data and "leads" in data["data"]:
+                    self.log_test("Leads - Get All Leads", True, "Leads retrieved successfully")
+                else:
+                    self.log_test("Leads - Get All Leads", False, "Invalid leads list response", data)
+            else:
+                self.log_test("Leads - Get All Leads", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Leads - Get All Leads", False, f"Request failed: {str(e)}")
+        
+        # Test 3: Get Lead by ID (if we have a created lead)
+        if created_lead_id:
+            try:
+                response = self.make_request("GET", f"/api/leads/{created_lead_id}", headers=self.session_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") and data.get("data", {}).get("id") == created_lead_id:
+                        self.log_test("Leads - Get Lead by ID", True, "Lead retrieved by ID successfully")
+                    else:
+                        self.log_test("Leads - Get Lead by ID", False, "Invalid lead response", data)
+                else:
+                    self.log_test("Leads - Get Lead by ID", False, f"HTTP {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Leads - Get Lead by ID", False, f"Request failed: {str(e)}")
+        else:
+            self.log_test("Leads - Get Lead by ID", False, "Skipped due to lead creation failure")
+        
+        # Test 4: Update Lead (if we have a created lead)
+        if created_lead_id:
+            update_data = {
+                "qualification_notes": "Updated qualification notes after initial review",
+                "lead_score": 90,
+                "status": "Qualified"
+            }
+            try:
+                response = self.make_request("PUT", f"/api/leads/{created_lead_id}", 
+                                           headers=self.session_headers, data=update_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status"):
+                        self.log_test("Leads - Update Lead", True, "Lead updated successfully")
+                    else:
+                        self.log_test("Leads - Update Lead", False, "Invalid update response", data)
+                else:
+                    self.log_test("Leads - Update Lead", False, f"HTTP {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Leads - Update Lead", False, f"Request failed: {str(e)}")
+        else:
+            self.log_test("Leads - Update Lead", False, "Skipped due to lead creation failure")
+        
+        # Test 5: Get Lead Stats
+        try:
+            response = self.make_request("GET", "/api/leads/stats", headers=self.session_headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") and data.get("data"):
+                    self.log_test("Leads - Get Stats", True, "Lead statistics retrieved successfully")
+                else:
+                    self.log_test("Leads - Get Stats", False, "Invalid stats response", data)
+            else:
+                self.log_test("Leads - Get Stats", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Leads - Get Stats", False, f"Request failed: {str(e)}")
+        
+        return created_lead_id
+
+    def test_lead_to_opportunity_conversion(self, lead_id=None):
+        """Test Lead to Opportunity Conversion Workflow"""
+        print("\n=== Testing Lead to Opportunity Conversion ===")
+        
+        if not lead_id:
+            self.log_test("Conversion - Request Conversion", False, "No lead ID available for conversion testing")
+            self.log_test("Conversion - Review Request", False, "Skipped due to no lead ID")
+            self.log_test("Conversion - Convert to Opportunity", False, "Skipped due to no lead ID")
+            return None
+        
+        # Test 1: Request Conversion
+        conversion_request_data = {
+            "notes": "Lead is qualified and ready for conversion to opportunity"
+        }
+        try:
+            response = self.make_request("POST", f"/api/leads/{lead_id}/request-conversion", 
+                                       headers=self.session_headers, data=conversion_request_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status"):
+                    self.log_test("Conversion - Request Conversion", True, "Conversion request submitted successfully")
+                else:
+                    self.log_test("Conversion - Request Conversion", False, "Invalid conversion request response", data)
+            else:
+                self.log_test("Conversion - Request Conversion", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Conversion - Request Conversion", False, f"Request failed: {str(e)}")
+        
+        # Test 2: Review Conversion Request (Admin action)
+        review_data = {
+            "decision": "Approved",
+            "comments": "Lead meets all criteria for conversion to opportunity"
+        }
+        try:
+            response = self.make_request("POST", f"/api/leads/{lead_id}/review", 
+                                       headers=self.session_headers, data=review_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status"):
+                    self.log_test("Conversion - Review Request", True, "Conversion request reviewed successfully")
+                else:
+                    self.log_test("Conversion - Review Request", False, "Invalid review response", data)
+            else:
+                self.log_test("Conversion - Review Request", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Conversion - Review Request", False, f"Request failed: {str(e)}")
+        
+        # Test 3: Convert to Opportunity
+        conversion_data = {
+            "opportunity_name": "Enterprise CRM Implementation Opportunity",
+            "notes": "Converting qualified lead to opportunity for further sales process"
+        }
+        opportunity_id = None
+        try:
+            response = self.make_request("POST", f"/api/leads/{lead_id}/convert-to-opportunity", 
+                                       headers=self.session_headers, data=conversion_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") and data.get("data", {}).get("opportunity_id"):
+                    opportunity_id = data["data"]["opportunity_id"]
+                    self.log_test("Conversion - Convert to Opportunity", True, "Lead converted to opportunity successfully")
+                else:
+                    self.log_test("Conversion - Convert to Opportunity", False, "Invalid conversion response", data)
+            else:
+                self.log_test("Conversion - Convert to Opportunity", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Conversion - Convert to Opportunity", False, f"Request failed: {str(e)}")
+        
+        return opportunity_id
+
+    def test_opportunities_api(self, opportunity_id=None):
+        """Test Opportunities API endpoints"""
+        print("\n=== Testing Opportunities API ===")
+        
+        # Test 1: Get All Opportunities
+        try:
+            response = self.make_request("GET", "/api/opportunities/?skip=0&limit=10", headers=self.session_headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") or data.get("success"):  # Handle different response formats
+                    self.log_test("Opportunities - Get All", True, "Opportunities retrieved successfully")
+                else:
+                    self.log_test("Opportunities - Get All", False, "Invalid opportunities list response", data)
+            else:
+                self.log_test("Opportunities - Get All", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Opportunities - Get All", False, f"Request failed: {str(e)}")
+        
+        # Test 2: Get Opportunity by ID (if we have one)
+        if opportunity_id:
+            try:
+                response = self.make_request("GET", f"/api/opportunities/{opportunity_id}", headers=self.session_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") or data.get("success"):
+                        self.log_test("Opportunities - Get by ID", True, "Opportunity retrieved by ID successfully")
+                    else:
+                        self.log_test("Opportunities - Get by ID", False, "Invalid opportunity response", data)
+                else:
+                    self.log_test("Opportunities - Get by ID", False, f"HTTP {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Opportunities - Get by ID", False, f"Request failed: {str(e)}")
+        else:
+            self.log_test("Opportunities - Get by ID", False, "Skipped due to no opportunity ID available")
+        
+        # Test 3: Get Opportunity Statistics
+        try:
+            response = self.make_request("GET", "/api/opportunities/statistics/overview", headers=self.session_headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") or data.get("success"):
+                    self.log_test("Opportunities - Get Statistics", True, "Opportunity statistics retrieved successfully")
+                else:
+                    self.log_test("Opportunities - Get Statistics", False, "Invalid statistics response", data)
+            else:
+                self.log_test("Opportunities - Get Statistics", False, f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("Opportunities - Get Statistics", False, f"Request failed: {str(e)}")
+        
+        # Test 4: Update Sales Stage (if we have an opportunity)
+        if opportunity_id:
+            stage_update_data = {
+                "status": "In Progress",
+                "completion_date": "2024-12-20",
+                "comments": "Moving to need analysis stage"
+            }
+            try:
+                response = self.make_request("PUT", f"/api/opportunities/{opportunity_id}/sales-process/stage/L2_Need_Analysis", 
+                                           headers=self.session_headers, data=stage_update_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") or data.get("success"):
+                        self.log_test("Opportunities - Update Sales Stage", True, "Sales stage updated successfully")
+                    else:
+                        self.log_test("Opportunities - Update Sales Stage", False, "Invalid stage update response", data)
+                else:
+                    self.log_test("Opportunities - Update Sales Stage", False, f"HTTP {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Opportunities - Update Sales Stage", False, f"Request failed: {str(e)}")
+        else:
+            self.log_test("Opportunities - Update Sales Stage", False, "Skipped due to no opportunity ID available")
+
     def test_integration_scenarios(self):
         """Test integration scenarios"""
         print("\n=== Testing Integration Scenarios ===")
