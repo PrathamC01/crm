@@ -19,6 +19,7 @@ from ...schemas.opportunity import (
 from ...schemas.auth import StandardResponse
 from ...utils.auth import get_current_user
 from ...utils.response import create_response
+from ...dependencies.rbac import require_opportunities_read
 
 
 router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
@@ -108,17 +109,13 @@ async def get_opportunities(
     user_filter: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(require_opportunities_read)
 ):
     """Get paginated list of opportunities with filters"""
     try:
         opportunity_service = OpportunityService(db)
         
-        # Role-based filtering
-        if current_user.role.name == "Sales":
-            # Sales users see only their converted opportunities
-            user_filter = current_user.id
-        
+        # Role-based filtering - simplified for session-based auth
         result = opportunity_service.get_opportunities_list(
             skip=skip,
             limit=limit,
@@ -302,17 +299,10 @@ async def get_sales_processes(
 @router.get("/statistics/overview", response_model=OpportunityStats)
 async def get_opportunity_statistics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(require_opportunities_read)
 ):
     """Get opportunity statistics"""
     try:
-        # Only Admin and Reviewers can see full statistics
-        if current_user.role.name not in ["Admin", "Reviewer"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to view statistics"
-            )
-        
         opportunity_service = OpportunityService(db)
         stats = opportunity_service.get_opportunity_statistics()
         

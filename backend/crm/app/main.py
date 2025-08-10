@@ -10,14 +10,18 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 
 # Import routers
-from .routers.sso import auth, dashboard
-from .routers.portal import companies, contacts, leads, opportunities, users, masters
+from .routers.sso import auth
+from .routers.portal import companies, contacts, leads, opportunities, users, masters, dashboard
 from .routers.portal import quotations
 from .routers.front import health
 
 # Import database
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
+
+# Import Redis and MinIO clients
+from .utils.redis_client import redis_client
+from .utils.minio_client import minio_client
 
 # Import centralized error handlers
 from .exceptions.handlers import (
@@ -94,7 +98,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 # Include routers
 app.include_router(health.router)
 app.include_router(auth.router)
-# app.include_router(dashboard.router)
+app.include_router(dashboard.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(leads.router)
