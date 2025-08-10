@@ -19,6 +19,7 @@ from ...schemas.opportunity import (
 from ...schemas.auth import StandardResponse
 from ...utils.auth import get_current_user
 from ...utils.response import create_response
+from ...dependencies.rbac import require_opportunities_read
 
 
 router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
