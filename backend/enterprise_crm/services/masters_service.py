@@ -216,13 +216,14 @@ class MastersService:
         if not price_list:
             return None
         
+        # Simple approval logic without enum
         if approval_data.decision == "approved":
-            price_list.approval_status = ApprovalStatusEnum.APPROVED
+            price_list.is_approved = True
             price_list.approved_by = approved_by
             price_list.approved_at = datetime.utcnow()
         else:
-            price_list.approval_status = ApprovalStatusEnum.REJECTED
-            price_list.rejection_reason = approval_data.comments
+            price_list.is_approved = False
+            # price_list.rejection_reason = approval_data.comments
         
         self.db.commit()
         return self._price_list_to_dict(price_list)
