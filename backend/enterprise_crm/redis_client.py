@@ -10,12 +10,24 @@ from .config import settings
 
 class RedisClient:
     def __init__(self):
-        self.redis = redis.Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-            db=settings.REDIS_DB,
-            decode_responses=True
-        )
+        try:
+            self.redis = redis.Redis(
+                host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+                db=settings.REDIS_DB,
+                decode_responses=True,
+                socket_connect_timeout=5,
+                socket_timeout=5
+            )
+            # Test connection
+            self.redis.ping()
+            self.available = True
+            print("Redis connection established")
+        except Exception as e:
+            print(f"Warning: Redis connection failed: {e}")
+            print("Session management will be disabled")
+            self.redis = None
+            self.available = False
     
     def create_session(self, user_id: int, user_data: Dict[str, Any]) -> str:
         """Create a new session and return session ID"""
