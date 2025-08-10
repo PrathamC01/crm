@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
     if (!sessionId) return false;
     
     try {
-      const response = await api.post('/session/refresh', {}, {
+      const response = await api.post('/api/session/refresh', {}, {
         headers: { 'x-session-id': sessionId }
       });
       return response.data.status;
