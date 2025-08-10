@@ -411,7 +411,7 @@ class CRMBackendTester:
         
         # Test 2: Get All Leads
         try:
-            response = self.make_request("GET", "/api/leads/?skip=0&limit=10", headers=self.session_headers)
+            response = self.make_request("GET", "/api/leads/?skip=0&limit=10", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and "data" in data and "leads" in data["data"]:
