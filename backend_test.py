@@ -656,7 +656,11 @@ class CRMBackendTester:
         """Run all backend tests"""
         print("🚀 Starting Comprehensive CRM Backend Testing")
         print(f"Backend URL: {self.base_url}")
-        print(f"Test Session ID: {TEST_SESSION_ID}")
+        
+        # First authenticate to get JWT token
+        if not self.authenticate():
+            print("❌ Authentication failed. Cannot proceed with protected endpoint tests.")
+            return
         
         # Run all test suites
         self.test_health_endpoints()
