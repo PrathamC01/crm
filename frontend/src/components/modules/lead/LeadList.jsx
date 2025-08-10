@@ -452,6 +452,9 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                         </button>
                       </div>
 
+                      {/* Status Change Dropdown */}
+                      <StatusChangeDropdown lead={lead} />
+
                       {/* Conversion Button */}
                       <ConversionButton
                         lead={lead}
