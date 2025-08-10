@@ -68,7 +68,7 @@ const Dashboard = ({ onLogout }) => {
 
       // Fetch opportunities pipeline
       const opportunitiesResponse = await apiRequest(
-        "/api/opportunities/pipeline/summary"
+        "/api/opportunities/statistics/overview"
       );
       if (opportunitiesResponse.status) {
         const oppData = opportunitiesResponse.data;
