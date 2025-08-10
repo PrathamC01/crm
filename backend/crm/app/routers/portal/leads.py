@@ -148,13 +148,10 @@ async def get_lead_stats(
     lead_service: LeadService = Depends(get_lead_service),
 ):
     """Get lead statistics"""
-    try:
-        stats = lead_service.get_lead_stats()
-        return StandardResponse(
-            status=True, message="Lead statistics retrieved successfully", data=stats
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    stats = lead_service.get_lead_stats()
+    return StandardResponse(
+        status=True, message="Lead statistics retrieved successfully", data=stats
+    )
 
 
 @router.get("/pending-review", response_model=StandardResponse)
