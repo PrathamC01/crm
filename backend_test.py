@@ -211,7 +211,7 @@ class CRMBackendTester:
         try:
             files = {"file": (test_filename, BytesIO(test_file_content), "text/plain")}
             response = self.make_request("POST", "/api/files/upload", 
-                                       headers=self.session_headers, files=files)
+                                       headers=self.auth_headers, files=files)
             
             if response.status_code == 200:
                 data = response.json()
