@@ -299,17 +299,10 @@ async def get_sales_processes(
 @router.get("/statistics/overview", response_model=OpportunityStats)
 async def get_opportunity_statistics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(require_opportunities_read)
 ):
     """Get opportunity statistics"""
     try:
-        # Only Admin and Reviewers can see full statistics
-        if current_user.role.name not in ["Admin", "Reviewer"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to view statistics"
-            )
-        
         opportunity_service = OpportunityService(db)
         stats = opportunity_service.get_opportunity_statistics()
         
