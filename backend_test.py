@@ -20,6 +20,8 @@ class CRMBackendTester:
     def __init__(self):
         self.base_url = BACKEND_URL
         self.session_headers = {"Authorization": TEST_SESSION_ID}
+        self.jwt_token = None
+        self.auth_headers = {}
         self.test_results = {}
         
     def log_test(self, test_name: str, success: bool, message: str, details: Any = None):
