@@ -570,7 +570,7 @@ class CRMBackendTester:
         # Test 2: Get Opportunity by ID (if we have one)
         if opportunity_id:
             try:
-                response = self.make_request("GET", f"/api/opportunities/{opportunity_id}", headers=self.session_headers)
+                response = self.make_request("GET", f"/api/opportunities/{opportunity_id}", headers=self.auth_headers)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status") or data.get("success"):
