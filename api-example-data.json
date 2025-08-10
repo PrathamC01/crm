@@ -18,13 +18,13 @@
       }
     },
     "logout": {
-      "method": "POST", 
+      "method": "POST",
       "endpoint": "/api/logout",
       "description": "Logout endpoint (client-side token removal)",
       "request_body": {},
       "response_example": {
         "status": true,
-        "message": "Logout successful", 
+        "message": "Logout successful",
         "data": null,
         "error": null
       }
@@ -332,20 +332,87 @@
         "Content-Type": "application/json"
       },
       "request_body": {
-        "project_title": "New AI Integration Project",
-        "lead_source": "Referral",
+        "project_title": "Test Project",
+        "lead_source": "Direct Marketing",
         "lead_sub_type": "Pre-Tender",
-        "tender_sub_type": "Open Tender",
-        "products_services": ["AI Software", "Integration Services"],
-        "company_id": 9,
-        "end_customer_id": 10,
-        "tender_fee": 75000.00,
+        "tender_sub_type": "Limited Tender",
+        "products_services": [
+          "Hardware Support"
+        ],
+        "company_id": "1",
+        "sub_business_type": "Upgrade",
+        "end_customer_id": "1",
+        "end_customer_region": "East",
+        "partner_involved": false,
+        "partners": [],
+        "contacts": [
+          {
+            "id": 1754719365385,
+            "designation": "Test",
+            "salutation": "Mr.",
+            "first_name": "Prathmesh",
+            "middle_name": "",
+            "last_name": "Chavan",
+            "email": "prathamesh.c@esds.co.in",
+            "primary_phone": "8878794568",
+            "decision_maker": true,
+            "decision_maker_percentage": "10",
+            "comments": ""
+          }
+        ],
+        "tender_fee": "19000",
         "currency": "INR",
-        "expected_revenue": 3500000.00,
+        "submission_type": "Online",
+        "tender_authority": "TEST",
+        "tender_for": "TEST",
+        "emd_required": false,
+        "emd_amount": 0,
+        "emd_currency": "INR",
+        "bg_required": false,
+        "bg_amount": 0,
+        "bg_currency": "INR",
+        "important_dates": [
+          {
+            "label": "Tender Publish Date",
+            "key": "tender_publish_date",
+            "value": "2025-08-09"
+          },
+          {
+            "label": "Query Submission Date",
+            "key": "query_submission_date",
+            "value": "2025-08-09"
+          },
+          {
+            "label": "Pre-Bid Meeting Date",
+            "key": "pre_bid_meeting_date",
+            "value": "2025-08-10"
+          },
+          {
+            "label": "Tender Submission Date",
+            "key": "tender_submission_date",
+            "value": "2025-08-07"
+          },
+          {
+            "label": "Technical Opening Date",
+            "key": "technical_opening_date",
+            "value": "2025-08-13"
+          },
+          {
+            "label": "Presentation Date",
+            "key": "presentation_date",
+            "value": "2025-08-23"
+          }
+        ],
+        "clauses": [],
+        "expected_revenue": "190000",
         "revenue_currency": "INR",
+        "convert_to_opportunity_date": "2025-08-02",
+        "competitors": [],
+        "documents": [],
         "status": "New",
         "priority": "Medium",
-        "qualification_notes": "High potential client with clear AI requirements"
+        "qualification_notes": "string",
+        "lead_score": 0
       },
       "response_example": {
         "status": true,
@@ -557,7 +624,7 @@
       "description": "Get paginated list of opportunities with filters",
       "query_parameters": {
         "skip": "0 (optional, default: 0)",
-        "limit": "100 (optional, default: 100)", 
+        "limit": "100 (optional, default: 100)",
         "status_filter": "null (optional)",
         "stage_filter": "null (optional)",
         "user_filter": "null (optional)",
@@ -568,7 +635,7 @@
       },
       "response_example": {
         "status": true,
-        "message": "Opportunities retrieved successfully", 
+        "message": "Opportunities retrieved successfully",
         "data": {
           "opportunities": [],
           "total": 0
