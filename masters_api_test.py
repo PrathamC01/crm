@@ -430,32 +430,36 @@ class MastersAPITester:
             }
             
             response = self.make_request("POST", "/masters/pricelists", pricelist_data)
-            if response and response.status_code == 200:
-                data = response.json()
-                if data.get("status") == True and "data" in data:
-                    created_pricelist = data["data"]
-                    self.created_resources["pricelists"].append(created_pricelist["id"])
-                    
-                    # Verify created price list structure
-                    required_fields = ["id", "name", "currency"]
-                    if all(field in created_pricelist for field in required_fields):
-                        self.log_test("Price List Creation", True, f"Price list created successfully with ID: {created_pricelist['id']}")
+            if response:
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == True and "data" in data:
+                        created_pricelist = data["data"]
+                        self.created_resources["pricelists"].append(created_pricelist["id"])
                         
-                        # Verify currency
-                        if created_pricelist["currency"] == pricelist_data["currency"]:
-                            self.log_test("Price List Currency", True, f"Currency set correctly: {created_pricelist['currency']}")
+                        # Verify created price list structure
+                        required_fields = ["id", "price_list_name", "currency"]
+                        if all(field in created_pricelist for field in required_fields):
+                            self.log_test("Price List Creation", True, f"Price list created successfully with ID: {created_pricelist['id']}")
+                            
+                            # Verify currency
+                            if created_pricelist["currency"] == pricelist_data["currency"]:
+                                self.log_test("Price List Currency", True, f"Currency set correctly: {created_pricelist['currency']}")
+                            else:
+                                self.log_test("Price List Currency", False, f"Currency mismatch: expected {pricelist_data['currency']}, got {created_pricelist['currency']}")
+                            
+                            return True
                         else:
-                            self.log_test("Price List Currency", False, f"Currency mismatch: expected {pricelist_data['currency']}, got {created_pricelist['currency']}")
-                        
-                        return True
+                            self.log_test("Price List Creation", False, f"Missing required fields in created price list: {created_pricelist}")
+                            return False
                     else:
-                        self.log_test("Price List Creation", False, f"Missing required fields in created price list: {created_pricelist}")
+                        self.log_test("Price List Creation", False, f"Invalid response format: {data}")
                         return False
                 else:
-                    self.log_test("Price List Creation", False, f"Invalid response format: {data}")
+                    self.log_test("Price List Creation", False, f"Request failed with status {response.status_code}: {response.text}")
                     return False
             else:
-                self.log_test("Price List Creation", False, f"Request failed with status {response.status_code if response else 'No response'}")
+                self.log_test("Price List Creation", False, "No response received")
                 return False
         except Exception as e:
             self.log_test("Price List Creation", False, f"Exception: {str(e)}")
