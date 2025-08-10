@@ -223,6 +223,7 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
         >
           <option value="">All Statuses</option>
           <option value="New">New</option>
+          <option value="Active">Active</option>
           <option value="Contacted">Contacted</option>
           <option value="Qualified">Qualified</option>
           <option value="Unqualified">Unqualified</option>
