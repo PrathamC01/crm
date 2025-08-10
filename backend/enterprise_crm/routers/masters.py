@@ -3,10 +3,13 @@ Masters Module API Routes
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Optional, List
+from sqlalchemy.orm import Session
+
 from ..schemas.common import StandardResponse, PaginatedResponse, BaseFilter, ApprovalRequest
 from ..schemas.masters import *
 from ..dependencies.auth import get_current_user, require_permission
-from ..services.masters_service import MastersService
+from ..services.masters_service import get_masters_service, MastersService
+from ..database import get_db
 
 router = APIRouter(prefix="/api/masters", tags=["masters"])
 
