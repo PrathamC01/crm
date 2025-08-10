@@ -519,15 +519,20 @@ class MastersAPITester:
                 if data.get("status") == True and "data" in data:
                     uoms_data = data["data"]
                     
-                    if "items" in uoms_data and "pagination" in uoms_data:
-                        pagination = uoms_data["pagination"]
+                    if "items" in uoms_data and "total" in uoms_data:
+                        pagination_info = {
+                            "total": uoms_data["total"],
+                            "page": uoms_data["page"],
+                            "per_page": uoms_data["per_page"],
+                            "pages": uoms_data["pages"]
+                        }
                         items = uoms_data["items"]
                         
                         # Verify pagination parameters are respected
-                        if pagination.get("page") == 1 and pagination.get("per_page") == 5:
-                            self.log_test("Pagination Parameters", True, f"Pagination parameters respected: page={pagination['page']}, per_page={pagination['per_page']}")
+                        if pagination_info.get("page") == 1 and pagination_info.get("per_page") == 5:
+                            self.log_test("Pagination Parameters", True, f"Pagination parameters respected: page={pagination_info['page']}, per_page={pagination_info['per_page']}")
                         else:
-                            self.log_test("Pagination Parameters", False, f"Pagination parameters not respected: {pagination}")
+                            self.log_test("Pagination Parameters", False, f"Pagination parameters not respected: {pagination_info}")
                         
                         # Verify items count doesn't exceed per_page
                         if len(items) <= 5:
