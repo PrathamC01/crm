@@ -125,8 +125,8 @@ class DashboardService:
     async def get_presales_dashboard_data(self, user_id: Optional[int] = None, department_id: Optional[int] = None) -> Dict[str, Any]:
         """Get presales dashboard data"""
         
-        # Solution team workload
-        presales_users = self.db.query(User).join(Department).filter(
+        # Solution team workload - fix join issues
+        presales_users = self.db.query(User).join(Department, User.department_id == Department.id).filter(
             Department.name.ilike('%presales%')
         ).all()
         
