@@ -90,19 +90,14 @@ async def update_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     """Update company information"""
-    try:
-        company = company_service.update_company(
-            company_id, company_data, current_user["id"]
-        )
-        if not company:
-            raise HTTPException(status_code=404, detail="Company not found")
+    company = company_service.update_company(
+        company_id, company_data, current_user["id"]
+    )
+    if not company:
+        from ...exceptions.custom_exceptions import NotFoundError
+        raise NotFoundError("Company", company_id)
 
-        return StandardResponse(status=True, message="Company updated successfully")
-    except HTTPException as he:
-        print(he)
-        raise he
-    except Exception as e:
-        print(e)
+    return StandardResponse(status=True, message="Company updated successfully")
 
 
 @router.delete("/{company_id}", response_model=StandardResponse)
