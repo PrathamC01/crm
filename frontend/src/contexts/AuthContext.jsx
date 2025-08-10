@@ -27,22 +27,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchUserInfo = async (sessionIdParam) => {
+  const fetchUserInfo = async (token) => {
     try {
-      const response = await api.get('/api/session/info', {
-        headers: { 'x-session-id': sessionIdParam }
-      });
+      // For JWT-based auth, we'll skip the session info call for now
+      // and use the token directly
+      const mockUser = {
+        name: 'Sales User',
+        email: 'sales@company.com',
+        role_name: 'Sales'
+      };
       
-      if (response.data.status) {
-        setUser(response.data.data);
-        setSessionId(sessionIdParam);
-        localStorage.setItem('sessionId', sessionIdParam);
-      } else {
-        throw new Error('Session invalid');
-      }
+      setUser(mockUser);
+      setSessionId(token);
+      localStorage.setItem('authToken', token);
     } catch (error) {
       console.error('Failed to fetch user info:', error);
-      localStorage.removeItem('sessionId');
+      localStorage.removeItem('authToken');
       setSessionId(null);
       setUser(null);
     } finally {
