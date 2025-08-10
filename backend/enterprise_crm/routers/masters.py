@@ -20,7 +20,7 @@ async def list_products(
     cat1_type: Optional[str] = Query(None),
     cat2_category: Optional[str] = Query(None),
     current_user: dict = Depends(get_current_user),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Get paginated list of products"""
     try:
