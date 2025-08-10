@@ -1,0 +1,78 @@
+"""
+Redis client for session management
+"""
+import redis
+import json
+import uuid
+from typing import Optional, Dict, Any
+from datetime import datetime, timedelta
+from .config import settings
+
+class RedisClient:
+    def __init__(self):
+        self.redis = redis.Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+            db=settings.REDIS_DB,
+            decode_responses=True
+        )
+    
+    def create_session(self, user_id: int, user_data: Dict[str, Any]) -> str:
+        """Create a new session and return session ID"""
+        session_id = str(uuid.uuid4())
+        session_data = {
+            "user_id": user_id,
+            "created_at": datetime.utcnow().isoformat(),
+            "expires_at": (datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)).isoformat(),
+            **user_data
+        }
+        
+        # Store session with expiration
+        self.redis.setex(
+            f"session:{session_id}",
+            timedelta(minutes=settings.SESSION_EXPIRE_MINUTES),
+            json.dumps(session_data)
+        )
+        
+        return session_id
+    
+    def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get session data by session ID"""
+        session_data = self.redis.get(f"session:{session_id}")
+        if session_data:
+            return json.loads(session_data)
+        return None
+    
+    def update_session(self, session_id: str, data: Dict[str, Any]) -> bool:
+        """Update session data"""
+        session_data = self.get_session(session_id)
+        if session_data:
+            session_data.update(data)
+            # Refresh expiration
+            self.redis.setex(
+                f"session:{session_id}",
+                timedelta(minutes=settings.SESSION_EXPIRE_MINUTES),
+                json.dumps(session_data)
+            )
+            return True
+        return False
+    
+    def delete_session(self, session_id: str) -> bool:
+        """Delete session"""
+        return bool(self.redis.delete(f"session:{session_id}"))
+    
+    def refresh_session(self, session_id: str) -> bool:
+        """Refresh session expiration"""
+        session_data = self.get_session(session_id)
+        if session_data:
+            session_data["expires_at"] = (datetime.utcnow() + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)).isoformat()
+            self.redis.setex(
+                f"session:{session_id}",
+                timedelta(minutes=settings.SESSION_EXPIRE_MINUTES),
+                json.dumps(session_data)
+            )
+            return True
+        return False
+
+# Global Redis client instance
+redis_client = RedisClient()
