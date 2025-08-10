@@ -54,7 +54,7 @@ async def create_product(
 async def get_product(
     product_id: int,
     current_user: dict = Depends(get_current_user),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Get product by ID"""
     try:
