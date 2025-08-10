@@ -54,39 +54,47 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
+      console.log('🔍 Starting login process with:', credentials.username);
+      
       // Convert username to email_or_username for backend compatibility
       const loginData = {
         email_or_username: credentials.username,
         password: credentials.password
       };
       
+      console.log('📡 Sending login request to backend...');
       const response = await api.post('/api/login', loginData);
+      console.log('📡 Login response received:', response.data);
       
       if (response.data.status && response.data.data.token) {
         const token = response.data.data.token;
+        console.log('✅ Token received, saving to localStorage');
         localStorage.setItem('authToken', token);
         
         // For now, create a mock user object since we have the token
         const mockUser = {
           name: 'Sales User',
           email: credentials.username,
-          role_name: 'Sales'
+          role_name: 'Sales',
+          id: 1
         };
         
         setUser(mockUser);
         setSessionId(token); // Use token as session ID for compatibility
+        console.log('✅ Login successful, user set:', mockUser);
         return { success: true, user: mockUser };
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
       return { 
         success: false, 
         error: error.response?.data?.message || error.message || 'Login failed' 
       };
     } finally {
       setLoading(false);
+      console.log('🔍 Login process completed, loading set to false');
     }
   };
 
