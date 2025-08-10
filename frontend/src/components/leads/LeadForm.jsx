@@ -263,11 +263,15 @@ const LeadForm = ({ lead = null, onSave, onCancel }) => {
             }`}
           >
             <option value="">Select Contact</option>
-            {contacts.map(contact => (
-              <option key={contact.id} value={contact.id}>
-                {contact.full_name} ({contact.company_name})
-              </option>
-            ))}
+            {contacts.length === 0 ? (
+              <option disabled>No contacts found</option>
+            ) : (
+              contacts.map(contact => (
+                <option key={contact.id} value={contact.id}>
+                  {contact.full_name} ({contact.company_name})
+                </option>
+              ))
+            )}
           </select>
           {errors.end_customer_id && (
             <p className="text-red-500 text-sm mt-1">{errors.end_customer_id}</p>
