@@ -17,7 +17,7 @@ const iconMap = {
   building: BuildingOfficeIcon,
   briefcase: BriefcaseIcon,
   'currency-dollar': CurrencyDollarIcon,
-  'trending-up': TrendingUpIcon,
+  'trending-up': ArrowTrendingUpIcon,
   trophy: TrophyIcon,
   clock: ClockIcon,
   calendar: CalendarIcon,
