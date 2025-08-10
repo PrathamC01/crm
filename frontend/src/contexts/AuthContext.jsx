@@ -18,11 +18,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for existing token on app load
+    console.log('🔍 AuthContext useEffect: Checking for saved token...');
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
+      console.log('✅ Found saved token, restoring authentication...');
       setSessionId(savedToken);
       fetchUserInfo(savedToken);
     } else {
+      console.log('❌ No saved token found');
       setLoading(false);
     }
   }, []);
