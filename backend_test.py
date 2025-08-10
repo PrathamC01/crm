@@ -586,7 +586,7 @@ class CRMBackendTester:
         
         # Test 3: Get Opportunity Statistics
         try:
-            response = self.make_request("GET", "/api/opportunities/statistics/overview", headers=self.session_headers)
+            response = self.make_request("GET", "/api/opportunities/statistics/overview", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") or data.get("success"):
