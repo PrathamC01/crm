@@ -10,6 +10,9 @@ from ..utils.redis_client import redis_client
 from ..models.user import User
 from ..models.role import Role
 from ..models.department import Department
+from ..services.auth_service import AuthService
+from ..services.user_service import UserService
+from .database import get_postgres_db, get_mongo_db
 
 async def get_session_id(x_session_id: Optional[str] = Header(None)) -> str:
     """Extract session ID from headers"""
