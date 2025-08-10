@@ -7,6 +7,7 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from fastapi import Depends
 
+from ..database import get_db
 from ..models.masters import (
     ProductMaster, UOMMaster, ProductUOMMap, PriceListMaster, 
     ProductPricingMaster, GroupMaster, ProductGroupingMaster,
