@@ -182,14 +182,14 @@ const LeadsPage = () => {
       className: 'text-blue-600 hover:text-blue-900'
     },
     {
+      label: 'Edit',
+      onClick: handleEditLead,
+      className: 'text-green-600 hover:text-green-900'
+    },
+    {
       label: 'Convert',
-      onClick: (lead) => {
-        if (lead.status === 'Qualified') {
-          // Handle conversion to opportunity
-          console.log('Converting lead to opportunity:', lead.id);
-        }
-      },
-      className: 'text-green-600 hover:text-green-900',
+      onClick: handleConvertLead,
+      className: 'text-purple-600 hover:text-purple-900',
       show: (lead) => lead.status === 'Qualified'
     }
   ];
