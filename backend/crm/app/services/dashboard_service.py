@@ -76,11 +76,11 @@ class DashboardService:
             func.count(Lead.id).label('count')
         ).group_by(Lead.status).all()
         
-        # Opportunity pipeline
+        # Opportunity pipeline - fix attribute name
         opp_pipeline_data = self.db.query(
             Opportunity.status,
             func.count(Opportunity.id).label('count'),
-            func.sum(Opportunity.estimated_value).label('total_value')
+            func.sum(Opportunity.amount).label('total_value')
         ).group_by(Opportunity.status).all()
         
         return {
