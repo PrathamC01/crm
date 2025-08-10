@@ -26,51 +26,63 @@ class LeadService:
             if isinstance(value, enum_class):
                 return value
             if isinstance(value, str):
-                return enum_class(value)
+                try:
+                    return enum_class(value)
+                except ValueError:
+                    # If direct conversion fails, try to find by name
+                    for enum_member in enum_class:
+                        if enum_member.value == value:
+                            return enum_member
+                    raise ValueError(f"Invalid {enum_class.__name__} value: {value}")
             return value
         
-        db_lead = Lead(
-            project_title=lead_data.get('project_title'),
-            lead_source=safe_enum_convert(lead_data.get('lead_source'), LeadSource),
-            lead_sub_type=safe_enum_convert(lead_data.get('lead_sub_type'), LeadSubType),
-            tender_sub_type=safe_enum_convert(lead_data.get('tender_sub_type'), TenderSubType),
-            products_services=lead_data.get('products_services', []),
-            company_id=lead_data.get('company_id'),
-            sub_business_type=lead_data.get('sub_business_type'),
-            end_customer_id=lead_data.get('end_customer_id'),
-            end_customer_region=lead_data.get('end_customer_region'),
-            partner_involved=lead_data.get('partner_involved', False),
-            partners_data=lead_data.get('partners_data', []),
-            tender_fee=lead_data.get('tender_fee'),
-            currency=lead_data.get('currency', 'INR'),
-            submission_type=safe_enum_convert(lead_data.get('submission_type'), SubmissionType),
-            tender_authority=lead_data.get('tender_authority'),
-            tender_for=lead_data.get('tender_for'),
-            emd_required=lead_data.get('emd_required', False),
-            emd_amount=lead_data.get('emd_amount'),
-            emd_currency=lead_data.get('emd_currency', 'INR'),
-            bg_required=lead_data.get('bg_required', False),
-            bg_amount=lead_data.get('bg_amount'),
-            bg_currency=lead_data.get('bg_currency', 'INR'),
-            important_dates=lead_data.get('important_dates', []),
-            clauses=lead_data.get('clauses', []),
-            expected_revenue=lead_data.get('expected_revenue'),
-            revenue_currency=lead_data.get('revenue_currency', 'INR'),
-            convert_to_opportunity_date=lead_data.get('convert_to_opportunity_date'),
-            competitors=lead_data.get('competitors', []),
-            documents=lead_data.get('documents', []),
-            status=safe_enum_convert(lead_data.get('status', LeadStatus.NEW), LeadStatus),
-            priority=safe_enum_convert(lead_data.get('priority', LeadPriority.MEDIUM), LeadPriority),
-            qualification_notes=lead_data.get('qualification_notes'),
-            lead_score=lead_data.get('lead_score', 0),
-            contacts=lead_data.get('contacts', []),
-            created_by=created_by
-        )
-        
-        self.db.add(db_lead)
-        self.db.commit()
-        self.db.refresh(db_lead)
-        return db_lead
+        try:
+            db_lead = Lead(
+                project_title=lead_data.get('project_title'),
+                lead_source=safe_enum_convert(lead_data.get('lead_source'), LeadSource),
+                lead_sub_type=safe_enum_convert(lead_data.get('lead_sub_type'), LeadSubType),
+                tender_sub_type=safe_enum_convert(lead_data.get('tender_sub_type'), TenderSubType),
+                products_services=lead_data.get('products_services', []),
+                company_id=lead_data.get('company_id'),
+                sub_business_type=lead_data.get('sub_business_type'),
+                end_customer_id=lead_data.get('end_customer_id'),
+                end_customer_region=lead_data.get('end_customer_region'),
+                partner_involved=lead_data.get('partner_involved', False),
+                partners_data=lead_data.get('partners_data', []),
+                tender_fee=lead_data.get('tender_fee'),
+                currency=lead_data.get('currency', 'INR'),
+                submission_type=safe_enum_convert(lead_data.get('submission_type'), SubmissionType),
+                tender_authority=lead_data.get('tender_authority'),
+                tender_for=lead_data.get('tender_for'),
+                emd_required=lead_data.get('emd_required', False),
+                emd_amount=lead_data.get('emd_amount'),
+                emd_currency=lead_data.get('emd_currency', 'INR'),
+                bg_required=lead_data.get('bg_required', False),
+                bg_amount=lead_data.get('bg_amount'),
+                bg_currency=lead_data.get('bg_currency', 'INR'),
+                important_dates=lead_data.get('important_dates', []),
+                clauses=lead_data.get('clauses', []),
+                expected_revenue=lead_data.get('expected_revenue'),
+                revenue_currency=lead_data.get('revenue_currency', 'INR'),
+                convert_to_opportunity_date=lead_data.get('convert_to_opportunity_date'),
+                competitors=lead_data.get('competitors', []),
+                documents=lead_data.get('documents', []),
+                status=safe_enum_convert(lead_data.get('status') or LeadStatus.NEW, LeadStatus),
+                priority=safe_enum_convert(lead_data.get('priority') or LeadPriority.MEDIUM, LeadPriority),
+                qualification_notes=lead_data.get('qualification_notes'),
+                lead_score=lead_data.get('lead_score', 0),
+                contacts=lead_data.get('contacts', []),
+                created_by=created_by
+            )
+            
+            self.db.add(db_lead)
+            self.db.commit()
+            self.db.refresh(db_lead)
+            return db_lead
+        except Exception as e:
+            self.db.rollback()
+            print(f"Lead creation error: {e}")
+            raise e
     
     def get_lead_by_id(self, lead_id: int) -> Optional[Lead]:
         """Get lead by ID with related details"""
