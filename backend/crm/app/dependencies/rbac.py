@@ -121,17 +121,17 @@ async def require_all_permissions(
     """
     Dependency to require all of the specified permissions
     """
-    permissions.append("*")
+    required_permissions = permissions + ["*"]  # Don't modify the original list
     user_permissions = current_user.get("permissions", [])
 
     # Super admin has all permissions
-    if "all" in user_permissions:
+    if "all" in user_permissions or "*" in user_permissions:
         return current_user
 
-    if not all(perm in user_permissions for perm in permissions):
+    if not all(perm in user_permissions for perm in required_permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"All of these permissions required: {permissions}",
+            detail=f"All of these permissions required: {required_permissions}",
         )
 
     return current_user
