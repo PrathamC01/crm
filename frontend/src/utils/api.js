@@ -85,7 +85,8 @@ export const apiMethods = {
     createLead: (data) => api.post('/api/leads', data),
     getLead: (id) => api.get(`/api/leads/${id}`),
     updateLead: (id, data) => api.put(`/api/leads/${id}`, data),
-    updateLeadStatus: (id, status) => api.patch(`/api/leads/${id}/status`, { status })
+    updateLeadStatus: (id, status) => api.patch(`/api/leads/${id}/status`, { status }),
+    convertToOpportunity: (id, data = {}) => api.post(`/api/leads/${id}/convert`, data)
   },
 
   // Opportunities APIs
