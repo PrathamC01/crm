@@ -276,7 +276,15 @@ async def create_lead(
 ):
     """Create new lead"""
     try:
-        lead = lead_service.create_lead(lead_data.dict(), current_user["id"])
+        # Convert Pydantic model to dict with proper enum handling
+        lead_dict = lead_data.dict()
+        
+        # Convert enum objects to their string values
+        for key, value in lead_dict.items():
+            if hasattr(value, 'value'):  # It's an enum
+                lead_dict[key] = value.value
+        
+        lead = lead_service.create_lead(lead_dict, current_user["id"])
 
         return StandardResponse(
             status=True,
