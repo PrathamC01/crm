@@ -106,13 +106,13 @@ def _convert_permissions(old_permissions):
     new_permissions = []
     for perm in old_permissions:
         if perm == "leads_read":
-            new_permissions.extend(["leads:read"])
+            new_permissions.extend(["leads:read", "companies:read", "companies:all", "contacts:read", "contacts:all"])
         elif perm == "leads_write":
-            new_permissions.extend(["leads:write", "leads:all"])
+            new_permissions.extend(["leads:write", "leads:all", "companies:read", "companies:all", "contacts:read", "contacts:all"])
         elif perm == "opportunities_read":
-            new_permissions.extend(["opportunities:read"])
+            new_permissions.extend(["opportunities:read", "companies:read", "companies:all", "contacts:read", "contacts:all"])
         elif perm == "opportunities_write":
-            new_permissions.extend(["opportunities:write", "opportunities:all"])
+            new_permissions.extend(["opportunities:write", "opportunities:all", "companies:read", "companies:all", "contacts:read", "contacts:all"])
         elif perm == "leads_review":
             new_permissions.extend(["leads:read", "leads:review"])
         elif perm == "leads_approve":
