@@ -38,6 +38,8 @@ class CRMBackendTester:
                 if data.get("status") and data.get("data", {}).get("token"):
                     self.jwt_token = data["data"]["token"]
                     self.auth_headers = {"Authorization": f"Bearer {self.jwt_token}"}
+                    # Also update session_headers to use the same token for session endpoints
+                    self.session_headers = {"Authorization": f"Bearer {self.jwt_token}"}
                     self.log_test("Authentication", True, "Successfully authenticated with JWT token")
                     return True
                 else:
