@@ -164,7 +164,7 @@ async def approve_price_list(
     price_list_id: int,
     approval_data: ApprovalRequest,
     current_user: dict = Depends(require_permission("masters", "approve")),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Approve or reject price list"""
     try:
