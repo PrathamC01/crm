@@ -3,10 +3,14 @@ Configuration for Enterprise CRM
 """
 import os
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/enterprise_crm")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://crm:Test@localhost:5432/crm_db")
     
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
