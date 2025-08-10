@@ -338,8 +338,8 @@ class MastersService:
             "description": uom.description,
             "base_unit": uom.base_unit,
             "conversion_factor_to_base": uom.conversion_factor_to_base,
-            "created_at": uom.created_at,
-            "updated_at": uom.updated_at,
+            "created_at": uom.created_on,  # Map to existing field
+            "updated_at": uom.updated_on,  # Map to existing field
             "is_active": uom.is_active
         }
     
