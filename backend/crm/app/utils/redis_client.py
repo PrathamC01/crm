@@ -113,7 +113,7 @@ class RedisClient:
                     + timedelta(minutes=settings.SESSION_EXPIRE_MINUTES)
                 ).isoformat()
                 self.redis.setex(
-                    f"session:{session_id}",
+                    f"auth:{session_id}",
                     timedelta(minutes=settings.SESSION_EXPIRE_MINUTES),
                     json.dumps(session_data),
                 )
