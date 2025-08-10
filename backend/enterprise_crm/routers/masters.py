@@ -146,7 +146,7 @@ async def list_price_lists(
 async def create_price_list(
     price_list_data: PriceListCreate,
     current_user: dict = Depends(require_permission("masters", "write")),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Create new price list"""
     try:
