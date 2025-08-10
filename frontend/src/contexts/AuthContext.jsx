@@ -91,15 +91,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      if (sessionId) {
-        await api.post('/api/logout', {}, {
-          headers: { 'x-session-id': sessionId }
-        });
-      }
+      // For JWT-based auth, we just clear the local storage
+      localStorage.removeItem('authToken');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('sessionId');
+      localStorage.removeItem('authToken');
       setSessionId(null);
       setUser(null);
     }
