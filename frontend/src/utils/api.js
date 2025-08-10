@@ -56,27 +56,87 @@ export const apiMethods = {
     createProduct: (data) => api.post('/api/masters/products', data),
     getProduct: (id) => api.get(`/api/masters/products/${id}`),
     updateProduct: (id, data) => api.put(`/api/masters/products/${id}`, data),
+    deleteProduct: (id) => api.delete(`/api/masters/products/${id}`),
+
+    // Product Categories
+    getProductCategories: (params = {}) => api.get('/api/masters/product-categories', { params }),
+    createProductCategory: (data) => api.post('/api/masters/product-categories', data),
+    updateProductCategory: (id, data) => api.put(`/api/masters/product-categories/${id}`, data),
+    deleteProductCategory: (id) => api.delete(`/api/masters/product-categories/${id}`),
 
     // UOMs
     getUOMs: (params = {}) => api.get('/api/masters/uoms', { params }),
     createUOM: (data) => api.post('/api/masters/uoms', data),
+    updateUOM: (id, data) => api.put(`/api/masters/uoms/${id}`, data),
+    deleteUOM: (id) => api.delete(`/api/masters/uoms/${id}`),
 
     // Price Lists
-    getPriceLists: (params = {}) => api.get('/api/masters/pricelists', { params }),
-    createPriceList: (data) => api.post('/api/masters/pricelists', data),
-    approvePriceList: (id, data) => api.post(`/api/masters/pricelists/${id}/approve`, data),
+    getPriceLists: (params = {}) => api.get('/api/masters/price-lists', { params }),
+    createPriceList: (data) => api.post('/api/masters/price-lists', data),
+    updatePriceList: (id, data) => api.put(`/api/masters/price-lists/${id}`, data),
+    deletePriceList: (id) => api.delete(`/api/masters/price-lists/${id}`),
+    approvePriceList: (id, data) => api.post(`/api/masters/price-lists/${id}/approve`, data),
 
     // Product Pricing
-    getProductPricing: (productId, params = {}) => api.get(`/api/masters/products/${productId}/pricing`, { params }),
-    createProductPricing: (productId, data) => api.post(`/api/masters/products/${productId}/pricing`, data),
+    getProductPricing: (params = {}) => api.get('/api/masters/product-pricing', { params }),
+    createProductPricing: (data) => api.post('/api/masters/product-pricing', data),
+    updateProductPricing: (id, data) => api.put(`/api/masters/product-pricing/${id}`, data),
+    deleteProductPricing: (id) => api.delete(`/api/masters/product-pricing/${id}`),
+
+    // Groups
+    getGroups: (params = {}) => api.get('/api/masters/groups', { params }),
+    createGroup: (data) => api.post('/api/masters/groups', data),
+    updateGroup: (id, data) => api.put(`/api/masters/groups/${id}`, data),
+    deleteGroup: (id) => api.delete(`/api/masters/groups/${id}`),
+
+    // Product Groupings
+    getProductGroupings: (params = {}) => api.get('/api/masters/product-groupings', { params }),
+    createProductGrouping: (data) => api.post('/api/masters/product-groupings', data),
+    updateProductGrouping: (id, data) => api.put(`/api/masters/product-groupings/${id}`, data),
+    deleteProductGrouping: (id) => api.delete(`/api/masters/product-groupings/${id}`),
+
+    // Taxes
+    getTaxes: (params = {}) => api.get('/api/masters/taxes', { params }),
+    createTax: (data) => api.post('/api/masters/taxes', data),
+    updateTax: (id, data) => api.put(`/api/masters/taxes/${id}`, data),
+    deleteTax: (id) => api.delete(`/api/masters/taxes/${id}`),
 
     // Users
     getUsers: (params = {}) => api.get('/api/masters/users', { params }),
     createUser: (data) => api.post('/api/masters/users', data),
+    updateUser: (id, data) => api.put(`/api/masters/users/${id}`, data),
+    deleteUser: (id) => api.delete(`/api/masters/users/${id}`),
 
-    // Lookups
-    getDepartments: () => api.get('/api/masters/departments'),
-    getRoles: () => api.get('/api/masters/roles')
+    // Roles
+    getRoles: (params = {}) => api.get('/api/masters/roles', { params }),
+    createRole: (data) => api.post('/api/masters/roles', data),
+    updateRole: (id, data) => api.put(`/api/masters/roles/${id}`, data),
+    deleteRole: (id) => api.delete(`/api/masters/roles/${id}`),
+
+    // Departments
+    getDepartments: (params = {}) => api.get('/api/masters/departments', { params }),
+    createDepartment: (data) => api.post('/api/masters/departments', data),
+    updateDepartment: (id, data) => api.put(`/api/masters/departments/${id}`, data),
+    deleteDepartment: (id) => api.delete(`/api/masters/departments/${id}`),
+
+    // Designations
+    getDesignations: (params = {}) => api.get('/api/masters/designations', { params }),
+    createDesignation: (data) => api.post('/api/masters/designations', data),
+    updateDesignation: (id, data) => api.put(`/api/masters/designations/${id}`, data),
+    deleteDesignation: (id) => api.delete(`/api/masters/designations/${id}`),
+
+    // Permissions
+    getPermissions: (params = {}) => api.get('/api/masters/permissions', { params }),
+    createPermission: (data) => api.post('/api/masters/permissions', data),
+    updatePermission: (id, data) => api.put(`/api/masters/permissions/${id}`, data),
+    deletePermission: (id) => api.delete(`/api/masters/permissions/${id}`),
+
+    // Other masters...
+    getStates: (params = {}) => api.get('/api/masters/states', { params }),
+    getCities: (params = {}) => api.get('/api/masters/cities', { params }),
+    getIndustryCategories: (params = {}) => api.get('/api/masters/industry-categories', { params }),
+    getDiscounts: (params = {}) => api.get('/api/masters/discounts', { params }),
+    getProductCalculations: (params = {}) => api.get('/api/masters/product-calculations', { params })
   },
 
   // Leads APIs
