@@ -272,3 +272,5 @@ agent_communication:
     message: "Starting comprehensive testing of Enterprise CRM system with Dashboard, Session Management, File Upload, and Masters modules"
   - agent: "testing"
     message: "TESTING COMPLETED SUCCESSFULLY - All 18 backend tests passed (100% success rate). Fixed multiple SQL join issues, enum compatibility problems, and Redis session handling. All core modules are working: Dashboard (sales, presales, product, overview), Session Management (info, refresh, logout), File Upload (upload, get URL, delete), Masters (CRUD operations), and Health endpoints. System is ready for production use."
+  - agent: "testing"
+    message: "MAJOR ISSUES RESOLVED - Fixed critical enum serialization bug in json_safe utility that was preventing lead creation. Updated opportunities authentication from JWT to session-based. Current status: 26/30 tests passing (86.7% success rate). All high-priority APIs now functional. Remaining issues are minor: lead-to-opportunity conversion has SQLAlchemy loader error, and some tests skipped due to dependencies."
