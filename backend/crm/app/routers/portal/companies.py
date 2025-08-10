@@ -31,26 +31,22 @@ async def get_companies(
     company_service: CompanyService = Depends(get_company_service),
 ):
     """Get all companies with pagination and search"""
-    try:
-        if limit is not None and limit > 500:
-            raise HTTPException(
-                status_code=422, detail="Limit cannot be greater than 500"
-            )
-        companies = company_service.get_companies(skip, limit, search)
-        total = company_service.get_company_count(search)
-        company_response_list = [
-            CompanyResponse.model_validate(company) for company in companies
-        ]
-        return StandardResponse(
-            status=True,
-            message="Companies retrieved successfully",
-            data=CompanyListResponse(
-                companies=company_response_list, total=total, skip=skip, limit=limit
-            ),
-        )
-    except Exception as e:
-        print(f"Error in get_companies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    if limit is not None and limit > 500:
+        from ...exceptions.custom_exceptions import ValidationError
+        raise ValidationError("Limit cannot be greater than 500", {"limit": "Maximum allowed value is 500"})
+    
+    companies = company_service.get_companies(skip, limit, search)
+    total = company_service.get_company_count(search)
+    company_response_list = [
+        CompanyResponse.model_validate(company) for company in companies
+    ]
+    return StandardResponse(
+        status=True,
+        message="Companies retrieved successfully",
+        data=CompanyListResponse(
+            companies=company_response_list, total=total, skip=skip, limit=limit
+        ),
+    )
 
 
 @router.get("/{company_id}", response_model=StandardResponse)
