@@ -74,17 +74,12 @@ async def create_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     """Create new company"""
-    try:
-        company = company_service.create_company(company_data, current_user["id"])
-        company_response = CompanyResponse.model_validate(company)
+    company = company_service.create_company(company_data, current_user["id"])
+    company_response = CompanyResponse.model_validate(company)
 
-        return StandardResponse(
-            status=True, message="Company created successfully", data=company_response
-        )
-    except Exception as e:
-        if "duplicate key" in str(e).lower():
-            raise HTTPException(status_code=400, detail="Company name already exists")
-        raise HTTPException(status_code=500, detail=str(e))
+    return StandardResponse(
+        status=True, message="Company created successfully", data=company_response
+    )
 
 
 @router.put("/{company_id}", response_model=StandardResponse)
