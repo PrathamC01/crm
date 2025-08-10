@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserInfo = async (sessionIdParam) => {
     try {
-      const response = await api.get('/session/info', {
+      const response = await api.get('/api/session/info', {
         headers: { 'x-session-id': sessionIdParam }
       });
       
