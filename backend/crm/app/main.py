@@ -122,6 +122,7 @@ async def root():
                 "/api/opportunities",
                 "/api/quotations",
                 "/api/users",
+                "/api/masters",
             ]
         },
     }
