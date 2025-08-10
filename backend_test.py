@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Enterprise CRM System
-Tests Dashboard, Session Management, File Upload, Masters, and Health endpoints
+Enhanced Leads Functionality Testing for Enterprise CRM System
+Focus on leads management, companies, contacts, and authentication permissions
 """
 
 import requests
