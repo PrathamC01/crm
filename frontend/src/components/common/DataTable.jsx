@@ -10,7 +10,9 @@ const DataTable = ({
   onPageChange, 
   onSort,
   sortBy,
-  sortOrder
+  sortOrder,
+  emptyMessage = "No records found",
+  actions
 }) => {
   const handlePageChange = (newPage) => {
     if (onPageChange) {
