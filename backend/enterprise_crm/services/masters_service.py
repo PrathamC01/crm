@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from fastapi import Depends
 
 from ..models.masters import (
     ProductMaster, UOMMaster, ProductUOMMap, PriceListMaster, 
