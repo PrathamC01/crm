@@ -20,9 +20,11 @@ router = APIRouter(prefix="/api", tags=["authentication"])
 async def login(
     login_request: LoginRequest,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
+    db: Session = Depends(get_postgres_db),
+    mongo_db = Depends(get_mongo_db),
 ):
     """Authenticate user and return JWT token"""
+    auth_service = AuthService(db, mongo_db)
     try:
         token_data = await auth_service.authenticate_user(
             login_request.email_or_username, login_request.password, request
