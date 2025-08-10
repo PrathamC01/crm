@@ -58,6 +58,7 @@ class MastersAPITester:
                 raise ValueError(f"Unsupported method: {method}")
             
             print(f"Response status: {response.status_code}")
+            print(f"Response text: {response.text}")
             return response
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
