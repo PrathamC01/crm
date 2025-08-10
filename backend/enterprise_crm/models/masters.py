@@ -151,7 +151,7 @@ class ProductGroupingMaster(ApprovalBaseModel):
     
     # Relationships
     product = relationship("ProductMaster", back_populates="groupings")
-    group = relationship("GroupMaster")
+    group = relationship("GroupMaster", foreign_keys=[group_id])
     
     __table_args__ = (
         UniqueConstraint('product_id', 'group_id', name='unique_product_group'),
