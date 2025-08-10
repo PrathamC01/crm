@@ -93,6 +93,36 @@ async def get_current_user(
     }
 
 
+def _convert_permissions(old_permissions):
+    """Convert old permission format to new format"""
+    if not old_permissions:
+        return []
+    
+    # Handle special permissions
+    if "all" in old_permissions:
+        return ["*", "all", "leads:read", "leads:write", "leads:all", "opportunities:read", "opportunities:write", "opportunities:all", "masters:read", "masters:write", "masters:all", "dashboard:read"]
+    
+    # Convert old format to new format
+    new_permissions = []
+    for perm in old_permissions:
+        if perm == "leads_read":
+            new_permissions.extend(["leads:read"])
+        elif perm == "leads_write":
+            new_permissions.extend(["leads:write", "leads:all"])
+        elif perm == "opportunities_read":
+            new_permissions.extend(["opportunities:read"])
+        elif perm == "opportunities_write":
+            new_permissions.extend(["opportunities:write", "opportunities:all"])
+        elif perm == "leads_review":
+            new_permissions.extend(["leads:read", "leads:review"])
+        elif perm == "leads_approve":
+            new_permissions.extend(["leads:read", "leads:approve"])
+        else:
+            new_permissions.append(perm)
+    
+    return new_permissions
+
+
 async def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db),
