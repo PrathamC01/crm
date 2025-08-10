@@ -1,12 +1,17 @@
 """
-Authentication endpoints
+Authentication endpoints with Redis Session Management
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import JSONResponse
 from ...schemas.auth import LoginRequest, StandardResponse, UserResponse
 from ...services.auth_service import AuthService
-from ...dependencies.auth import get_current_user, get_auth_service
+from ...dependencies.auth import get_current_user, get_optional_user, get_auth_service
+from ...dependencies.database import get_postgres_db
+from ...utils.redis_client import redis_client
+from ...utils.minio_client import minio_client
+from ...models.user import User
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api", tags=["authentication"])
 
