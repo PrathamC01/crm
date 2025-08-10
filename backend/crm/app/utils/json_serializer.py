@@ -14,7 +14,7 @@ from enum import Enum
 def json_safe(obj: Any) -> Any:
     """
     Convert objects to JSON-serializable format.
-    Handles datetime, date, Decimal, UUID, and other common types.
+    Handles datetime, date, Decimal, UUID, Enum, and other common types.
     """
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
@@ -22,6 +22,8 @@ def json_safe(obj: Any) -> Any:
         return float(obj)
     elif isinstance(obj, UUID):
         return str(obj)
+    elif isinstance(obj, Enum):
+        return obj.value
     elif hasattr(obj, '__dict__'):
         # Handle SQLAlchemy models and similar objects
         return {key: json_safe(value) for key, value in obj.__dict__.items() 
