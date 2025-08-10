@@ -636,6 +636,12 @@ class CRMBackendTester:
         self.test_dashboard_endpoints()
         self.test_file_upload_endpoints()
         self.test_masters_endpoints()
+        
+        # Test Leads and Opportunities workflow
+        created_lead_id = self.test_leads_api()
+        opportunity_id = self.test_lead_to_opportunity_conversion(created_lead_id)
+        self.test_opportunities_api(opportunity_id)
+        
         self.test_integration_scenarios()
         
         # Print summary
