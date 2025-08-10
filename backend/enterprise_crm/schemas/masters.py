@@ -135,7 +135,7 @@ class ProductPricingResponse(BaseResponseSchema):
 # User Management Schemas
 class UserMasterCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    email: str = Field(..., regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
     phone: Optional[str] = Field(None, max_length=20)
     role_id: int
     department_id: int
