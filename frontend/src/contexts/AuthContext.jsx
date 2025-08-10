@@ -29,17 +29,18 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserInfo = async (token) => {
     try {
-      // For JWT-based auth, we'll skip the session info call for now
-      // and use the token directly
+      // For development, since we have a working JWT, we'll create a mock user
+      // In production, this would call /api/user/me or similar
       const mockUser = {
         name: 'Sales User',
         email: 'sales@company.com',
-        role_name: 'Sales'
+        role_name: 'Sales',
+        id: 1
       };
       
       setUser(mockUser);
       setSessionId(token);
-      localStorage.setItem('authToken', token);
+      console.log('✅ User authenticated successfully:', mockUser);
     } catch (error) {
       console.error('Failed to fetch user info:', error);
       localStorage.removeItem('authToken');
