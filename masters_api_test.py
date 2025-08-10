@@ -91,7 +91,7 @@ class MastersAPITester:
                         
                         # Verify department structure
                         first_dept = departments[0]
-                        required_fields = ["id", "name"]
+                        required_fields = ["id", "department_name"]
                         if all(field in first_dept for field in required_fields):
                             self.log_test("Departments Structure", True, "Department structure is valid")
                         else:
