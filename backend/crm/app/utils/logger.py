@@ -23,9 +23,9 @@ async def log_activity(mongo_db, user_id: int, action: str, details: Optional[Di
 
 async def log_request(mongo_db, method: str, url: str, status_code: int, 
                      process_time: float, ip_address: str, user_agent: str):
-    """Log HTTP request to MongoDB"""
+    """Log HTTP request to MongoDB""" 
     try:
-        if mongo_db is not None:
+        if mongo_db is not None: 
             log_entry = {
                 "method": method,
                 "url": url,

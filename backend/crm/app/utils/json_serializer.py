@@ -10,27 +10,15 @@ from decimal import Decimal
 from uuid import UUID
 
 
-def json_safe(obj: Any) -> Any:
-    """
-    Convert objects to JSON-serializable format.
-    Handles datetime, date, Decimal, UUID, and other common types.
-    """
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    elif isinstance(obj, Decimal):
-        return float(obj)
-    elif isinstance(obj, UUID):
-        return str(obj)
-    elif hasattr(obj, '__dict__'):
-        # Handle SQLAlchemy models and similar objects
-        return {key: json_safe(value) for key, value in obj.__dict__.items() 
-                if not key.startswith('_')}
-    elif isinstance(obj, (list, tuple)):
-        return [json_safe(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {key: json_safe(value) for key, value in obj.items()}
-    else:
-        return obj
+def json_safe(value: Any) -> Any:
+    """Recursively convert to JSON-safe values."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, list):
+        return [json_safe(v) for v in value]
+    if isinstance(value, dict):
+        return {k: json_safe(v) for k, v in value.items()}
+    return value
 
 
 def safe_json_dumps(obj: Any, **kwargs) -> str:

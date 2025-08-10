@@ -184,7 +184,24 @@ class LeadBase(BaseModel):
             raise ValueError("At least one contact is required")
         return v
 
+    @root_validator(pre=True)
+    def convert_dates_in_json_fields(cls, values):
+        json_fields = [
+            "products_services",
+            "partners_data",
+            "important_dates",
+            "clauses",
+            "competitors",
+            "documents",
+            "contacts",
+        ]
+        for field in json_fields:
+            if field in values and values[field] is not None:
+                values[field] = json_safe(values[field])
+        return values
+
     def dict(self, *args, **kwargs):
+        """Ensure dict output is JSON-safe before DB insert."""
         raw = super().dict(*args, **kwargs)
         return json_safe(raw)
 

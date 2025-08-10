@@ -18,7 +18,7 @@ class LeadService:
     
     def create_lead(self, lead_data: dict, created_by: Optional[int] = None) -> Lead:
         """Create a new lead"""
-        
+        print(lead_data)
         db_lead = Lead(
             project_title=lead_data.get('project_title'),
             lead_source=LeadSource(lead_data.get('lead_source')),
