@@ -245,7 +245,7 @@ async def list_users(
 async def create_user(
     user_data: UserMasterCreate,
     current_user: dict = Depends(require_permission("masters", "write")),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Create new user"""
     try:
