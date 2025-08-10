@@ -109,7 +109,7 @@ backend:
     working: true
     file: "/app/backend/crm/app/routers/sso/auth.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -124,7 +124,7 @@ backend:
     working: true
     file: "/app/backend/crm/app/routers/sso/auth.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -139,7 +139,7 @@ backend:
     working: true
     file: "/app/backend/crm/app/routers/sso/auth.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -163,6 +163,60 @@ backend:
       - working: true
         agent: "testing"
         comment: "Masters module tested successfully. All CRUD operations for products, UOMs, departments, and roles working correctly with proper pagination and filtering."
+
+  - task: "Leads Module - Get Stats"
+    implemented: true
+    working: true
+    file: "/app/backend/crm/app/routers/portal/leads.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Lead statistics API working correctly. Returns comprehensive lead metrics."
+      - working: true
+        agent: "main" 
+        comment: "Lead stats endpoint tested successfully. RBAC permissions fixed for test user."
+
+  - task: "Leads Module - Create Lead"
+    implemented: true
+    working: false
+    file: "/app/backend/crm/app/routers/portal/leads.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Lead creation failing due to enum conversion issues in service layer"
+      - working: false
+        agent: "main"
+        comment: "Issue identified: Pydantic LeadCreate model converts enums to dicts causing 'unhashable type: dict' SQL error. Service enum conversion needs fixing."
+
+  - task: "Leads Module - CRUD Operations"
+    implemented: true
+    working: false
+    file: "/app/backend/crm/app/routers/portal/leads.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Dependent on lead creation fix. Other CRUD operations likely affected by same enum issue."
+
+  - task: "Opportunities Module - Basic CRUD"
+    implemented: true
+    working: false
+    file: "/app/backend/crm/app/routers/portal/opportunities.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "API endpoints exist but likely affected by similar enum/data processing issues as leads"
 
   - task: "Health Check Endpoints"
     implemented: true
