@@ -4,7 +4,7 @@ import {
   BuildingOfficeIcon,
   BriefcaseIcon,
   CurrencyDollarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   TrophyIcon,
   ClockIcon,
   CalendarIcon,
