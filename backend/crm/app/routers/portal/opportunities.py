@@ -109,17 +109,13 @@ async def get_opportunities(
     user_filter: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(require_opportunities_read)
 ):
     """Get paginated list of opportunities with filters"""
     try:
         opportunity_service = OpportunityService(db)
         
-        # Role-based filtering
-        if current_user.role.name == "Sales":
-            # Sales users see only their converted opportunities
-            user_filter = current_user.id
-        
+        # Role-based filtering - simplified for session-based auth
         result = opportunity_service.get_opportunities_list(
             skip=skip,
             limit=limit,
