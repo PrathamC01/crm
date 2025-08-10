@@ -39,7 +39,7 @@ class DashboardService:
             opps_query = opps_query.join(User, Opportunity.created_by == User.id).filter(User.department_id == department_id)
         
         total_opportunities = opps_query.count()
-        open_opportunities = opps_query.filter(Opportunity.status.in_([OpportunityStatus.PROSPECTING, OpportunityStatus.QUALIFICATION])).count()
+        open_opportunities = opps_query.filter(Opportunity.status.in_([OpportunityStatus.OPEN, OpportunityStatus.CONVERTED_FROM_LEAD])).count()
         won_opportunities = opps_query.filter(Opportunity.status == OpportunityStatus.WON).count()
         
         # Revenue calculations - fix attribute name
