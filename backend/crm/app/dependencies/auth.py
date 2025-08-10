@@ -100,7 +100,7 @@ def _convert_permissions(old_permissions):
     
     # Handle special permissions
     if "all" in old_permissions:
-        return ["*", "all", "leads:read", "leads:write", "leads:all", "opportunities:read", "opportunities:write", "opportunities:all", "masters:read", "masters:write", "masters:all", "dashboard:read"]
+        return ["*", "all", "leads:read", "leads:write", "leads:all", "opportunities:read", "opportunities:write", "opportunities:all", "masters:read", "masters:write", "masters:all", "dashboard:read", "companies:read", "companies:all", "contacts:read", "contacts:all"]
     
     # Convert old format to new format
     new_permissions = []
