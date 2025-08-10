@@ -80,35 +80,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Global exception handler"""
-    return JSONResponse(
-        status_code=500,
-        content={
-            "status": False,
-            "message": "Internal server error",
-            "data": None,
-            "error": str(exc),
-        },
-    )
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = {}
-    for err in exc.errors():
-        loc = err["loc"]
-        field = loc[-1]  # last part of the location (e.g., "company_id")
-        message = err["msg"]
-        errors[field] = message
-
-    return JSONResponse(
-        status_code=422,
-        content={"status": False, "message": "Validation Failed", "error": errors},
-    )
+# Register centralized exception handlers
+app.add_exception_handler(CRMBaseException, custom_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(PydanticValidationError, pydantic_validation_exception_handler)
+app.add_exception_handler(IntegrityError, sqlalchemy_exception_handler)
+app.add_exception_handler(DBAPIError, database_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 # Include routers
