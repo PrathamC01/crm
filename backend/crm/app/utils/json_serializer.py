@@ -1,15 +1,41 @@
-from datetime import date, datetime
+"""
+JSON serialization utilities for the CRM application.
+Provides safe serialization functions for complex objects.
+"""
+
+import json
+from typing import Any
+from datetime import datetime, date
 from decimal import Decimal
+from uuid import UUID
 
 
-def json_safe(value):
-    """Recursively convert Pydantic/complex objects to JSON-safe primitives."""
-    if isinstance(value, (date, datetime)):
-        return value.isoformat()
-    if isinstance(value, Decimal):
-        return float(value)
-    if isinstance(value, list):
-        return [json_safe(v) for v in value]
-    if isinstance(value, dict):
-        return {k: json_safe(v) for k, v in value.items()}
-    return value
+def json_safe(obj: Any) -> Any:
+    """
+    Convert objects to JSON-serializable format.
+    Handles datetime, date, Decimal, UUID, and other common types.
+    """
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    elif isinstance(obj, Decimal):
+        return float(obj)
+    elif isinstance(obj, UUID):
+        return str(obj)
+    elif hasattr(obj, '__dict__'):
+        # Handle SQLAlchemy models and similar objects
+        return {key: json_safe(value) for key, value in obj.__dict__.items() 
+                if not key.startswith('_')}
+    elif isinstance(obj, (list, tuple)):
+        return [json_safe(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: json_safe(value) for key, value in obj.items()}
+    else:
+        return obj
+
+
+def safe_json_dumps(obj: Any, **kwargs) -> str:
+    """
+    Safely serialize objects to JSON string.
+    Uses json_safe to handle complex objects.
+    """
+    return json.dumps(json_safe(obj), **kwargs)

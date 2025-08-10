@@ -1,11 +1,12 @@
 """
-FastAPI main application with SQLAlchemy
+FastAPI main application with SQLAlchemy and centralized error handling
 """
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 
 # Import routers
@@ -17,7 +18,22 @@ from .routers.front import health
 # Import database
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
-from .middlewares.error_handler import ErrorHandlerMiddleware
+
+# Import centralized error handlers
+from .exceptions.handlers import (
+    custom_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    pydantic_validation_exception_handler,
+    sqlalchemy_exception_handler,
+    database_exception_handler,
+    generic_exception_handler
+)
+from .exceptions.custom_exceptions import CRMBaseException
+
+# SQLAlchemy imports for error handling
+from sqlalchemy.exc import IntegrityError, DBAPIError
+from pydantic import ValidationError as PydanticValidationError
 
 
 @asynccontextmanager
@@ -54,7 +70,7 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
-app.add_middleware(ErrorHandlerMiddleware)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -64,35 +80,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Global exception handler"""
-    return JSONResponse(
-        status_code=500,
-        content={
-            "status": False,
-            "message": "Internal server error",
-            "data": None,
-            "error": str(exc),
-        },
-    )
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = {}
-    for err in exc.errors():
-        loc = err["loc"]
-        field = loc[-1]  # last part of the location (e.g., "company_id")
-        message = err["msg"]
-        errors[field] = message
-
-    return JSONResponse(
-        status_code=422,
-        content={"status": False, "message": "Validation Failed", "error": errors},
-    )
+# Register centralized exception handlers
+app.add_exception_handler(CRMBaseException, custom_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(PydanticValidationError, pydantic_validation_exception_handler)
+app.add_exception_handler(IntegrityError, sqlalchemy_exception_handler)
+app.add_exception_handler(DBAPIError, database_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 # Include routers
