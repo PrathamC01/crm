@@ -134,8 +134,8 @@ class DashboardService:
         for user in presales_users:
             active_opportunities = self.db.query(func.count(Opportunity.id)).filter(
                 and_(
-                    Opportunity.assigned_to == user.id,
-                    Opportunity.status.in_([OpportunityStatus.PROSPECTING, OpportunityStatus.QUALIFICATION])
+                    Opportunity.created_by == user.id,
+                    Opportunity.status.in_([OpportunityStatus.OPEN, OpportunityStatus.CONVERTED_FROM_LEAD])
                 )
             ).scalar() or 0
             
