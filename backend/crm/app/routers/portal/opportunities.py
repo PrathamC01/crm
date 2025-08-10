@@ -99,7 +99,7 @@ async def check_lead_conversion_eligibility(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.get("/", response_model=OpportunityListResponse)
+@router.get("/", response_model=StandardResponse)
 async def get_opportunities(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
