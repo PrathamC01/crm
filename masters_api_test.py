@@ -308,9 +308,6 @@ class MastersAPITester:
             
             response = self.make_request("POST", "/masters/uoms", uom_data)
             if response:
-                print(f"Response status: {response.status_code}")
-                print(f"Response text: {response.text}")
-                
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status") == True and "data" in data:
