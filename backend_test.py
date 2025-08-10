@@ -396,7 +396,7 @@ class CRMBackendTester:
         
         # Test 1: Create Lead
         try:
-            response = self.make_request("POST", "/api/leads/", headers=self.session_headers, data=lead_data)
+            response = self.make_request("POST", "/api/leads/", headers=self.auth_headers, data=lead_data)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and data.get("data", {}).get("id"):
