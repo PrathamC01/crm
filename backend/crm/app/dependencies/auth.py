@@ -115,3 +115,14 @@ require_opportunities_write = require_permission("opportunities", "write")
 require_masters_read = require_permission("masters", "read")
 require_masters_write = require_permission("masters", "write")
 require_dashboard_read = require_permission("dashboard", "read")
+
+def get_auth_service(
+    db: Session = Depends(get_postgres_db),
+    mongo_db = Depends(get_mongo_db)
+) -> AuthService:
+    """Get AuthService instance with database dependencies"""
+    return AuthService(db, mongo_db)
+
+def get_user_service(db: Session = Depends(get_postgres_db)) -> UserService:
+    """Get UserService instance with database dependency"""
+    return UserService(db)
