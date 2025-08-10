@@ -1,11 +1,12 @@
 """
-FastAPI main application with SQLAlchemy
+FastAPI main application with SQLAlchemy and centralized error handling
 """
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 
 # Import routers
@@ -17,7 +18,22 @@ from .routers.front import health
 # Import database
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
-from .middlewares.error_handler import ErrorHandlerMiddleware
+
+# Import centralized error handlers
+from .exceptions.handlers import (
+    custom_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    pydantic_validation_exception_handler,
+    sqlalchemy_exception_handler,
+    database_exception_handler,
+    generic_exception_handler
+)
+from .exceptions.custom_exceptions import CRMBaseException
+
+# SQLAlchemy imports for error handling
+from sqlalchemy.exc import IntegrityError, DBAPIError
+from pydantic import ValidationError as PydanticValidationError
 
 
 @asynccontextmanager
