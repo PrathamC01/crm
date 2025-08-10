@@ -332,6 +332,25 @@ const LeadsPage = () => {
         />
       </Modal>
 
+      {/* Edit Lead Modal */}
+      <Modal
+        isOpen={!!editingLead}
+        onClose={() => setEditingLead(null)}
+        title="Edit Lead"
+        size="large"
+      >
+        {editingLead && (
+          <LeadForm
+            lead={editingLead}
+            onSave={(updatedLead) => {
+              setEditingLead(null);
+              fetchLeads(); // Refresh the leads list
+            }}
+            onCancel={() => setEditingLead(null)}
+          />
+        )}
+      </Modal>
+
       {/* Lead Detail Modal */}
       <Modal
         isOpen={!!selectedLead}
