@@ -11,10 +11,14 @@ from ...schemas.masters import (
     UOMCreate, ProductMasterCreate, ProductMasterUpdate, PriceListCreate,
     ProductPricingCreate, UserMasterCreate, UserMasterUpdate
 )
-from ...services.masters_service import get_masters_service, MastersService
+from ...services.masters_service import MastersService
 from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/masters", tags=["masters"])
+
+def get_masters_service(db: Session = Depends(get_postgres_db)) -> MastersService:
+    """Dependency to get masters service"""
+    return MastersService(db)
 
 # Product Master Routes
 @router.get("/products", response_model=StandardResponse)
