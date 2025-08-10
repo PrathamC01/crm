@@ -426,7 +426,7 @@ class CRMBackendTester:
         # Test 3: Get Lead by ID (if we have a created lead)
         if created_lead_id:
             try:
-                response = self.make_request("GET", f"/api/leads/{created_lead_id}", headers=self.session_headers)
+                response = self.make_request("GET", f"/api/leads/{created_lead_id}", headers=self.auth_headers)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status") and data.get("data", {}).get("id") == created_lead_id:
