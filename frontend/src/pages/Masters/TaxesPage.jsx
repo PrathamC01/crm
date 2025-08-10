@@ -4,80 +4,62 @@ import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const RolesPage = () => {
-  const [roles, setRoles] = useState([]);
-  const [permissions, setPermissions] = useState([]);
+const TaxesPage = () => {
+  const [taxes, setTaxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingRole, setEditingRole] = useState(null);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [editingTax, setEditingTax] = useState(null);
+  const [selectedTax, setSelectedTax] = useState(null);
   const [stats, setStats] = useState({});
 
   useEffect(() => {
-    fetchRoles();
-    fetchPermissions();
+    fetchTaxes();
   }, []);
 
-  const fetchRoles = async () => {
+  const fetchTaxes = async () => {
     try {
       setLoading(true);
-      const response = await apiMethods.masters.getRoles();
+      const response = await apiMethods.masters.getTaxes();
       if (response.data?.status) {
-        setRoles(response.data.data?.roles || []);
+        setTaxes(response.data.data?.taxes || []);
         setStats(response.data.data?.stats || {});
       }
     } catch (error) {
-      console.error('Error fetching roles:', error);
-      setRoles([]);
+      console.error('Error fetching taxes:', error);
+      setTaxes([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchPermissions = async () => {
-    try {
-      const response = await apiMethods.masters.getPermissions();
-      if (response.data?.status) {
-        setPermissions(response.data.data?.permissions || []);
-      }
-    } catch (error) {
-      console.error('Error fetching permissions:', error);
-      setPermissions([]);
-    }
+  const handleViewTax = (tax) => {
+    setSelectedTax(tax);
   };
 
-  const handleViewRole = (role) => {
-    setSelectedRole(role);
+  const handleEditTax = (tax) => {
+    setEditingTax(tax);
   };
 
-  const handleEditRole = (role) => {
-    setEditingRole(role);
-  };
-
-  const handleDeleteRole = async (role) => {
-    if (window.confirm('Are you sure you want to delete this role?')) {
+  const handleDeleteTax = async (tax) => {
+    if (window.confirm('Are you sure you want to delete this tax?')) {
       try {
-        await apiMethods.masters.deleteRole(role.id);
-        fetchRoles();
+        await apiMethods.masters.deleteTax(tax.id);
+        fetchTaxes();
       } catch (error) {
-        console.error('Error deleting role:', error);
-        alert('Failed to delete role');
+        console.error('Error deleting tax:', error);
+        alert('Failed to delete tax');
       }
     }
   };
 
   const columns = [
-    { key: 'role_name', label: 'Role Name' },
-    { key: 'role_code', label: 'Role Code' },
+    { key: 'tax_name', label: 'Tax Name' },
+    { key: 'tax_code', label: 'Tax Code' },
+    { key: 'financial_year', label: 'Financial Year' },
     {
-      key: 'description',
-      label: 'Description',
-      render: (item) => item.description || 'No description'
-    },
-    {
-      key: 'permission_count',
-      label: 'Permissions',
-      render: (item) => `${item.permission_count || 0} permissions`
+      key: 'tax_rate',
+      label: 'Tax Rate',
+      render: (item) => `${item.tax_rate || 0}%`
     },
     {
       key: 'is_active',
@@ -102,17 +84,17 @@ const RolesPage = () => {
   const actions = [
     {
       label: 'View',
-      onClick: handleViewRole,
+      onClick: handleViewTax,
       className: 'text-blue-600 hover:text-blue-900'
     },
     {
       label: 'Edit',
-      onClick: handleEditRole,
+      onClick: handleEditTax,
       className: 'text-green-600 hover:text-green-900'
     },
     {
       label: 'Delete',
-      onClick: handleDeleteRole,
+      onClick: handleDeleteTax,
       className: 'text-red-600 hover:text-red-900'
     }
   ];
@@ -122,8 +104,8 @@ const RolesPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Role Management</h1>
-          <p className="text-gray-600">Manage user roles and their permission configurations</p>
+          <h1 className="text-3xl font-bold text-gray-900">Tax Management</h1>
+          <p className="text-gray-600">Manage tax configurations and rates for financial calculations</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -132,7 +114,7 @@ const RolesPage = () => {
           <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
-          Create Role
+          Create Tax
         </button>
       </div>
 
@@ -142,12 +124,12 @@ const RolesPage = () => {
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100">
               <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-2a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM7 12l2 2 4-4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Roles</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.total || roles.length}</p>
+              <p className="text-sm font-medium text-gray-600">Total Taxes</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.total || taxes.length}</p>
             </div>
           </div>
         </div>
@@ -159,7 +141,7 @@ const RolesPage = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Roles</p>
+              <p className="text-sm font-medium text-gray-600">Active</p>
               <p className="text-2xl font-semibold text-gray-900">{stats.active || 0}</p>
             </div>
           </div>
@@ -172,7 +154,7 @@ const RolesPage = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Inactive Roles</p>
+              <p className="text-sm font-medium text-gray-600">Inactive</p>
               <p className="text-2xl font-semibold text-gray-900">{stats.inactive || 0}</p>
             </div>
           </div>
@@ -181,18 +163,18 @@ const RolesPage = () => {
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-purple-100">
               <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Admin Roles</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.admin || 0}</p>
+              <p className="text-sm font-medium text-gray-600">Avg Tax Rate</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.avg_rate || 0}%</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Roles Table */}
+      {/* Taxes Table */}
       <div className="bg-white rounded-lg shadow">
         {loading ? (
           <div className="p-8 text-center">
@@ -201,84 +183,74 @@ const RolesPage = () => {
         ) : (
           <DataTable
             columns={columns}
-            data={roles}
+            data={taxes}
             actions={actions}
-            emptyMessage="No roles found. Create your first role to manage user permissions."
+            emptyMessage="No taxes found. Create your first tax configuration to handle financial calculations."
           />
         )}
       </div>
 
       {/* Create/Edit Modal */}
       <Modal
-        isOpen={showCreateModal || !!editingRole}
+        isOpen={showCreateModal || !!editingTax}
         onClose={() => {
           setShowCreateModal(false);
-          setEditingRole(null);
+          setEditingTax(null);
         }}
-        title={editingRole ? "Edit Role" : "Create New Role"}
+        title={editingTax ? "Edit Tax" : "Create New Tax"}
         size="large"
       >
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tax Name</label>
             <input
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter role name"
+              placeholder="Enter tax name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role Code</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tax Code</label>
             <input
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter role code"
+              placeholder="Enter tax code"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea
-              rows={3}
+            <label className="block text-sm font-medium text-gray-700 mb-2">Financial Year</label>
+            <input
+              type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter role description"
+              placeholder="Enter financial year (e.g., 2024-2025)"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-3">
-              {permissions.length === 0 ? (
-                <p className="text-gray-500 text-sm">No permissions found</p>
-              ) : (
-                <div className="space-y-2">
-                  {permissions.map(permission => (
-                    <label key={permission.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-900">{permission.permission_name}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tax Rate (%)</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter tax rate percentage"
+            />
           </div>
           <div className="flex items-center">
             <input
               type="checkbox"
               id="is_active"
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              defaultChecked
             />
             <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
-              Active Role
+              Active Tax
             </label>
           </div>
           <div className="flex justify-end space-x-3 pt-6 border-t">
             <button
               onClick={() => {
                 setShowCreateModal(false);
-                setEditingRole(null);
+                setEditingTax(null);
               }}
               className="px-6 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
             >
@@ -287,12 +259,12 @@ const RolesPage = () => {
             <button
               onClick={() => {
                 setShowCreateModal(false);
-                setEditingRole(null);
-                fetchRoles();
+                setEditingTax(null);
+                fetchTaxes();
               }}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              {editingRole ? "Update" : "Create"} Role
+              {editingTax ? "Update" : "Create"} Tax
             </button>
           </div>
         </div>
@@ -300,32 +272,32 @@ const RolesPage = () => {
 
       {/* View Details Modal */}
       <Modal
-        isOpen={!!selectedRole}
-        onClose={() => setSelectedRole(null)}
-        title="Role Details"
+        isOpen={!!selectedTax}
+        onClose={() => setSelectedTax(null)}
+        title="Tax Details"
       >
-        {selectedRole && (
+        {selectedTax && (
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Role Name</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedRole.role_name || 'N/A'}</p>
+                <label className="block text-sm font-medium text-gray-700">Tax Name</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedTax.tax_name || 'N/A'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Role Code</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedRole.role_code || 'N/A'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Description</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedRole.description || 'No description'}</p>
+                <label className="block text-sm font-medium text-gray-700">Tax Code</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedTax.tax_code || 'N/A'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Permissions</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedRole.permission_count || 0} permissions assigned</p>
+                <label className="block text-sm font-medium text-gray-700">Financial Year</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedTax.financial_year || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tax Rate</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedTax.tax_rate || 0}%</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Status</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedRole.is_active ? 'Active' : 'Inactive'}</p>
+                <p className="mt-1 text-sm text-gray-900">{selectedTax.is_active ? 'Active' : 'Inactive'}</p>
               </div>
             </div>
           </div>
@@ -335,4 +307,4 @@ const RolesPage = () => {
   );
 };
 
-export default RolesPage;
+export default TaxesPage;
