@@ -58,12 +58,12 @@ class DashboardService:
             )
         ).scalar() or 0
         
-        # Assignment overview
+        # Assignment overview - fix join issues
         assignment_data = self.db.query(
             User.name,
             func.count(Lead.id).label('lead_count'),
             func.count(Opportunity.id).label('opp_count')
-        ).select_from(User).outerjoin(Lead).outerjoin(Opportunity).group_by(User.id, User.name).all()
+        ).select_from(User).outerjoin(Lead, Lead.sales_person_id == User.id).outerjoin(Opportunity, Opportunity.created_by == User.id).group_by(User.id, User.name).all()
         
         # Approvals pending
         pending_quotes = self.db.query(func.count(Quotation.id)).filter(
