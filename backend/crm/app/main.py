@@ -19,6 +19,10 @@ from .routers.front import health
 from .database.init_db import init_database
 from .dependencies.database import init_mongodb, close_mongodb
 
+# Import Redis and MinIO clients
+from .utils.redis_client import redis_client
+from .utils.minio_client import minio_client
+
 # Import centralized error handlers
 from .exceptions.handlers import (
     custom_exception_handler,
