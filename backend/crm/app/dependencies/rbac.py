@@ -196,7 +196,8 @@ async def require_opportunities_write(
 # Role-based dependencies
 async def require_admin_role(current_user: dict = Depends(get_current_user)) -> dict:
     """Require admin or super_admin role"""
-    role_name = current_user.get("role_name", "")
+    role_name = current_user.get("role", "")
+    print(current_user)
     if role_name not in ["admin", "super_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required"

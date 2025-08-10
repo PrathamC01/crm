@@ -283,9 +283,7 @@ async def create_lead(
 ):
     """Create new lead"""
     try:
-        lead = lead_service.create_lead(
-            lead_data.dict(exclude_unset=True), current_user["id"]
-        )
+        lead = lead_service.create_lead(lead_data.dict(), current_user["id"])
 
         return StandardResponse(
             status=True,
@@ -299,6 +297,7 @@ async def create_lead(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -472,7 +471,7 @@ async def convert_to_opportunity(
         }
 
         # Create the opportunity
-        opportunity = opportunity_service.create_opportunity(
+        opportunity = opportunity_service.create_opportunity_from_lead(
             opportunity_data, current_user["id"]
         )
 

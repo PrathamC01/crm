@@ -2,11 +2,12 @@
 Enhanced Lead schemas with opportunity conversion workflow
 """
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, root_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
+from ..utils import json_safe
 
 
 class LeadSource(str, Enum):
@@ -109,59 +110,59 @@ class LeadBase(BaseModel):
     lead_sub_type: LeadSubType
     tender_sub_type: TenderSubType
     products_services: List[str] = []
-    
+
     # Company Details
     company_id: int
     sub_business_type: Optional[str] = None
-    
+
     # End Customer Details
     end_customer_id: int
     end_customer_region: Optional[str] = None
-    
+
     # Partner Details
     partner_involved: bool = False
     partners_data: List[PartnerBase] = []
-    
+
     # Tender Details
     tender_fee: Optional[Decimal] = None
     currency: str = "INR"
     submission_type: Optional[SubmissionType] = None
     tender_authority: Optional[str] = None
     tender_for: Optional[str] = None
-    
+
     # EMD Details
     emd_required: bool = False
     emd_amount: Optional[Decimal] = None
     emd_currency: str = "INR"
-    
+
     # BG Details
     bg_required: bool = False
     bg_amount: Optional[Decimal] = None
     bg_currency: str = "INR"
-    
+
     # Important Dates
     important_dates: List[ImportantDateBase] = []
-    
+
     # Clauses
     clauses: List[ClauseBase] = []
-    
+
     # Revenue and Conversion
     expected_revenue: Decimal
     revenue_currency: str = "INR"
     convert_to_opportunity_date: Optional[date] = None
-    
+
     # Competitors
     competitors: List[CompetitorBase] = []
-    
+
     # Documents
     documents: List[DocumentBase] = []
-    
+
     # Lead Management
     status: LeadStatus = LeadStatus.NEW
     priority: LeadPriority = LeadPriority.MEDIUM
     qualification_notes: Optional[str] = None
     lead_score: int = 0
-    
+
     # Contact Information
     contacts: List[ContactBase] = []
 
@@ -182,6 +183,10 @@ class LeadBase(BaseModel):
         if not v or len(v) == 0:
             raise ValueError("At least one contact is required")
         return v
+
+    def dict(self, *args, **kwargs):
+        raw = super().dict(*args, **kwargs)
+        return json_safe(raw)
 
 
 class LeadCreate(LeadBase):
@@ -232,29 +237,29 @@ class LeadResponse(LeadBase):
     creator_name: Optional[str] = None
     conversion_requester_name: Optional[str] = None
     reviewer_name: Optional[str] = None
-    
+
     # Conversion Workflow Fields
     ready_for_conversion: bool = False
     conversion_requested: bool = False
     conversion_request_date: Optional[datetime] = None
-    
+
     # Review and Approval Fields
     reviewed: bool = False
     review_status: ReviewStatus = ReviewStatus.PENDING
     review_date: Optional[datetime] = None
     review_comments: Optional[str] = None
-    
+
     # Conversion Tracking
     converted: bool = False
     converted_to_opportunity_id: Optional[int] = None
     conversion_date: Optional[datetime] = None
     conversion_notes: Optional[str] = None
-    
+
     # Properties
     can_request_conversion: bool = False
     can_convert_to_opportunity: bool = False
     needs_admin_review: bool = False
-    
+
     is_active: bool
     created_on: datetime
     updated_on: Optional[datetime] = None
@@ -279,11 +284,15 @@ class ConversionRequestSchema(BaseModel):
 class ReviewDecisionSchema(BaseModel):
     decision: ReviewStatus  # Approved or Rejected
     comments: str
-    
+
     @validator("comments")
     def validate_comments(cls, v, values):
-        if values.get("decision") == ReviewStatus.REJECTED and (not v or len(v.strip()) == 0):
-            raise ValueError("Comments are required when rejecting a conversion request")
+        if values.get("decision") == ReviewStatus.REJECTED and (
+            not v or len(v.strip()) == 0
+        ):
+            raise ValueError(
+                "Comments are required when rejecting a conversion request"
+            )
         return v
 
 
