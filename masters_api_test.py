@@ -308,15 +308,15 @@ class MastersAPITester:
                     self.created_resources["uoms"].append(created_uom["id"])
                     
                     # Verify created UOM structure
-                    required_fields = ["id", "code", "name"]
+                    required_fields = ["id", "uom_code", "uom_name"]
                     if all(field in created_uom for field in required_fields):
                         self.log_test("UOM Creation", True, f"UOM created successfully with ID: {created_uom['id']}")
                         
                         # Verify the code matches what we sent
-                        if created_uom["code"] == uom_data["code"]:
+                        if created_uom["uom_code"] == uom_data["uom_code"]:
                             self.log_test("UOM Code Validation", True, "UOM code matches input")
                         else:
-                            self.log_test("UOM Code Validation", False, f"UOM code mismatch: expected {uom_data['code']}, got {created_uom['code']}")
+                            self.log_test("UOM Code Validation", False, f"UOM code mismatch: expected {uom_data['uom_code']}, got {created_uom['uom_code']}")
                         
                         return True
                     else:
