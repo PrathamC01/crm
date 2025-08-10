@@ -234,11 +234,15 @@ const LeadForm = ({ lead = null, onSave, onCancel }) => {
             }`}
           >
             <option value="">Select Company</option>
-            {companies.map(company => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
+            {companies.length === 0 ? (
+              <option disabled>No companies found</option>
+            ) : (
+              companies.map(company => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))
+            )}
           </select>
           {errors.company_id && (
             <p className="text-red-500 text-sm mt-1">{errors.company_id}</p>
