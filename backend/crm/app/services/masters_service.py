@@ -393,8 +393,8 @@ class MastersService:
             "designation_id": user.designation_id,
             "designation_name": user.designation.designation_name if user.designation else None,
             "status": user.status.value if user.status else None,
-            "created_at": user.created_at,
-            "updated_at": user.updated_at,
+            "created_at": user.created_on,  # Map to existing field
+            "updated_at": user.updated_on,  # Map to existing field
             "is_active": user.is_active
         }
 
