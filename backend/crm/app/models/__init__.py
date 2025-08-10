@@ -12,6 +12,14 @@ from .lead import Lead, LeadSource, LeadStatus, LeadPriority, ReviewStatus, Lead
 from .opportunity import Opportunity, OpportunityStage, OpportunityStatus
 from .sales_process import SalesProcess, SalesStage, StageStatus
 from .quotation import Quotation, QuotationStatus
+from .masters import (
+    UOMMaster, ProductMaster, ProductUOMMap, PriceListMaster, 
+    ProductPricingMaster, GroupMaster, ProductGroupingMaster,
+    RolesMaster, DepartmentMaster, DesignationMaster, UserMaster,
+    PermissionMaster, TaxMaster, DiscountMaster, ProductCalculationMaster,
+    StateMaster, CityMaster, IndustryCategoryMaster, CompanyMasterEnhanced,
+    ProductTypeEnum, StatusEnum, AccessTypeEnum, ApprovalStatusEnum
+)
 
 __all__ = [
     'Base',
@@ -37,5 +45,29 @@ __all__ = [
     'SalesStage',
     'StageStatus',
     'Quotation',
-    'QuotationStatus'
+    'QuotationStatus',
+    # Master Data Models
+    'UOMMaster',
+    'ProductMaster',
+    'ProductUOMMap',
+    'PriceListMaster',
+    'ProductPricingMaster',
+    'GroupMaster',
+    'ProductGroupingMaster',
+    'RolesMaster',
+    'DepartmentMaster',
+    'DesignationMaster',
+    'UserMaster',
+    'PermissionMaster',
+    'TaxMaster',
+    'DiscountMaster',
+    'ProductCalculationMaster',
+    'StateMaster',
+    'CityMaster',
+    'IndustryCategoryMaster',
+    'CompanyMasterEnhanced',
+    'ProductTypeEnum',
+    'StatusEnum',
+    'AccessTypeEnum',
+    'ApprovalStatusEnum'
 ]
