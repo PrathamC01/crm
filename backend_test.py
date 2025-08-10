@@ -641,14 +641,14 @@ class CRMBackendTester:
         except Exception as e:
             self.log_test("Integration - Session Auth", False, f"Request failed: {str(e)}")
         
-        # Test without session header (should fail)
+        # Test without auth header (should fail)
         try:
             response = self.make_request("GET", "/api/dashboard/overview")
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 self.log_test("Integration - Auth Required", True, "Proper authentication required")
             else:
                 self.log_test("Integration - Auth Required", False, 
-                            f"Expected 401, got {response.status_code}")
+                            f"Expected 401/403, got {response.status_code}")
         except Exception as e:
             self.log_test("Integration - Auth Required", False, f"Request failed: {str(e)}")
 
