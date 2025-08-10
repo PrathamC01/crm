@@ -534,7 +534,7 @@ class CRMBackendTester:
         opportunity_id = None
         try:
             response = self.make_request("POST", f"/api/leads/{lead_id}/convert-to-opportunity", 
-                                       headers=self.session_headers, data=conversion_data)
+                                       headers=self.auth_headers, data=conversion_data)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and data.get("data", {}).get("opportunity_id"):
