@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../utils/api';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api, { apiMethods } from "../utils/api";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -18,14 +18,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for existing token on app load
-    console.log('🔍 AuthContext useEffect: Checking for saved token...');
-    const savedToken = localStorage.getItem('authToken');
+    console.log("🔍 AuthContext useEffect: Checking for saved token...");
+    const savedToken = localStorage.getItem("authToken");
     if (savedToken) {
-      console.log('✅ Found saved token, restoring authentication...');
+      console.log("✅ Found saved token, restoring authentication...");
       setSessionId(savedToken);
       fetchUserInfo(savedToken);
+      console.log(user);
     } else {
-      console.log('❌ No saved token found');
+      console.log("❌ No saved token found");
       setLoading(false);
     }
   }, []);
@@ -34,19 +35,14 @@ export const AuthProvider = ({ children }) => {
     try {
       // For development, since we have a working JWT, we'll create a mock user
       // In production, this would call /api/user/me or similar
-      const mockUser = {
-        name: 'Sales User',
-        email: 'sales@company.com',
-        role_name: 'Sales',
-        id: 1
-      };
-      
-      setUser(mockUser);
+      const u = await apiMethods.session.getInfo();
+      // console.log("user", u.data.data); 
+      setUser(u.data.data);
       setSessionId(token);
-      console.log('✅ User authenticated successfully:', mockUser);
+      console.log("✅ User authenticated successfully:", user);
     } catch (error) {
-      console.error('Failed to fetch user info:', error);
-      localStorage.removeItem('authToken');
+      console.error("Failed to fetch user info:", error);
+      localStorage.removeItem("authToken");
       setSessionId(null);
       setUser(null);
     } finally {
@@ -57,58 +53,53 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      console.log('🔍 Starting login process with:', credentials.username);
-      
+      console.log("🔍 Starting login process with:", credentials.username);
+
       // Convert username to email_or_username for backend compatibility
       const loginData = {
         email_or_username: credentials.username,
-        password: credentials.password
+        password: credentials.password,
       };
-      
-      console.log('📡 Sending login request to backend...');
-      const response = await api.post('/api/login', loginData);
-      console.log('📡 Login response received:', response.data);
-      
+
+      console.log("📡 Sending login request to backend...");
+      const response = await api.post("/api/login", loginData);
+      console.log("📡 Login response received:", response.data);
+
       if (response.data.status && response.data.data.token) {
         const token = response.data.data.token;
-        console.log('✅ Token received, saving to localStorage');
-        localStorage.setItem('authToken', token);
-        
+        console.log("✅ Token received, saving to localStorage");
+        localStorage.setItem("authToken", token);
+
         // For now, create a mock user object since we have the token
-        const mockUser = {
-          name: 'Sales User',
-          email: credentials.username,
-          role_name: 'Sales',
-          id: 1
-        };
-        
-        setUser(mockUser);
+        fetchUserInfo(token);
+
+        // setUser(mockUser);
         setSessionId(token); // Use token as session ID for compatibility
-        console.log('✅ Login successful, user set:', mockUser);
-        return { success: true, user: mockUser };
+        // console.log("✅ Login successful, user set:", mockUser);
+        return { success: true, user: user };
       } else {
-        throw new Error(response.data.message || 'Login failed');
+        throw new Error(response.data.message || "Login failed");
       }
     } catch (error) {
-      console.error('❌ Login error:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || error.message || 'Login failed' 
+      console.error("❌ Login error:", error);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || "Login failed",
       };
     } finally {
       setLoading(false);
-      console.log('🔍 Login process completed, loading set to false');
+      console.log("🔍 Login process completed, loading set to false");
     }
   };
 
   const logout = async () => {
     try {
       // For JWT-based auth, we just clear the local storage
-      localStorage.removeItem('authToken');
+      localStorage.removeItem("authToken");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      localStorage.removeItem('authToken');
+      localStorage.removeItem("authToken");
       setSessionId(null);
       setUser(null);
     }
@@ -116,14 +107,18 @@ export const AuthProvider = ({ children }) => {
 
   const refreshSession = async () => {
     if (!sessionId) return false;
-    
+
     try {
-      const response = await api.post('/api/session/refresh', {}, {
-        headers: { 'Authorization': sessionId }
-      });
+      const response = await api.post(
+        "/api/session/refresh",
+        {},
+        {
+          headers: { Authorization: sessionId },
+        }
+      );
       return response.data.status;
     } catch (error) {
-      console.error('Session refresh failed:', error);
+      console.error("Session refresh failed:", error);
       return false;
     }
   };
@@ -143,12 +138,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     refreshSession,
-    isAuthenticated: !!user && !!sessionId
+    isAuthenticated: !!user && !!sessionId,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
