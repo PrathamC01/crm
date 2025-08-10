@@ -24,10 +24,10 @@ class DashboardService:
     async def get_sales_dashboard_data(self, user_id: Optional[int] = None, department_id: Optional[int] = None) -> Dict[str, Any]:
         """Get sales dashboard data"""
         
-        # Total leads
+        # Total leads - fix join issues
         leads_query = self.db.query(Lead)
         if department_id:
-            leads_query = leads_query.join(User).filter(User.department_id == department_id)
+            leads_query = leads_query.join(User, Lead.sales_person_id == User.id).filter(User.department_id == department_id)
         
         total_leads = leads_query.count()
         active_leads = leads_query.filter(Lead.status.in_([LeadStatus.NEW, LeadStatus.ACTIVE, LeadStatus.CONTACTED])).count()
