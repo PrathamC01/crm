@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AddNewLeadForm, LeadList, LeadView } from "./modules/lead";
 import { apiRequest } from "../utils/api";
-import LeadsList from "./LeadsList";
 
 const LeadManagement = () => {
   const [view, setView] = useState("list"); // 'list', 'form', 'view'
@@ -331,9 +330,13 @@ const LeadManagement = () => {
         );
       default:
         return (
-          <LeadsList
-            onEditLead={handleEditLead}
-            onViewLead={handleViewLead}
+          <LeadList
+            leads={leads}
+            loading={loading}
+            onEdit={handleEditLead}
+            onView={handleViewLead}
+            onDelete={handleDelete}
+            onRefresh={fetchLeads}
           />
         );
     }
