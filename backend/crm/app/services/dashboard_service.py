@@ -42,16 +42,16 @@ class DashboardService:
         open_opportunities = opps_query.filter(Opportunity.status.in_([OpportunityStatus.PROSPECTING, OpportunityStatus.QUALIFICATION])).count()
         won_opportunities = opps_query.filter(Opportunity.status == OpportunityStatus.WON).count()
         
-        # Revenue calculations
-        revenue_query = self.db.query(func.sum(Opportunity.estimated_value)).filter(Opportunity.status == OpportunityStatus.WON)
+        # Revenue calculations - fix attribute name
+        revenue_query = self.db.query(func.sum(Opportunity.amount)).filter(Opportunity.status == OpportunityStatus.WON)
         if department_id:
-            revenue_query = revenue_query.join(User).filter(User.department_id == department_id)
+            revenue_query = revenue_query.join(User, Opportunity.created_by == User.id).filter(User.department_id == department_id)
         
         total_revenue = revenue_query.scalar() or 0
         
         # This month's revenue
         current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        monthly_revenue = self.db.query(func.sum(Opportunity.estimated_value)).filter(
+        monthly_revenue = self.db.query(func.sum(Opportunity.amount)).filter(
             and_(
                 Opportunity.status == OpportunityStatus.WON,
                 Opportunity.updated_on >= current_month_start
