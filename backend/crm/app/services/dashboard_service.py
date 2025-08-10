@@ -142,7 +142,7 @@ class DashboardService:
             pending_quotes = self.db.query(func.count(Quotation.id)).filter(
                 and_(
                     Quotation.created_by == user.id,
-                    Quotation.status.in_([QuotationStatus.PENDING, QuotationStatus.REVIEW])
+                    Quotation.status.in_([QuotationStatus.DRAFT, QuotationStatus.SUBMITTED])
                 )
             ).scalar() or 0
             
