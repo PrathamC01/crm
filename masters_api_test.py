@@ -365,10 +365,10 @@ class MastersAPITester:
         """Test POST /api/masters/products - Create product with auto SKU generation"""
         try:
             product_data = {
-                "name": f"Test Product {datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                "cat1_type": "Hardware",
-                "cat2_category": "Servers",
-                "cat3_sub_category": "Rack Servers",
+                "name": f"Test Product {datetime.now().strftime('%H%M%S')}",
+                "cat1_type": "product",  # Fixed: use valid enum value
+                "cat2_category": "Electronics",  # Use existing category
+                "cat3_sub_category": "Test Devices",  # Required field
                 "description": "Test product for API testing",
                 "is_active": True,
                 "uom_ids": [1, 2]  # Assuming these UOM IDs exist from seeded data
