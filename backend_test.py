@@ -237,7 +237,7 @@ class CRMBackendTester:
                     # Test delete file
                     try:
                         response = self.make_request("DELETE", f"/api/files/{file_path}", 
-                                                   headers=self.session_headers)
+                                                   headers=self.auth_headers)
                         if response.status_code == 200:
                             data = response.json()
                             if data.get("status"):
