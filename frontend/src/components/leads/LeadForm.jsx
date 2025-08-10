@@ -234,11 +234,15 @@ const LeadForm = ({ lead = null, onSave, onCancel }) => {
             }`}
           >
             <option value="">Select Company</option>
-            {companies.map(company => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
+            {companies.length === 0 ? (
+              <option disabled>No companies found</option>
+            ) : (
+              companies.map(company => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))
+            )}
           </select>
           {errors.company_id && (
             <p className="text-red-500 text-sm mt-1">{errors.company_id}</p>
@@ -259,11 +263,15 @@ const LeadForm = ({ lead = null, onSave, onCancel }) => {
             }`}
           >
             <option value="">Select Contact</option>
-            {contacts.map(contact => (
-              <option key={contact.id} value={contact.id}>
-                {contact.full_name} ({contact.company_name})
-              </option>
-            ))}
+            {contacts.length === 0 ? (
+              <option disabled>No contacts found</option>
+            ) : (
+              contacts.map(contact => (
+                <option key={contact.id} value={contact.id}>
+                  {contact.full_name} ({contact.company_name})
+                </option>
+              ))
+            )}
           </select>
           {errors.end_customer_id && (
             <p className="text-red-500 text-sm mt-1">{errors.end_customer_id}</p>
