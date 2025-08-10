@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await api.post('/login', credentials);
+      const response = await api.post('/api/login', credentials);
       
       if (response.data.status && response.data.data.session_id) {
         const newSessionId = response.data.data.session_id;
