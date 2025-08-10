@@ -634,7 +634,7 @@ class CRMBackendTester:
             masters_response = self.make_request("GET", "/api/masters/products", headers=self.auth_headers)
             
             if dashboard_response.status_code == 200 and masters_response.status_code == 200:
-                self.log_test("Integration - Session Auth", True, "Session authentication working across modules")
+                self.log_test("Integration - Session Auth", True, "JWT authentication working across modules")
             else:
                 self.log_test("Integration - Session Auth", False, 
                             f"Dashboard: {dashboard_response.status_code}, Masters: {masters_response.status_code}")
