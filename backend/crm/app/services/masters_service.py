@@ -398,7 +398,4 @@ class MastersService:
             "is_active": user.is_active
         }
 
-
-def get_masters_service(db: Session = Depends(get_postgres_db)) -> MastersService:
-    """Dependency to get masters service"""
-    return MastersService(db)
+# Service dependency is defined in the router
