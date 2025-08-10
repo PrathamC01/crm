@@ -262,7 +262,7 @@ async def create_user(
 @router.get("/departments", response_model=StandardResponse)
 async def list_departments(
     current_user: dict = Depends(get_current_user),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Get all departments for dropdowns"""
     try:
