@@ -158,7 +158,7 @@ class DashboardService:
             Quotation.status,
             func.count(Quotation.id).label('count')
         ).filter(
-            Quotation.status.in_([QuotationStatus.PENDING, QuotationStatus.REVIEW])
+            Quotation.status.in_([QuotationStatus.DRAFT, QuotationStatus.SUBMITTED])
         ).group_by(Quotation.status).all()
         
         return {
