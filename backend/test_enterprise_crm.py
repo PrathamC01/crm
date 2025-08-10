@@ -93,9 +93,13 @@ def test_create_uom(session_id):
     print("\n=== Testing UOM Creation ===")
     headers = {"x-session-id": session_id, "Content-Type": "application/json"} if session_id else {"Content-Type": "application/json"}
     
+    import time
+    # Use timestamp to ensure unique code
+    timestamp = str(int(time.time()))[-4:]
+    
     payload = {
-        "uom_name": "Test Units",
-        "uom_code": "TEST",
+        "uom_name": f"Test Units {timestamp}",
+        "uom_code": f"TST{timestamp}",
         "description": "Test unit for API testing"
     }
     
