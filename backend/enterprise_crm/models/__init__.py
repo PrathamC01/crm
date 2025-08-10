@@ -3,7 +3,6 @@ from .base import Base
 from .masters import *
 from .leads import *
 from .opportunities import *
-from .users import *
 from .dashboard import *
 
 __all__ = [
