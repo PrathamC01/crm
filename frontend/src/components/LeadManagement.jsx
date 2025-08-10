@@ -331,13 +331,9 @@ const LeadManagement = () => {
         );
       default:
         return (
-          <LeadList
-            leads={leads}
-            loading={loading}
-            onEdit={handleEditLead}
-            onView={handleViewLead}
-            onDelete={handleDelete}
-            onRefresh={fetchLeads}
+          <LeadsList
+            onEditLead={handleEditLead}
+            onViewLead={handleViewLead}
           />
         );
     }
