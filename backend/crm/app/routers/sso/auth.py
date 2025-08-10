@@ -61,9 +61,11 @@ async def login(
 async def dashboard(
     request: Request,
     current_user: dict = Depends(get_current_user),
-    auth_service: AuthService = Depends(get_auth_service),
+    db: Session = Depends(get_postgres_db),
+    mongo_db = Depends(get_mongo_db),
 ):
     """Get user dashboard information"""
+    auth_service = AuthService(db, mongo_db)
     try:
         user_data = await auth_service.get_user_info(str(current_user["id"]), request)
 
