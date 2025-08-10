@@ -465,7 +465,7 @@ class CRMBackendTester:
         
         # Test 5: Get Lead Stats
         try:
-            response = self.make_request("GET", "/api/leads/stats", headers=self.session_headers)
+            response = self.make_request("GET", "/api/leads/stats", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and data.get("data"):
