@@ -514,7 +514,7 @@ class CRMBackendTester:
         }
         try:
             response = self.make_request("POST", f"/api/leads/{lead_id}/review", 
-                                       headers=self.session_headers, data=review_data)
+                                       headers=self.auth_headers, data=review_data)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status"):
