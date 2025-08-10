@@ -267,6 +267,6 @@ class DashboardService:
             )
         ).first()
 
-def get_dashboard_service(db: Session) -> DashboardService:
+def get_dashboard_service(db: Session = Depends(get_postgres_db)) -> DashboardService:
     """Dependency to get dashboard service"""
     return DashboardService(db)
