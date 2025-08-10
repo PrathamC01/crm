@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (sessionId) {
-        await api.post('/logout', {}, {
+        await api.post('/api/logout', {}, {
           headers: { 'x-session-id': sessionId }
         });
       }
