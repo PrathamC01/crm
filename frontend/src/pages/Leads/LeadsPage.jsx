@@ -3,6 +3,7 @@ import { apiMethods } from '../../utils/api';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import LeadForm from '../../components/leads/LeadForm';
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
