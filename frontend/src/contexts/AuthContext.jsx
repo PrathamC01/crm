@@ -17,11 +17,11 @@ export const AuthProvider = ({ children }) => {
   const [sessionId, setSessionId] = useState(null);
 
   useEffect(() => {
-    // Check for existing session on app load
-    const savedSessionId = localStorage.getItem('sessionId');
-    if (savedSessionId) {
-      setSessionId(savedSessionId);
-      fetchUserInfo(savedSessionId);
+    // Check for existing token on app load
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+      setSessionId(savedToken);
+      fetchUserInfo(savedToken);
     } else {
       setLoading(false);
     }
