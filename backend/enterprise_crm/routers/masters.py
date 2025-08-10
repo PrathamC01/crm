@@ -37,7 +37,7 @@ async def list_products(
 async def create_product(
     product_data: ProductMasterCreate,
     current_user: dict = Depends(require_permission("masters", "write")),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Create new product"""
     try:
