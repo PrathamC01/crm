@@ -94,7 +94,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 # Include routers
 app.include_router(health.router)
 app.include_router(auth.router)
-# app.include_router(dashboard.router)
+app.include_router(dashboard.router)
 app.include_router(companies.router)
 app.include_router(contacts.router)
 app.include_router(leads.router)
