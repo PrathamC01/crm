@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiMethods } from '../../utils/api';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
-import ProductForm from '../../components/masters/ProductForm';
+import ProductForm from '../../components/products/ProductForm';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { PlusIcon, PencilIcon, EyeIcon } from '@heroicons/react/24/outline';
 
