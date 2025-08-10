@@ -117,6 +117,9 @@ def _convert_permissions(old_permissions):
             new_permissions.extend(["leads:read", "leads:review"])
         elif perm == "leads_approve":
             new_permissions.extend(["leads:read", "leads:approve"])
+        elif perm in ["leads_read", "leads_write", "opportunities_read", "opportunities_write"]:
+            # Sales role gets companies and contacts access too
+            new_permissions.extend(["companies:read", "companies:all", "contacts:read", "contacts:all"])
         else:
             new_permissions.append(perm)
     
