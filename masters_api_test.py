@@ -155,23 +155,28 @@ class MastersAPITester:
                     uoms_data = data["data"]
                     
                     # Check if it's paginated response
-                    if "items" in uoms_data and "pagination" in uoms_data:
+                    if "items" in uoms_data and "total" in uoms_data:
                         uoms = uoms_data["items"]
-                        pagination = uoms_data["pagination"]
+                        pagination_info = {
+                            "total": uoms_data["total"],
+                            "page": uoms_data["page"],
+                            "per_page": uoms_data["per_page"],
+                            "pages": uoms_data["pages"]
+                        }
                         
                         self.log_test("UOMs Retrieval", True, f"Retrieved {len(uoms)} UOMs with pagination")
                         
                         # Verify pagination structure
                         required_pagination_fields = ["total", "page", "per_page", "pages"]
-                        if all(field in pagination for field in required_pagination_fields):
-                            self.log_test("UOMs Pagination Structure", True, f"Pagination: {pagination}")
+                        if all(field in pagination_info for field in required_pagination_fields):
+                            self.log_test("UOMs Pagination Structure", True, f"Pagination: {pagination_info}")
                         else:
-                            self.log_test("UOMs Pagination Structure", False, f"Missing pagination fields: {pagination}")
+                            self.log_test("UOMs Pagination Structure", False, f"Missing pagination fields: {pagination_info}")
                         
                         # Verify UOM structure
                         if uoms and len(uoms) > 0:
                             first_uom = uoms[0]
-                            required_fields = ["id", "code", "name"]
+                            required_fields = ["id", "uom_code", "uom_name"]
                             if all(field in first_uom for field in required_fields):
                                 self.log_test("UOMs Structure", True, "UOM structure is valid")
                             else:
