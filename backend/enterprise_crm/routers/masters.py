@@ -94,7 +94,7 @@ async def update_product(
 async def list_uoms(
     filters: BaseFilter = Depends(),
     current_user: dict = Depends(get_current_user),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Get paginated list of UOMs"""
     try:
