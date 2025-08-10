@@ -178,6 +178,9 @@ backend:
       - working: true
         agent: "main" 
         comment: "Lead stats endpoint tested successfully. RBAC permissions fixed for test user."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: Lead statistics endpoint working perfectly. Returns accurate metrics including total leads count and proper data structure."
 
   - task: "Leads Module - Create Lead"
     implemented: true
@@ -196,6 +199,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "FIXED: Lead creation now working correctly. Root cause was json_safe utility function not handling Enum types properly. Added Enum support to json_serializer.py. All lead CRUD operations now functional."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: Lead creation working perfectly with complex realistic data including contacts, competitors, important dates, clauses, and all required fields. Validation working correctly for missing/invalid data."
 
   - task: "Leads Module - CRUD Operations"
     implemented: true
@@ -211,6 +217,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "FIXED: All lead CRUD operations (create, read, update, delete, stats) now working correctly after fixing enum serialization issue."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: All lead CRUD operations working perfectly. Tested: Create (with complex data), Read (list and by ID), Update (status changes, field updates), Statistics. Lead listing with pagination working. Lead editing and status changes working correctly."
 
   - task: "Opportunities Module - Basic CRUD"
     implemented: true
