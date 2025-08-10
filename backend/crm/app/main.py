@@ -101,6 +101,7 @@ app.include_router(leads.router)
 app.include_router(opportunities.router)
 app.include_router(quotations.router)
 app.include_router(users.router)
+app.include_router(masters.router)
 
 
 @app.get("/")
