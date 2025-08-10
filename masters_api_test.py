@@ -124,7 +124,7 @@ class MastersAPITester:
                         
                         # Verify role structure
                         first_role = roles[0]
-                        required_fields = ["id", "name"]
+                        required_fields = ["id", "role_name"]
                         if all(field in first_role for field in required_fields):
                             self.log_test("Roles Structure", True, "Role structure is valid")
                         else:
