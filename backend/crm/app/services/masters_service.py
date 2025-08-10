@@ -7,8 +7,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from fastapi import Depends
 
-from ..database.base import get_db
-from ..models.masters import (
+from ...dependencies.database import get_postgres_db
+from ...models.masters import (
     ProductMaster, UOMMaster, ProductUOMMap, PriceListMaster, 
     ProductPricingMaster, GroupMaster, ProductGroupingMaster,
     UserMaster, RolesMaster, DepartmentMaster, DesignationMaster,
@@ -16,7 +16,7 @@ from ..models.masters import (
     PermissionMaster, DiscountMaster, ProductCalculationMaster,
     ApprovalStatusEnum
 )
-from ..schemas.masters import (
+from ...schemas.masters import (
     ProductMasterCreate, ProductMasterUpdate, UOMCreate,
     PriceListCreate, ProductPricingCreate, UserMasterCreate,
     UserMasterUpdate, PaginatedResponse, BaseFilter, ApprovalRequest
@@ -399,6 +399,6 @@ class MastersService:
         }
 
 
-def get_masters_service(db: Session = Depends(get_db)) -> MastersService:
+def get_masters_service(db: Session = Depends(get_postgres_db)) -> MastersService:
     """Dependency to get masters service"""
     return MastersService(db)
