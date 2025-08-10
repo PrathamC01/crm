@@ -25,11 +25,15 @@ export const apiRequest = async (endpoint, options = {}) => {
     const response = await fetch(`${BACKEND_URL}${endpoint}`, finalOptions);
     const data = await response.json();
     
-    // Handle unauthorized responses
+    // Handle unauthorized responses more gracefully
     if (response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-      return null;
+      // Only logout if we get a proper 401 auth error with valid JSON response
+      if (data && data.status === false && data.message && data.message.toLowerCase().includes('token')) {
+        console.warn('Token expired or invalid, logging out user');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return null;
+      }
     }
     
     return data;

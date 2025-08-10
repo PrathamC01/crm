@@ -21,7 +21,7 @@ const Dashboard = ({ onLogout }) => {
     try {
       const token = localStorage.getItem("token");
       const backendUrl =
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
+        import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
       const response = await fetch(`${backendUrl}/api/dashboard`, {
         headers: {
@@ -52,7 +52,7 @@ const Dashboard = ({ onLogout }) => {
   const fetchDashboardMetrics = async () => {
     try {
       // Fetch leads summary
-      const leadsResponse = await apiRequest("/api/leads/summary/statistics");
+      const leadsResponse = await apiRequest("/api/leads/stats");
       if (leadsResponse.status) {
         const leadData = leadsResponse.data;
         setMetrics((prev) => ({
@@ -68,7 +68,7 @@ const Dashboard = ({ onLogout }) => {
 
       // Fetch opportunities pipeline
       const opportunitiesResponse = await apiRequest(
-        "/api/opportunities/pipeline/summary"
+        "/api/opportunities/statistics/overview"
       );
       if (opportunitiesResponse.status) {
         const oppData = opportunitiesResponse.data;
