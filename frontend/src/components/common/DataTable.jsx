@@ -43,7 +43,7 @@ const DataTable = ({
                   onClick={column.sortable ? () => handleSort(column.key) : undefined}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>{column.title}</span>
+                    <span>{column.label || column.title}</span>
                     {column.sortable && sortBy === column.key && (
                       <span className="text-blue-600">
                         {sortOrder === 'asc' ? '↑' : '↓'}
@@ -52,6 +52,11 @@ const DataTable = ({
                   </div>
                 </th>
               ))}
+              {actions && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
