@@ -337,8 +337,8 @@ class MastersAPITester:
         try:
             # Try to create a UOM with duplicate code
             duplicate_uom_data = {
-                "code": "KG",  # This should already exist from seeded data
-                "name": "Duplicate Kilogram",
+                "uom_code": "KG",  # This should already exist from seeded data
+                "uom_name": "Duplicate Kilogram",
                 "description": "This should fail due to duplicate code",
                 "is_active": True
             }
