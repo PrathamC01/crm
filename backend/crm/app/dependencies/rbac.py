@@ -71,12 +71,10 @@ async def require_permission(
     """
     Dependency to require a specific permission
     """
-    permission.append("*")
-
     user_permissions = current_user.get("permissions", [])
 
-    # Super admin has all permissions
-    if "all" in user_permissions:
+    # Super admin has all permissions  
+    if "all" in user_permissions or "*" in user_permissions:
         return current_user
 
     if permission not in user_permissions:
