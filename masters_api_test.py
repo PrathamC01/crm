@@ -206,18 +206,23 @@ class MastersAPITester:
                     products_data = data["data"]
                     
                     # Check if it's paginated response
-                    if "items" in products_data and "pagination" in products_data:
+                    if "items" in products_data and "total" in products_data:
                         products = products_data["items"]
-                        pagination = products_data["pagination"]
+                        pagination_info = {
+                            "total": products_data["total"],
+                            "page": products_data["page"],
+                            "per_page": products_data["per_page"],
+                            "pages": products_data["pages"]
+                        }
                         
                         self.log_test("Products Retrieval", True, f"Retrieved {len(products)} products with pagination")
                         
                         # Verify pagination structure
                         required_pagination_fields = ["total", "page", "per_page", "pages"]
-                        if all(field in pagination for field in required_pagination_fields):
-                            self.log_test("Products Pagination Structure", True, f"Pagination: {pagination}")
+                        if all(field in pagination_info for field in required_pagination_fields):
+                            self.log_test("Products Pagination Structure", True, f"Pagination: {pagination_info}")
                         else:
-                            self.log_test("Products Pagination Structure", False, f"Missing pagination fields: {pagination}")
+                            self.log_test("Products Pagination Structure", False, f"Missing pagination fields: {pagination_info}")
                         
                         # Verify product structure if products exist
                         if products and len(products) > 0:
