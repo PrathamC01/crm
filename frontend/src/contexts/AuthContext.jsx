@@ -53,12 +53,28 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await api.post('/api/login', credentials);
+      // Convert username to email_or_username for backend compatibility
+      const loginData = {
+        email_or_username: credentials.username,
+        password: credentials.password
+      };
       
-      if (response.data.status && response.data.data.session_id) {
-        const newSessionId = response.data.data.session_id;
-        await fetchUserInfo(newSessionId);
-        return { success: true, user: response.data.data.user };
+      const response = await api.post('/api/login', loginData);
+      
+      if (response.data.status && response.data.data.token) {
+        const token = response.data.data.token;
+        localStorage.setItem('authToken', token);
+        
+        // For now, create a mock user object since we have the token
+        const mockUser = {
+          name: 'Sales User',
+          email: credentials.username,
+          role_name: 'Sales'
+        };
+        
+        setUser(mockUser);
+        setSessionId(token); // Use token as session ID for compatibility
+        return { success: true, user: mockUser };
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
