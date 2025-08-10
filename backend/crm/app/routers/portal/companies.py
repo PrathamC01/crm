@@ -107,13 +107,9 @@ async def delete_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     """Soft delete company"""
-    try:
-        deleted = company_service.delete_company(company_id, current_user["id"])
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Company not found")
+    deleted = company_service.delete_company(company_id, current_user["id"])
+    if not deleted:
+        from ...exceptions.custom_exceptions import NotFoundError
+        raise NotFoundError("Company", company_id)
 
-        return StandardResponse(status=True, message="Company deleted successfully")
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(e)
+    return StandardResponse(status=True, message="Company deleted successfully")
