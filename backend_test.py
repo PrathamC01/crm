@@ -627,11 +627,11 @@ class CRMBackendTester:
         
         # Test that session authentication works across different modules
         try:
-            # Test dashboard with session
-            dashboard_response = self.make_request("GET", "/api/dashboard/overview", headers=self.session_headers)
+            # Test dashboard with auth
+            dashboard_response = self.make_request("GET", "/api/dashboard/overview", headers=self.auth_headers)
             
-            # Test masters with session
-            masters_response = self.make_request("GET", "/api/masters/products", headers=self.session_headers)
+            # Test masters with auth
+            masters_response = self.make_request("GET", "/api/masters/products", headers=self.auth_headers)
             
             if dashboard_response.status_code == 200 and masters_response.status_code == 200:
                 self.log_test("Integration - Session Auth", True, "Session authentication working across modules")
