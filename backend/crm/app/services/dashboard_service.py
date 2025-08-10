@@ -175,13 +175,13 @@ class DashboardService:
     async def get_product_dashboard_data(self, user_id: Optional[int] = None, department_id: Optional[int] = None) -> Dict[str, Any]:
         """Get product dashboard data"""
         
-        # Top-selling products (based on opportunities)
+        # Top-selling products (based on opportunities) - fix join and attribute
         top_products = self.db.query(
             ProductMaster.name,
             ProductMaster.cat2_category,
             func.count(Opportunity.id).label('opportunity_count'),
-            func.sum(Opportunity.estimated_value).label('total_value')
-        ).select_from(ProductMaster).join(
+            func.sum(Opportunity.amount).label('total_value')
+        ).select_from(ProductMaster).outerjoin(
             # This would need a proper join table in real implementation
             Opportunity, ProductMaster.id == Opportunity.id  # Placeholder
         ).group_by(
