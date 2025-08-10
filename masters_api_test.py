@@ -257,18 +257,23 @@ class MastersAPITester:
                     pricelists_data = data["data"]
                     
                     # Check if it's paginated response
-                    if "items" in pricelists_data and "pagination" in pricelists_data:
+                    if "items" in pricelists_data and "total" in pricelists_data:
                         pricelists = pricelists_data["items"]
-                        pagination = pricelists_data["pagination"]
+                        pagination_info = {
+                            "total": pricelists_data["total"],
+                            "page": pricelists_data["page"],
+                            "per_page": pricelists_data["per_page"],
+                            "pages": pricelists_data["pages"]
+                        }
                         
                         self.log_test("Price Lists Retrieval", True, f"Retrieved {len(pricelists)} price lists with pagination")
                         
                         # Verify pagination structure
                         required_pagination_fields = ["total", "page", "per_page", "pages"]
-                        if all(field in pagination for field in required_pagination_fields):
-                            self.log_test("Price Lists Pagination Structure", True, f"Pagination: {pagination}")
+                        if all(field in pagination_info for field in required_pagination_fields):
+                            self.log_test("Price Lists Pagination Structure", True, f"Pagination: {pagination_info}")
                         else:
-                            self.log_test("Price Lists Pagination Structure", False, f"Missing pagination fields: {pagination}")
+                            self.log_test("Price Lists Pagination Structure", False, f"Missing pagination fields: {pagination_info}")
                         
                         return True
                     else:
