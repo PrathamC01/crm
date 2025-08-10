@@ -94,82 +94,27 @@ const ProductsPage = () => {
   };
 
   const columns = [
-    {
-      key: 'name',
-      title: 'Product Name',
-      render: (item) => (
-        <div>
-          <div className="font-medium text-gray-900">{item.name}</div>
-          <div className="text-sm text-gray-500">SKU: {item.sku_code}</div>
-        </div>
-      )
+    { key: 'name', label: 'Product Name' },
+    { key: 'type', label: 'Type', render: (item) => item.type?.toUpperCase() || 'N/A' },
+    { key: 'sku_code', label: 'SKU Code', render: (item) => item.sku_code || 'Auto-generated' },
+    { 
+      key: 'categories', 
+      label: 'Categories',
+      render: (item) => {
+        const cats = [item.cat1_name, item.cat2_name, item.cat3_name].filter(Boolean);
+        return cats.length > 0 ? cats.join(' > ') : 'N/A';
+      }
+    },
+    { key: 'oem', label: 'OEM', render: (item) => item.oem || 'N/A' },
+    { 
+      key: 'price', 
+      label: 'Price',
+      render: (item) => item.price ? `$${parseFloat(item.price).toFixed(2)}` : 'N/A'
     },
     {
-      key: 'cat2_category',
-      title: 'Category',
-      render: (item) => (
-        <div>
-          <div className="text-sm text-gray-900">{item.cat2_category}</div>
-          <div className="text-xs text-gray-500">{item.cat3_sub_category}</div>
-        </div>
-      )
-    },
-    {
-      key: 'cat1_type',
-      title: 'Type',
-      render: (item) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          item.cat1_type === 'product' ? 'bg-blue-100 text-blue-800' :
-          item.cat1_type === 'service' ? 'bg-green-100 text-green-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {item.cat1_type}
-        </span>
-      )
-    },
-    {
-      key: 'uoms',
-      title: 'UOMs',
-      render: (item) => (
-        <div className="flex flex-wrap gap-1">
-          {item.uoms?.map((uom, index) => (
-            <span 
-              key={index}
-              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                uom.is_primary ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              {uom.uom_code}
-              {uom.is_primary && <span className="ml-1">★</span>}
-            </span>
-          ))}
-        </div>
-      )
-    },
-    {
-      key: 'actions',
-      title: 'Actions',
-      render: (item) => (
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setViewingProduct(item)}
-            className="text-blue-600 hover:text-blue-900"
-            title="View"
-          >
-            <EyeIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => {
-              setEditingProduct(item);
-              setShowModal(true);
-            }}
-            className="text-green-600 hover:text-green-900"
-            title="Edit"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </button>
-        </div>
-      )
+      key: 'created_at',
+      label: 'Created Date',
+      render: (item) => item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'
     }
   ];
 
