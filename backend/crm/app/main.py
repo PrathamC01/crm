@@ -10,8 +10,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 
 # Import routers
-from .routers.sso import auth, dashboard
-from .routers.portal import companies, contacts, leads, opportunities, users, masters
+from .routers.sso import auth
+from .routers.portal import companies, contacts, leads, opportunities, users, masters, dashboard
 from .routers.portal import quotations
 from .routers.front import health
 
