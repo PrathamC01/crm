@@ -309,7 +309,7 @@ class CRMBackendTester:
         
         # Test get roles
         try:
-            response = self.make_request("GET", "/api/masters/roles", headers=self.session_headers)
+            response = self.make_request("GET", "/api/masters/roles", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") and "data" in data:
