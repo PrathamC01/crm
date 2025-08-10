@@ -5,13 +5,14 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Optional, List
 from sqlalchemy.orm import Session
 
-from ..schemas.masters import (
-    StandardResponse, PaginatedResponse, BaseFilter, ApprovalRequest,
+from ...schemas.auth import StandardResponse
+from ...schemas.masters import (
+    PaginatedResponse, BaseFilter, ApprovalRequest,
     UOMCreate, ProductMasterCreate, ProductMasterUpdate, PriceListCreate,
     ProductPricingCreate, UserMasterCreate, UserMasterUpdate
 )
-from ..services.masters_service import get_masters_service, MastersService
-from ..database.base import get_db
+from ...services.masters_service import get_masters_service, MastersService
+from ...dependencies.database import get_postgres_db
 
 router = APIRouter(prefix="/api/masters", tags=["masters"])
 
