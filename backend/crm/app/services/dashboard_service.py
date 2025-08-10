@@ -67,7 +67,7 @@ class DashboardService:
         
         # Approvals pending
         pending_quotes = self.db.query(func.count(Quotation.id)).filter(
-            Quotation.status.in_([QuotationStatus.PENDING, QuotationStatus.REVIEW])
+            Quotation.status.in_([QuotationStatus.DRAFT, QuotationStatus.SUBMITTED])
         ).scalar() or 0
         
         # Lead status breakdown
