@@ -374,8 +374,8 @@ class MastersService:
             "discount_upto_percent": pricing.discount_upto_percent,
             "approval_status": pricing.approval_status.value if pricing.approval_status else None,
             "approved_by": pricing.approved_by,
-            "created_at": pricing.created_at,
-            "updated_at": pricing.updated_at,
+            "created_at": pricing.created_on,  # Map to existing field
+            "updated_at": pricing.updated_on,  # Map to existing field
             "is_active": pricing.is_active
         }
     
