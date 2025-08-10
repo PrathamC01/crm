@@ -306,32 +306,39 @@ class MastersAPITester:
             }
             
             response = self.make_request("POST", "/masters/uoms", uom_data)
-            if response and response.status_code == 200:
-                data = response.json()
-                if data.get("status") == True and "data" in data:
-                    created_uom = data["data"]
-                    self.created_resources["uoms"].append(created_uom["id"])
-                    
-                    # Verify created UOM structure
-                    required_fields = ["id", "uom_code", "uom_name"]
-                    if all(field in created_uom for field in required_fields):
-                        self.log_test("UOM Creation", True, f"UOM created successfully with ID: {created_uom['id']}")
+            if response:
+                print(f"Response status: {response.status_code}")
+                print(f"Response text: {response.text}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == True and "data" in data:
+                        created_uom = data["data"]
+                        self.created_resources["uoms"].append(created_uom["id"])
                         
-                        # Verify the code matches what we sent
-                        if created_uom["uom_code"] == uom_data["uom_code"]:
-                            self.log_test("UOM Code Validation", True, "UOM code matches input")
+                        # Verify created UOM structure
+                        required_fields = ["id", "uom_code", "uom_name"]
+                        if all(field in created_uom for field in required_fields):
+                            self.log_test("UOM Creation", True, f"UOM created successfully with ID: {created_uom['id']}")
+                            
+                            # Verify the code matches what we sent
+                            if created_uom["uom_code"] == uom_data["uom_code"]:
+                                self.log_test("UOM Code Validation", True, "UOM code matches input")
+                            else:
+                                self.log_test("UOM Code Validation", False, f"UOM code mismatch: expected {uom_data['uom_code']}, got {created_uom['uom_code']}")
+                            
+                            return True
                         else:
-                            self.log_test("UOM Code Validation", False, f"UOM code mismatch: expected {uom_data['uom_code']}, got {created_uom['uom_code']}")
-                        
-                        return True
+                            self.log_test("UOM Creation", False, f"Missing required fields in created UOM: {created_uom}")
+                            return False
                     else:
-                        self.log_test("UOM Creation", False, f"Missing required fields in created UOM: {created_uom}")
+                        self.log_test("UOM Creation", False, f"Invalid response format: {data}")
                         return False
                 else:
-                    self.log_test("UOM Creation", False, f"Invalid response format: {data}")
+                    self.log_test("UOM Creation", False, f"Request failed with status {response.status_code}: {response.text}")
                     return False
             else:
-                self.log_test("UOM Creation", False, f"Request failed with status {response.status_code if response else 'No response'}")
+                self.log_test("UOM Creation", False, "No response received")
                 return False
         except Exception as e:
             self.log_test("UOM Creation", False, f"Exception: {str(e)}")
