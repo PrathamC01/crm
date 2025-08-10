@@ -7,8 +7,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from fastapi import Depends
 
-from ...dependencies.database import get_postgres_db
-from ...models.masters import (
+from ..dependencies.database import get_postgres_db
+from ..models.masters import (
     ProductMaster, UOMMaster, ProductUOMMap, PriceListMaster, 
     ProductPricingMaster, GroupMaster, ProductGroupingMaster,
     UserMaster, RolesMaster, DepartmentMaster, DesignationMaster,
