@@ -54,7 +54,7 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
-app.add_middleware(ErrorHandlerMiddleware)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
