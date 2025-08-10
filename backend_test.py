@@ -495,7 +495,7 @@ class CRMBackendTester:
         }
         try:
             response = self.make_request("POST", f"/api/leads/{lead_id}/request-conversion", 
-                                       headers=self.session_headers, data=conversion_request_data)
+                                       headers=self.auth_headers, data=conversion_request_data)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status"):
