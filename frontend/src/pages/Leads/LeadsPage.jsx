@@ -300,30 +300,15 @@ const LeadsPage = () => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Create New Lead"
-        size="lg"
+        size="large"
       >
-        <div className="p-6">
-          <p className="text-gray-600 mb-4">
-            Lead creation form will be implemented here. This modal demonstrates the UI structure.
-          </p>
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                // Handle form submission
-                setShowCreateModal(false);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Create Lead
-            </button>
-          </div>
-        </div>
+        <LeadForm
+          onSave={(newLead) => {
+            setShowCreateModal(false);
+            fetchLeads(); // Refresh the leads list
+          }}
+          onCancel={() => setShowCreateModal(false)}
+        />
       </Modal>
 
       {/* Lead Detail Modal */}
