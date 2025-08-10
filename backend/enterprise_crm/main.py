@@ -175,20 +175,11 @@ async def startup_event():
     create_tables()
     print("Database tables created")
     
-    # Test Redis connection
-    try:
-        redis_client.redis.ping()
-        print("Redis connection established")
-    except Exception as e:
-        print(f"Redis connection failed: {e}")
+    # Test services and show status
+    print(f"Redis status: {'available' if redis_client.available else 'disabled'}")
+    print(f"MinIO status: {'available' if minio_client.available else 'disabled'}")
     
-    # Test MinIO connection
-    try:
-        if not minio_client.client.bucket_exists(settings.MINIO_BUCKET):
-            minio_client.client.make_bucket(settings.MINIO_BUCKET)
-        print(f"MinIO bucket '{settings.MINIO_BUCKET}' ready")
-    except Exception as e:
-        print(f"MinIO connection failed: {e}")
+    print("Enterprise CRM API startup complete")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
