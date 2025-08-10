@@ -24,6 +24,32 @@ class CRMBackendTester:
         self.auth_headers = {}
         self.test_results = {}
         
+    def authenticate(self):
+        """Authenticate and get JWT token"""
+        print("\n=== Authenticating with CRM System ===")
+        try:
+            login_data = {
+                "email_or_username": "sales@company.com",
+                "password": "sales123"
+            }
+            response = self.make_request("POST", "/api/login", data=login_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") and data.get("data", {}).get("token"):
+                    self.jwt_token = data["data"]["token"]
+                    self.auth_headers = {"Authorization": f"Bearer {self.jwt_token}"}
+                    self.log_test("Authentication", True, "Successfully authenticated with JWT token")
+                    return True
+                else:
+                    self.log_test("Authentication", False, "Invalid login response", data)
+                    return False
+            else:
+                self.log_test("Authentication", False, f"HTTP {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_test("Authentication", False, f"Authentication failed: {str(e)}")
+            return False
+
     def log_test(self, test_name: str, success: bool, message: str, details: Any = None):
         """Log test results"""
         self.test_results[test_name] = {
