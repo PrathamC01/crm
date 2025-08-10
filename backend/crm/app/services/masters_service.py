@@ -352,8 +352,8 @@ class MastersService:
             "approval_status": price_list.approval_status.value if price_list.approval_status else None,
             "approved_by": price_list.approved_by,
             "approved_at": price_list.approved_at,
-            "created_at": price_list.created_at,
-            "updated_at": price_list.updated_at,
+            "created_at": price_list.created_on,  # Map to existing field
+            "updated_at": price_list.updated_on,  # Map to existing field
             "is_active": price_list.is_active
         }
     
