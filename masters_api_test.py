@@ -42,6 +42,10 @@ class MastersAPITester:
         url = f"{API_BASE}{endpoint}"
         
         try:
+            print(f"Making {method} request to {url}")
+            if data:
+                print(f"Request data: {data}")
+            
             if method.upper() == "GET":
                 response = self.session.get(url, params=params)
             elif method.upper() == "POST":
@@ -52,7 +56,8 @@ class MastersAPITester:
                 response = self.session.delete(url)
             else:
                 raise ValueError(f"Unsupported method: {method}")
-                
+            
+            print(f"Response status: {response.status_code}")
             return response
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
