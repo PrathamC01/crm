@@ -1,70 +1,74 @@
 <analysis>
-The AI engineer began with an empty workspace, systematically building a full-stack CRM application. Initially, it established the basic React/Vite frontend and FastAPI backend with JWT authentication, including PostgreSQL for users and MongoDB for logging. After addressing several critical environment and routing issues (CORS, Vite proxy, preview URL access), the engineer successfully demonstrated a functional login and dashboard. Subsequently, the backend was extensively refactored into a modular, enterprise-level structure as requested by the user. The latest phase involved implementing comprehensive CRUD operations for all management modules (User, Company, Contact, Lead, Opportunity) on the backend, including SQLAlchemy models and Pydantic schemas, and initiating the corresponding frontend component creation. The current challenge revolves around persistent PostgreSQL connectivity issues preventing full system operation.
+The previous AI engineer successfully brought a CRM application from zero to a functional state, addressing numerous technical challenges. The initial phase focused on identifying and fixing broken APIs, environment misconfigurations (like supervisor settings, missing  files, and incorrect port usage), and resolving Python and PostgreSQL dependency issues. A significant part involved debugging Pydantic v2 migration issues and handling database connection/permission errors. The engineer also implemented a robust centralized error handling system, removing scattered inline exception handling. Finally, a key feature, lead status management, was fully integrated into the backend and then adapted to enhance the existing frontend LeadList component as per user's refinement. The last interaction shows a pivot to designing a new, modular enterprise platform.
 </analysis>
 
 <product_requirements>
-The user tasked the AI engineer with building a minimal full-stack CRM web application.
-**Frontend (React + Vite):** A JWT login page with email/password fields, storing JWT in browser storage. A protected dashboard page displaying user information, accessible only with a valid JWT. Minimal Tailwind CSS styling.
-**Backend (FastAPI):**  route for user verification against PostgreSQL, returning a JWT. A protected  route returning user data. Centralized error handling returning . JWT generation/verification utilities.
-**Database & Services:** PostgreSQL for user data, MongoDB for logging activities via middleware, Redis for sessions, MinIO for media. JWT expiration set to 1 hour. Login must support email OR username.
-**User Master Table:** .
-**Expanded CRM Modules:** Implement full CRUD for User Management, Company Formation, Contact Management, Lead Management, and Opportunity Management. Use SQLAlchemy for models (with foreign keys) and Pydantic for validation. Auto-fill audit fields (, , , , , , ). Role-based access control (RBAC) required for all modules.
-**Business Flow & Logic:** Company added, Lead linked to Company, Lead converts to Opportunity. Opportunity linked to Contact, Company, BOM. Specific validations for GST/PAN, Decision Maker role for opportunity creation, lead auto-close after 4 weeks, opportunity amount justification (≥₹10,000), and a stage-driven workflow (L1-L7).
-**Backend Restructuring:** Move to a more modular structure, including .
+The primary objective was to audit and fix all issues in an existing React frontend and FastAPI backend CRM application, ensuring all APIs function correctly and return appropriate responses. This included fixing route definitions, middleware/CORS, validation errors, database issues, and frontend API call bugs. A centralized  file detailing all API endpoints was also required. Subsequently, the user requested the implementation of a centralized error handler middleware in FastAPI, capable of handling various error types (Pydantic validation, SQLAlchemy integrity, custom app exceptions, unhandled errors) with a standardized JSON response format. The final major feature request was to add lead status change functionality (backend API and frontend UI) and ensure a fully working, bug-free application with robust error handling. The most recent task shifts to designing a new, modular enterprise sales and product management platform.
 </product_requirements>
 
 <key_technical_concepts>
--   **Frontend:** React, Vite, Tailwind CSS, Local Storage (JWT).
--   **Backend:** FastAPI, JWT (JSON Web Tokens), PostgreSQL, MongoDB, Bcrypt (password hashing), SQLAlchemy, Pydantic, Alembic (migrations), Redis (sessions, not fully implemented), MinIO (media, not fully implemented), CORS.
--   **System:** Supervisor (process management), Role-Based Access Control (RBAC).
+- **FastAPI**: Python web framework for backend APIs.
+- **React.js**: JavaScript library for building the frontend UI.
+- **PostgreSQL**: Primary relational database used for CRM data.
+- **SQLAlchemy**: Python SQL toolkit and ORM for database interaction.
+- **Pydantic (v2)**: Data validation and settings management for Python.
+- **Supervisor**: Process control system to manage backend and frontend services.
+- **JWT**: JSON Web Tokens for authentication and session management.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a full-stack architecture with a React frontend and a FastAPI backend. The initial setup started with a basic structure, which was later significantly refactored for modularity.
+The application follows a full-stack architecture with separate  (FastAPI) and  (React) directories within the  root.
 
 
 
-**Key Files and Changes:**
-*    (old): Initially contained the entire FastAPI logic. This file was completely removed after refactoring.
-*   : This is the new root entry point for the FastAPI application, referenced by Supervisor. It imports  from .
-*   : The core FastAPI application, now responsible for including all modular routers (sso, portal, front). Contains centralized error handling and CORS configuration.
-*   : New files (e.g., , , , , , ) defining SQLAlchemy ORM models for the CRM entities, including audit fields and relationships.
-*   : New files (e.g., , , ) defining Pydantic schemas for request and response validation, ensuring data integrity.
-*   : New files (e.g., , , ) encapsulating business logic for each module, interacting with models.
-*   : Contains authentication-related API endpoints like login and dashboard.
-*   : Contains CRUD API endpoints for User, Company, Contact, Lead, and Opportunity management.
-*   : Crucial for storing . This was updated to point to the preview domain's  path for correct routing.
-*   : Modified to include  to permit access from the preview URL, resolving frontend loading issues.
-*   : Updated to point to the new backend entry point  and ensure proper environment variables are set.
-*   : Adjusted  from yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. to yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. to correctly launch the Vite development server.
-*   : The main React component, updated to include the CRM navigation and route to different management modules.
-*   : New directory structure to house modular frontend components for each CRM module (e.g., , ). This promotes reusability and maintainability.
+-   : This is the main FastAPI application file, where routers are included, and CORS/exception handlers are registered. Crucial for application startup and routing. The AI modified this to register the new centralized error handlers and to use  with prefixes for consistency.
+-   : Stores backend environment variables like . The AI created and then moved this file to ensure it's loaded correctly by the application configuration, and fixed the password.
+-   : Contains frontend environment variables, notably  (previously ). The AI ensured this correctly pointed to .
+-   : Central utility for making API calls from the frontend. The AI modified its 401 handling to be more robust, preventing aggressive logouts.
+-   : Defines Pydantic models for company data. The AI fixed Pydantic v2 migration issues, specifically changing  to .
+-   : Defines API routes for company management. The AI updated  calls to  for Pydantic v2 compatibility and removed inline exception handling.
+-   : API routes for opportunities. The AI added the  prefix to the router and updated the response model to .
+-   : Configures the SQLAlchemy engine. The AI adjusted the  loading path to ensure environment variables were correctly accessed at startup.
+-   : Defines the SQLAlchemy Base class. The AI fixed a critical bug where it used a hardcoded default PostgreSQL URL instead of the  environment variable.
+-   : (NEW FILE) Contains the centralized FastAPI exception handlers for , , , and generic , standardizing API error responses.
+-   : (NEW FILE) Defines custom application-specific exceptions that can be raised and handled by the centralized system.
+-   : The main React component for lead management. The AI initially replaced its  with a custom  but later reverted and enhanced the original  as per user instruction.
+-   : The original leads list component. The AI enhanced this file to include lead status change functionality (dropdown and status display) while preserving its existing features.
+-   : Supervisor configuration file. The AI updated the backend command to correctly point to  and the frontend command to yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command..
+-   : (NEW FILE) Centralized JSON file containing example payloads for all APIs.
+-   : (NEW DIRECTORY) This is a new directory structure being created for the new enterprise sales and product management platform. It currently contains , , and  subdirectories.
 </code_architecture>
 
 <pending_tasks>
--   Complete implementation of all CRUD operation forms and logic on the frontend for Contact, Lead, and Opportunity Management modules.
--   Resolve persistent PostgreSQL database connectivity issues within the container environment.
--   Implement Session Management (Redis) and Media Storage (MinIO) as per initial requirements.
--   Address ESLint warnings encountered during frontend file writes.
+- Fully detail the  with all request/response examples for every API.
+- Implement the comprehensive design for the new modular, scalable enterprise sales and product management platform (currently only initial file structures have been created).
+- Address the SQLAlchemy  about relationship overlap (minor, not functionality-breaking).
 </pending_tasks>
 
 <current_work>
-The AI engineer is currently in the process of building out the comprehensive frontend for the CRM system, specifically focusing on creating all CRUD (Create, Read, Update, Delete) operation components for each management module.
+Immediately prior to this summary request, the AI engineer was tasked with designing a new, modular, scalable enterprise sales and product management platform. This new platform is intended to have major modules like Dashboard, Leads, Opportunities, and Masters, with detailed master data definitions (e.g., Product Master, Price List Master, User Master, etc.). The engineer has begun this task by establishing a new directory structure  and has started generating the backend , , and  for this new platform. Specifically, the following files have been created as part of this new design phase:
 
-The backend has been fully refactored into a modular, enterprise-level structure as requested, with all necessary SQLAlchemy models, Pydantic schemas, RBAC dependencies, business logic services, and API routers for User Management, Company Formation, Contact Management, Lead Management, and Opportunity Management. All backend API endpoints are confirmed to be working correctly via curl, including authentication and CRUD operations.
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
+-   
 
-On the frontend, the login and dashboard functionality is fully operational. The current focus is on extending the UI for the newly implemented backend modules.
-The AI engineer has already created:
--   Modular components for **Company Management** (e.g., , , ,  in ).
--   Modular components for **User Management** (e.g., , , ,  in ).
--   A new  utility file for frontend API calls.
--   The main  and  components have been updated to integrate these new module-wise components and provide navigation.
-
-A critical nuance is that while the backend logic for all CRUD operations is complete and tested, the PostgreSQL database connectivity within the environment is currently experiencing issues (e.g., Database not initialized, PostgreSQL not running, port 8001 already in use, pg_ctlcluster: not found). This prevents the complete end-to-end functionality of the new CRUD features, despite the frontend components being developed. The last actions were creating User Management frontend components.
+This indicates that the focus has shifted from fixing the existing CRM application to designing a brand new system. The current work is focused on establishing the foundational backend components for this new architecture.
 </current_work>
 
 <optional_next_step>
-Continue creating the remaining frontend CRUD components for Contact, Lead, and Opportunity Management modules.
+Continue creating the frontend UI component structure for the new enterprise sales and product management platform as outlined in the design request.
 </optional_next_step>

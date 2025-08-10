@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 
 # Import routers
 from .routers.sso import auth, dashboard
-from .routers.portal import companies, contacts, leads, opportunities, users
+from .routers.portal import companies, contacts, leads, opportunities, users, masters
 from .routers.portal import quotations
 from .routers.front import health
 
@@ -101,6 +101,7 @@ app.include_router(leads.router)
 app.include_router(opportunities.router)
 app.include_router(quotations.router)
 app.include_router(users.router)
+app.include_router(masters.router)
 
 
 @app.get("/")
@@ -121,6 +122,7 @@ async def root():
                 "/api/opportunities",
                 "/api/quotations",
                 "/api/users",
+                "/api/masters",
             ]
         },
     }
