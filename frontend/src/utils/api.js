@@ -30,8 +30,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Session expired or invalid
-      localStorage.removeItem('sessionId');
+      // Token expired or invalid
+      localStorage.removeItem('authToken');
       window.location.href = '/login';
     }
     return Promise.reject(error);
