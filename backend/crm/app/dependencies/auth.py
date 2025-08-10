@@ -33,17 +33,21 @@ async def get_current_user(
     if not session_data:
         # Try mock session for testing
         if session_id.startswith("test_"):
-            # Mock user for testing
+            # Mock user for testing with all permissions
             return {
                 "id": 1,
                 "name": "Test User",
                 "email": "test@example.com",
                 "username": "testuser",
                 "role_id": 1,
-                "role_name": "Admin",
+                "role": "admin",
+                "role_name": "admin",
                 "department_id": 1,
                 "department_name": "IT",
-                "session_id": session_id
+                "session_id": session_id,
+                "permissions": ["*", "all", "leads:read", "leads:write", "leads:all", 
+                              "opportunities:read", "opportunities:write", "opportunities:all",
+                              "companies:read", "companies:write", "contacts:read", "contacts:write"]
             }
         
         raise HTTPException(
