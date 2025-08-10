@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
 class Settings(BaseSettings):
-    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://crm:Test@localhost:5432/crm_db")
+    # Database - Use SQLite for development
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./enterprise_crm.db")
     
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
