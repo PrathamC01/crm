@@ -11,14 +11,22 @@ from .config import settings
 
 class MinIOClient:
     def __init__(self):
-        self.client = Minio(
-            settings.MINIO_ENDPOINT,
-            access_key=settings.MINIO_ACCESS_KEY,
-            secret_key=settings.MINIO_SECRET_KEY,
-            secure=settings.MINIO_SECURE
-        )
-        self.bucket_name = settings.MINIO_BUCKET
-        self._ensure_bucket()
+        try:
+            self.client = Minio(
+                settings.MINIO_ENDPOINT,
+                access_key=settings.MINIO_ACCESS_KEY,
+                secret_key=settings.MINIO_SECRET_KEY,
+                secure=settings.MINIO_SECURE
+            )
+            self.bucket_name = settings.MINIO_BUCKET
+            self.available = True
+            self._ensure_bucket()
+            print("MinIO connection established")
+        except Exception as e:
+            print(f"Warning: MinIO connection failed: {e}")
+            print("File storage will be disabled")
+            self.client = None
+            self.available = False
     
     def _ensure_bucket(self):
         """Ensure the bucket exists"""
