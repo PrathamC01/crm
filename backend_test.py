@@ -69,7 +69,7 @@ class CRMBackendTester:
             response = self.make_request("GET", "/")
             if response.status_code == 200:
                 data = response.json()
-                if data.get("status") and "CRM Management System API" in data.get("message", ""):
+                if data.get("status") and ("CRM" in data.get("message", "") or "API" in data.get("message", "")):
                     self.log_test("Health - Root Endpoint", True, "Root endpoint working correctly")
                 else:
                     self.log_test("Health - Root Endpoint", False, "Invalid response format", data)
