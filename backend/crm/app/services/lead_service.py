@@ -19,11 +19,21 @@ class LeadService:
     def create_lead(self, lead_data: dict, created_by: Optional[int] = None) -> Lead:
         """Create a new lead"""
         
+        # Handle enum conversions safely
+        def safe_enum_convert(value, enum_class):
+            if value is None:
+                return None
+            if isinstance(value, enum_class):
+                return value
+            if isinstance(value, str):
+                return enum_class(value)
+            return value
+        
         db_lead = Lead(
             project_title=lead_data.get('project_title'),
-            lead_source=LeadSource(lead_data.get('lead_source')),
-            lead_sub_type=LeadSubType(lead_data.get('lead_sub_type')),
-            tender_sub_type=TenderSubType(lead_data.get('tender_sub_type')),
+            lead_source=safe_enum_convert(lead_data.get('lead_source'), LeadSource),
+            lead_sub_type=safe_enum_convert(lead_data.get('lead_sub_type'), LeadSubType),
+            tender_sub_type=safe_enum_convert(lead_data.get('tender_sub_type'), TenderSubType),
             products_services=lead_data.get('products_services', []),
             company_id=lead_data.get('company_id'),
             sub_business_type=lead_data.get('sub_business_type'),
@@ -33,7 +43,7 @@ class LeadService:
             partners_data=lead_data.get('partners_data', []),
             tender_fee=lead_data.get('tender_fee'),
             currency=lead_data.get('currency', 'INR'),
-            submission_type=SubmissionType(lead_data.get('submission_type')) if lead_data.get('submission_type') else None,
+            submission_type=safe_enum_convert(lead_data.get('submission_type'), SubmissionType),
             tender_authority=lead_data.get('tender_authority'),
             tender_for=lead_data.get('tender_for'),
             emd_required=lead_data.get('emd_required', False),
@@ -49,8 +59,8 @@ class LeadService:
             convert_to_opportunity_date=lead_data.get('convert_to_opportunity_date'),
             competitors=lead_data.get('competitors', []),
             documents=lead_data.get('documents', []),
-            status=LeadStatus(lead_data.get('status', LeadStatus.NEW)),
-            priority=LeadPriority(lead_data.get('priority', LeadPriority.MEDIUM)),
+            status=safe_enum_convert(lead_data.get('status', LeadStatus.NEW), LeadStatus),
+            priority=safe_enum_convert(lead_data.get('priority', LeadPriority.MEDIUM), LeadPriority),
             qualification_notes=lead_data.get('qualification_notes'),
             lead_score=lead_data.get('lead_score', 0),
             contacts=lead_data.get('contacts', []),
