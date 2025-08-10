@@ -421,12 +421,12 @@ class MastersAPITester:
         """Test POST /api/masters/pricelists - Create price list"""
         try:
             pricelist_data = {
-                "name": f"Test Price List {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "price_list_name": f"Test Price List {datetime.now().strftime('%H%M%S')}",
                 "description": "Test price list for API testing",
                 "currency": "INR",
                 "is_active": True,
-                "effective_from": "2024-01-01",
-                "effective_to": "2024-12-31"
+                "valid_from": "2024-01-01",
+                "valid_upto": "2024-12-31"
             }
             
             response = self.make_request("POST", "/masters/pricelists", pricelist_data)
