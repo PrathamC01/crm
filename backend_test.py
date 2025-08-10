@@ -555,7 +555,7 @@ class CRMBackendTester:
         
         # Test 1: Get All Opportunities
         try:
-            response = self.make_request("GET", "/api/opportunities/?skip=0&limit=10", headers=self.session_headers)
+            response = self.make_request("GET", "/api/opportunities/?skip=0&limit=10", headers=self.auth_headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") or data.get("success"):  # Handle different response formats
