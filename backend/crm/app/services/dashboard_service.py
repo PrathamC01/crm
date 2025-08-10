@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_, func, desc
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 from collections import defaultdict
+from fastapi import Depends
 
 from ..models.dashboard import DashboardConfig, DashboardWidget, DashboardMetric, AlertConfig
 from ..models.lead import Lead, LeadStatus
