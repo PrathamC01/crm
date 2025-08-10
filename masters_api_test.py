@@ -375,40 +375,43 @@ class MastersAPITester:
             }
             
             response = self.make_request("POST", "/masters/products", product_data)
-            if response and response.status_code == 200:
-                data = response.json()
-                if data.get("status") == True and "data" in data:
-                    created_product = data["data"]
-                    self.created_resources["products"].append(created_product["id"])
-                    
-                    # Verify created product structure
-                    required_fields = ["id", "name", "sku_code"]
-                    if all(field in created_product for field in required_fields):
-                        self.log_test("Product Creation", True, f"Product created successfully with ID: {created_product['id']}")
+            if response:
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == True and "data" in data:
+                        created_product = data["data"]
+                        self.created_resources["products"].append(created_product["id"])
                         
-                        # Verify auto-generated SKU code
-                        sku_code = created_product["sku_code"]
-                        if sku_code and len(sku_code) > 0:
-                            self.log_test("Product SKU Generation", True, f"Auto-generated SKU: {sku_code}")
+                        # Verify created product structure
+                        required_fields = ["id", "name", "sku_code"]
+                        if all(field in created_product for field in required_fields):
+                            self.log_test("Product Creation", True, f"Product created successfully with ID: {created_product['id']}")
+                            
+                            # Verify auto-generated SKU code
+                            sku_code = created_product["sku_code"]
+                            if sku_code and len(sku_code) > 0:
+                                self.log_test("Product SKU Generation", True, f"Auto-generated SKU: {sku_code}")
+                            else:
+                                self.log_test("Product SKU Generation", False, "SKU code not generated")
+                            
+                            # Verify product name includes category information
+                            if created_product["cat2_category"] in created_product["name"]:
+                                self.log_test("Product Name Generation", True, "Product name includes category information")
+                            else:
+                                self.log_test("Product Name Generation", False, f"Product name doesn't reflect categories: {created_product['name']}")
+                            
+                            return True
                         else:
-                            self.log_test("Product SKU Generation", False, "SKU code not generated")
-                        
-                        # Verify product name auto-generation from categories
-                        expected_name_parts = ["Hardware", "Servers", "Rack Servers"]
-                        if any(part in created_product["name"] for part in expected_name_parts):
-                            self.log_test("Product Name Generation", True, "Product name includes category information")
-                        else:
-                            self.log_test("Product Name Generation", False, f"Product name doesn't reflect categories: {created_product['name']}")
-                        
-                        return True
+                            self.log_test("Product Creation", False, f"Missing required fields in created product: {created_product}")
+                            return False
                     else:
-                        self.log_test("Product Creation", False, f"Missing required fields in created product: {created_product}")
+                        self.log_test("Product Creation", False, f"Invalid response format: {data}")
                         return False
                 else:
-                    self.log_test("Product Creation", False, f"Invalid response format: {data}")
+                    self.log_test("Product Creation", False, f"Request failed with status {response.status_code}: {response.text}")
                     return False
             else:
-                self.log_test("Product Creation", False, f"Request failed with status {response.status_code if response else 'No response'}")
+                self.log_test("Product Creation", False, "No response received")
                 return False
         except Exception as e:
             self.log_test("Product Creation", False, f"Exception: {str(e)}")
