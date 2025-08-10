@@ -52,7 +52,7 @@ const Dashboard = ({ onLogout }) => {
   const fetchDashboardMetrics = async () => {
     try {
       // Fetch leads summary
-      const leadsResponse = await apiRequest("/api/leads/summary/statistics");
+      const leadsResponse = await apiRequest("/api/leads/stats");
       if (leadsResponse.status) {
         const leadData = leadsResponse.data;
         setMetrics((prev) => ({
