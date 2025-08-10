@@ -16,6 +16,7 @@ from ...schemas.opportunity import (
     OpportunityResponse, OpportunityListResponse, OpportunityCreate,
     SalesProcessUpdate, OpportunityStats
 )
+from ...schemas.auth import StandardResponse
 from ...utils.auth import get_current_user
 from ...utils.response import create_response
 
