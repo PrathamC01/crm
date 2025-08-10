@@ -76,15 +76,21 @@ async def health_check():
     """Health check endpoint"""
     try:
         # Check Redis connection
-        redis_client.redis.ping()
-        redis_status = "connected"
+        if redis_client.available:
+            redis_client.redis.ping()
+            redis_status = "connected"
+        else:
+            redis_status = "disabled (using mock)"
     except Exception as e:
         redis_status = f"error: {str(e)}"
     
     try:
         # Check MinIO connection
-        minio_client.client.bucket_exists(settings.MINIO_BUCKET)
-        minio_status = "connected"
+        if minio_client.available:
+            minio_client.client.bucket_exists(settings.MINIO_BUCKET)
+            minio_status = "connected"
+        else:
+            minio_status = "disabled (using mock)"
     except Exception as e:
         minio_status = f"error: {str(e)}"
     
