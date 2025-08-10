@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 
 # Import routers
 from .routers.sso import auth, dashboard
-from .routers.portal import companies, contacts, leads, opportunities, users
+from .routers.portal import companies, contacts, leads, opportunities, users, masters
 from .routers.portal import quotations
 from .routers.front import health
 
