@@ -9,7 +9,8 @@ import traceback
 
 from .config import settings
 from .database import create_tables
-from .routers import masters, dashboard, leads, opportunities
+from .routers import masters
+# from .routers import dashboard, leads, opportunities
 from .redis_client import redis_client
 from .minio_client import minio_client
 
