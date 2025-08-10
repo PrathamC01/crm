@@ -186,7 +186,7 @@ async def get_product_pricing(
     price_list_id: Optional[int] = Query(None),
     uom_id: Optional[int] = Query(None),
     current_user: dict = Depends(get_current_user),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Get product pricing for specific price list and UOM"""
     try:
