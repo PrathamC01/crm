@@ -183,7 +183,7 @@ class CRMBackendTester:
         
         for dashboard_name, endpoint in dashboard_types:
             try:
-                response = self.make_request("GET", endpoint, headers=self.session_headers)
+                response = self.make_request("GET", endpoint, headers=self.auth_headers)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("status") and data.get("data") is not None:
