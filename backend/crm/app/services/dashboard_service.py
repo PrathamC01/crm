@@ -33,10 +33,10 @@ class DashboardService:
         active_leads = leads_query.filter(Lead.status.in_([LeadStatus.NEW, LeadStatus.ACTIVE, LeadStatus.CONTACTED])).count()
         converted_leads = leads_query.filter(Lead.status == LeadStatus.CONVERTED).count()
         
-        # Total opportunities
+        # Total opportunities - fix join issues
         opps_query = self.db.query(Opportunity)
         if department_id:
-            opps_query = opps_query.join(User).filter(User.department_id == department_id)
+            opps_query = opps_query.join(User, Opportunity.created_by == User.id).filter(User.department_id == department_id)
         
         total_opportunities = opps_query.count()
         open_opportunities = opps_query.filter(Opportunity.status.in_([OpportunityStatus.PROSPECTING, OpportunityStatus.QUALIFICATION])).count()
