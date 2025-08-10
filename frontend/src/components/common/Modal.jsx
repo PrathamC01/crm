@@ -4,12 +4,15 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const Modal = ({
   show = false,
+  isOpen = false,
   onClose,
   title,
   children,
   size = "normal",
   showCloseButton = true,
 }) => {
+  // Support both `show` and `isOpen` props for backward compatibility
+  const isModalOpen = show || isOpen;
   const sizeClasses = {
     small: "max-w-md",
     normal: "max-w-2xl",
