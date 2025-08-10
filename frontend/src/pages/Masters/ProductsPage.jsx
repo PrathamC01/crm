@@ -210,6 +210,7 @@ const ProductsPage = () => {
           pagination={pagination}
           onPageChange={fetchProducts}
           loading={loading}
+          emptyMessage="No products found. Create your first product to get started."
         />
       </div>
 
