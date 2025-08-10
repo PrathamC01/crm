@@ -86,7 +86,7 @@ async def get_current_user(
         "username": user.username,
         "role_id": user.role_id,
         "role_name": user.role.name if user.role else "User",
-        "permissions": user.role.permissions if user.role else "User",
+        "permissions": _convert_permissions(user.role.permissions if user.role else []),
         "department_id": user.department_id,
         "department_name": user.department.name if user.department else "Unknown",
         "session_id": session_id,
