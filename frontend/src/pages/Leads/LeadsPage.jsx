@@ -151,6 +151,26 @@ const LeadsPage = () => {
     setSelectedLead(lead);
   };
 
+  const handleEditLead = (lead) => {
+    setEditingLead(lead);
+  };
+
+  const handleConvertLead = async (lead) => {
+    if (lead.status === 'Qualified') {
+      try {
+        // Call conversion API
+        const response = await apiMethods.leads.convertToOpportunity(lead.id);
+        if (response.data?.status) {
+          alert('Lead converted to opportunity successfully!');
+          fetchLeads(); // Refresh the list
+        }
+      } catch (error) {
+        console.error('Error converting lead:', error);
+        alert('Failed to convert lead to opportunity');
+      }
+    }
+  };
+
   const handleCreateLead = () => {
     setShowCreateModal(true);
   };
