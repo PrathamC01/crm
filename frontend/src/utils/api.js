@@ -11,12 +11,12 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add session ID to headers
+// Request interceptor to add JWT token to headers
 api.interceptors.request.use(
   (config) => {
-    const sessionId = localStorage.getItem('sessionId');
-    if (sessionId && !config.headers['x-session-id']) {
-      config.headers['x-session-id'] = sessionId;
+    const token = localStorage.getItem('authToken');
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
