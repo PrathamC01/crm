@@ -16,13 +16,7 @@ class StatusEnum(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
 
-# Standard Response Models
-class StandardResponse(BaseModel):
-    status: bool
-    message: str
-    data: Optional[Any] = None
-    error: Optional[Dict[str, Any]] = None
-
+# Standard Response Models (Using from auth schema)
 class PaginatedResponse(BaseModel):
     items: List[Any]
     total: int
