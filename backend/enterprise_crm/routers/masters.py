@@ -111,7 +111,7 @@ async def list_uoms(
 async def create_uom(
     uom_data: UOMCreate,
     current_user: dict = Depends(require_permission("masters", "write")),
-    masters_service: MastersService = Depends()
+    masters_service: MastersService = Depends(get_masters_service)
 ):
     """Create new UOM"""
     try:
