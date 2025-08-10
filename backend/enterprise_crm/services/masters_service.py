@@ -13,8 +13,7 @@ from ..models.masters import (
     ProductPricingMaster, GroupMaster, ProductGroupingMaster,
     UserMaster, RolesMaster, DepartmentMaster, DesignationMaster,
     StateMaster, CityMaster, IndustryCategoryMaster, TaxMaster,
-    PermissionMaster, DiscountMaster, ProductCalculationMaster,
-    ApprovalStatusEnum
+    PermissionMaster, DiscountMaster, ProductCalculationMaster
 )
 from ..schemas.masters import (
     ProductMasterCreate, ProductMasterUpdate, UOMCreate,
