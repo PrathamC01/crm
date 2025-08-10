@@ -94,7 +94,7 @@ class RedisClient:
     def delete_session(self, session_id: str) -> bool:
         """Delete session"""
         if self.available:
-            return bool(self.redis.delete(f"session:{session_id}"))
+            return bool(self.redis.delete(f"auth:{session_id}"))
         else:
             # Fallback storage
             if session_id in self._fallback_sessions:
