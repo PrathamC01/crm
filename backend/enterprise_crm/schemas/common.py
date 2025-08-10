@@ -24,7 +24,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     pages: int
 
 class ApprovalRequest(BaseModel):
-    decision: str = Field(..., regex="^(approved|rejected)$")
+    decision: str = Field(..., pattern="^(approved|rejected)$")
     comments: Optional[str] = None
 
 class ApprovalResponse(BaseModel):
