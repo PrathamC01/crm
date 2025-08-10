@@ -16,7 +16,7 @@ from ..models.masters import (
     PermissionMaster, DiscountMaster, ProductCalculationMaster,
     ApprovalStatusEnum
 )
-from ...schemas.masters import (
+from ..schemas.masters import (
     ProductMasterCreate, ProductMasterUpdate, UOMCreate,
     PriceListCreate, ProductPricingCreate, UserMasterCreate,
     UserMasterUpdate, PaginatedResponse, BaseFilter, ApprovalRequest
