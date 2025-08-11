@@ -1,3 +1,0 @@
-"""
-CRM Application Core Package
-"""

@@ -1,3 +1,0 @@
-"""
-Helper utilities package
-"""
