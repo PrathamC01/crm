@@ -13,17 +13,22 @@ class ContactService:
     
     def create_contact(self, contact_data: dict, created_by: Optional[int] = None) -> Contact:
         """Create a new contact"""
+
         db_contact = Contact(
-            full_name=contact_data.get('full_name'),
-            designation=contact_data.get('designation'),
-            email=contact_data.get('email'),
-            phone_number=contact_data.get('phone_number'),
-            company_id=contact_data.get('company_id'),
-            role_type=contact_data.get('role_type'),
-            business_card_path=contact_data.get('business_card_path'),
+            salutation=contact_data.get("salutation"),
+            first_name=contact_data.get("first_name"),
+            middle_name=contact_data.get("middle_name"),
+            last_name=contact_data.get("last_name"),
+            designation=contact_data.get("designation"),
+            email=contact_data.get("email"),
+            primary_phone=contact_data.get("primary_phone"),
+            decision_maker=contact_data.get("decision_maker", False),
+            decision_maker_percentage=contact_data.get("decision_maker_percentage"),
+            comments=contact_data.get("comments"),
+            company_id=contact_data.get("company_id"),
             created_by=created_by
         )
-        
+
         self.db.add(db_contact)
         self.db.commit()
         self.db.refresh(db_contact)

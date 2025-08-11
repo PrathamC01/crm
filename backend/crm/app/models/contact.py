@@ -1,29 +1,23 @@
-"""
-SQLAlchemy Contact model
-"""
-
-from sqlalchemy import Column, String, ForeignKey, Enum as SQLEnum, Integer
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from enum import Enum
 from .base import BaseModel
-
-
-class RoleType(str, Enum):
-    ADMIN = "Admin"
-    INFLUENCER = "Influencer"
-    DECISION_MAKER = "Decision Maker"
 
 
 class Contact(BaseModel):
     __tablename__ = "contacts"
 
-    full_name = Column(String(255), nullable=False)
+    salutation = Column(String(10))
+    first_name = Column(String(100), nullable=False)
+    middle_name = Column(String(100))
+    last_name = Column(String(100), nullable=False)
     designation = Column(String(100))
     email = Column(String(255), unique=True, nullable=False, index=True)
-    phone_number = Column(String(20))
+    primary_phone = Column(String(20))
+    decision_maker = Column(Boolean, default=False)
+    decision_maker_percentage = Column(String(10))
+    comments = Column(String(500))
+
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
-    role_type = Column(SQLEnum(RoleType), nullable=False, index=True)
-    business_card_path = Column(String(500))
 
     # Relationships
     company = relationship(
@@ -36,8 +30,7 @@ class Contact(BaseModel):
         "User", foreign_keys="Contact.updated_by", back_populates="contacts_updated"
     )
 
-    # Opportunities linked to this contact (only Decision Makers)
     opportunities = relationship("Opportunity", back_populates="contact")
 
     def __repr__(self):
-        return f"<Contact(id={self.id}, full_name={self.full_name}, role={self.role_type}, company_name={self.company.name})>"
+        return f"<Contact(id={self.id}, full_name={self.first_name} {self.last_name}, company_name={self.company.name})>"

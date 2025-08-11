@@ -146,7 +146,7 @@ export const apiMethods = {
     getLead: (id) => api.get(`/api/leads/${id}`),
     updateLead: (id, data) => api.put(`/api/leads/${id}`, data),
     updateLeadStatus: (id, status) => api.patch(`/api/leads/${id}/status`, { status }),
-    convertToOpportunity: (id, data = {}) => api.post(`/api/leads/${id}/convert`, data)
+    convertToOpportunity: (id, data = {}) => api.post(`/api/leads/${id}/convert-to-opportunity`, data)
   },
 
   // Opportunities APIs
@@ -191,7 +191,7 @@ export const apiMethods = {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
     },
-    getUrl: (filePath, expiresInMinutes = 60) => 
+    getUrl: (filePath, expiresInMinutes = 60) =>
       api.get(`/api/files/${filePath}?expires_in_minutes=${expiresInMinutes}`),
     delete: (filePath) => api.delete(`/api/files/${filePath}`)
   },
