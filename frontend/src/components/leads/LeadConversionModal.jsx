@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../../utils/api';
+import React, { useState, useEffect } from "react";
+import api from "../../utils/api";
 
 const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
-    contact_id: '',
-    opportunity_name: '',
-    amount: '',
-    justification: '',
-    stage: 'L1_Prospect',
-    notes: ''
+    contact_id: "",
+    opportunity_name: "",
+    amount: "",
+    justification: "",
+    stage: "L1_Prospect",
+    notes: "",
   });
-  
+
   const [decisionMakers, setDecisionMakers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (lead) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        opportunity_name: `${lead.company_name} Opportunity`
+        opportunity_name: `${lead.company_name} Opportunity`,
       }));
       fetchDecisionMakers();
     }
@@ -27,12 +27,14 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
 
   const fetchDecisionMakers = async () => {
     try {
-      const response = await apiRequest(`/api/contacts/company/${lead.company_id}/decision-makers`);
+      const response = await api(
+        `/api/contacts/company/${lead.company_id}/decision-makers`
+      );
       if (response.status) {
         setDecisionMakers(response.data.decision_makers || []);
       }
     } catch (err) {
-      console.error('Failed to fetch decision makers:', err);
+      console.error("Failed to fetch decision makers:", err);
     }
   };
 
@@ -40,19 +42,19 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
     const newErrors = {};
 
     if (!formData.contact_id) {
-      newErrors.contact_id = 'Decision maker contact is required';
+      newErrors.contact_id = "Decision maker contact is required";
     }
 
     if (!formData.opportunity_name.trim()) {
-      newErrors.opportunity_name = 'Opportunity name is required';
+      newErrors.opportunity_name = "Opportunity name is required";
     }
 
     if (formData.amount) {
       const amount = parseFloat(formData.amount);
       if (isNaN(amount) || amount < 0) {
-        newErrors.amount = 'Amount must be a valid positive number';
+        newErrors.amount = "Amount must be a valid positive number";
       } else if (amount >= 1000000 && !formData.justification.trim()) {
-        newErrors.justification = 'Justification required for amounts ≥₹10L';
+        newErrors.justification = "Justification required for amounts ≥₹10L";
       }
     }
 
@@ -62,23 +64,23 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       const response = await apiRequest(`/api/leads/${lead.id}/convert`, {
-        method: 'POST',
-        body: JSON.stringify(formData)
+        method: "POST",
+        body: JSON.stringify(formData),
       });
 
       if (response.status) {
         onSuccess();
       } else {
-        setErrors({ submit: response.message || 'Conversion failed' });
+        setErrors({ submit: response.message || "Conversion failed" });
       }
     } catch (err) {
-      setErrors({ submit: 'Network error occurred' });
+      setErrors({ submit: "Network error occurred" });
     } finally {
       setLoading(false);
     }
@@ -86,23 +88,23 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const opportunityStages = [
-    { value: 'L1_Prospect', label: 'L1 - Prospect' },
-    { value: 'L1_Qualification', label: 'L1 - Initial' },
-    { value: 'L2_Need_Analysis', label: 'L2 - Qualified' },
-    { value: 'L3_Proposal', label: 'L3 - Needs Analysis' },
-    { value: 'L4_Negotiation', label: 'L4 - Proposal' },
-    { value: 'L5_Won', label: 'L5 - Negotiation' },
-    { value: 'L6_Lost', label: 'L6 - Decision' },
-    { value: 'L7_Dropped', label: 'L7 - Closing' }
+    { value: "L1_Prospect", label: "L1 - Prospect" },
+    { value: "L1_Qualification", label: "L1 - Initial" },
+    { value: "L2_Need_Analysis", label: "L2 - Qualified" },
+    { value: "L3_Proposal", label: "L3 - Needs Analysis" },
+    { value: "L4_Negotiation", label: "L4 - Proposal" },
+    { value: "L5_Won", label: "L5 - Negotiation" },
+    { value: "L6_Lost", label: "L6 - Decision" },
+    { value: "L7_Dropped", label: "L7 - Closing" },
   ];
 
   return (
@@ -118,8 +120,18 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </button>
           </div>
@@ -140,7 +152,10 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
           {decisionMakers.length === 0 && (
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg mb-4">
               <p className="font-medium">No Decision Makers Found</p>
-              <p className="text-sm">Please create a Decision Maker contact for this company before converting the lead.</p>
+              <p className="text-sm">
+                Please create a Decision Maker contact for this company before
+                converting the lead.
+              </p>
             </div>
           )}
 
@@ -157,17 +172,20 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
                 onChange={handleInputChange}
                 disabled={decisionMakers.length === 0}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.contact_id ? 'border-red-300' : 'border-gray-300'
-                } ${decisionMakers.length === 0 ? 'bg-gray-100' : ''}`}
+                  errors.contact_id ? "border-red-300" : "border-gray-300"
+                } ${decisionMakers.length === 0 ? "bg-gray-100" : ""}`}
               >
                 <option value="">Select decision maker</option>
-                {decisionMakers.map(contact => (
+                {decisionMakers.map((contact) => (
                   <option key={contact.id} value={contact.id}>
-                    {contact.full_name} - {contact.designation} ({contact.email})
+                    {contact.full_name} - {contact.designation} ({contact.email}
+                    )
                   </option>
                 ))}
               </select>
-              {errors.contact_id && <p className="text-red-500 text-sm mt-1">{errors.contact_id}</p>}
+              {errors.contact_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.contact_id}</p>
+              )}
             </div>
 
             {/* Opportunity Details */}
@@ -183,23 +201,33 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
                   value={formData.opportunity_name}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    errors.opportunity_name ? 'border-red-300' : 'border-gray-300'
+                    errors.opportunity_name
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter opportunity name"
                 />
-                {errors.opportunity_name && <p className="text-red-500 text-sm mt-1">{errors.opportunity_name}</p>}
+                {errors.opportunity_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.opportunity_name}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Stage
+                </label>
                 <select
                   name="stage"
                   value={formData.stage}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  {opportunityStages.map(stage => (
-                    <option key={stage.value} value={stage.value}>{stage.label}</option>
+                  {opportunityStages.map((stage) => (
+                    <option key={stage.value} value={stage.value}>
+                      {stage.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -207,7 +235,9 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
 
             {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Amount (₹)
+              </label>
               <input
                 type="number"
                 name="amount"
@@ -216,11 +246,13 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
                 value={formData.amount}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.amount ? 'border-red-300' : 'border-gray-300'
+                  errors.amount ? "border-red-300" : "border-gray-300"
                 }`}
                 placeholder="Enter amount"
               />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+              {errors.amount && (
+                <p className="text-red-500 text-sm mt-1">{errors.amount}</p>
+              )}
             </div>
 
             {/* Justification */}
@@ -236,17 +268,23 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
                   value={formData.justification}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    errors.justification ? 'border-red-300' : 'border-gray-300'
+                    errors.justification ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="Justification required for amounts ≥₹10L"
                 />
-                {errors.justification && <p className="text-red-500 text-sm mt-1">{errors.justification}</p>}
+                {errors.justification && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.justification}
+                  </p>
+                )}
               </div>
             )}
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notes
+              </label>
               <textarea
                 name="notes"
                 rows="3"
@@ -277,7 +315,7 @@ const LeadConversionModal = ({ lead, onClose, onSuccess }) => {
                     Converting...
                   </div>
                 ) : (
-                  'Convert to Opportunity'
+                  "Convert to Opportunity"
                 )}
               </button>
             </div>

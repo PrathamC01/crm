@@ -18,21 +18,30 @@ class OpportunityService:
         self.db = db
 
     def create_opportunity_from_lead(
-        self, 
-        lead_id: int, 
-        converted_by_user_id: int, 
-        approved_by_user_id: Optional[int] = None,
-        conversion_notes: Optional[str] = None
-    ) -> Opportunity:
+    self, 
+    lead_id: int, 
+    converted_by_user_id: int, 
+    approved_by_user_id: Optional[int] = None,
+    conversion_notes: Optional[str] = None
+) -> Opportunity:
         """
-        Create opportunity from lead with complete data preservation
-        This is the ONLY way opportunities should be created
+        Create opportunity from lead with complete data preservation.
+        This is the ONLY way opportunities should be created.
         """
+
+    # Validate lead_id early to avoid psycopg2 dict error
+        if isinstance(lead_id, dict):
+            if "lead_id" in lead_id:
+                lead_id = lead_id["lead_id"]
+            else:
+                raise ValueError("lead_id must be an integer or a dict containing 'lead_id'.")
+        elif not isinstance(lead_id, int):
+            raise TypeError(f"lead_id must be int, got {type(lead_id).__name__}")
+
         # Get the lead with all related data
         lead = self.db.query(Lead).options(
             joinedload(Lead.company),
-            joinedload(Lead.end_customer),
-            joinedload(Lead.contacts)
+            joinedload(Lead.end_customer)
         ).filter(
             and_(
                 Lead.id == lead_id,
@@ -40,7 +49,7 @@ class OpportunityService:
                 Lead.deleted_on.is_(None)
             )
         ).first()
-        
+
         if not lead:
             raise ValueError(f"Lead with ID {lead_id} not found")
         
@@ -53,7 +62,7 @@ class OpportunityService:
             raise ValueError(f"Lead must be Qualified before conversion. Current status: {lead.status}")
         
         if not lead.reviewed or lead.review_status != ReviewStatus.APPROVED:
-            raise ValueError(f"Lead must be reviewed and approved before conversion")
+            raise ValueError("Lead must be reviewed and approved before conversion")
         
         # Check if opportunity already exists for this lead
         existing_opportunity = self.db.query(Opportunity).filter(
@@ -61,7 +70,9 @@ class OpportunityService:
         ).first()
         
         if existing_opportunity:
-            raise ValueError(f"Opportunity already exists for Lead {lead_id}: {existing_opportunity.pot_id}")
+            raise ValueError(
+                f"Opportunity already exists for Lead {lead_id}: {existing_opportunity.pot_id}"
+            )
 
         try:
             # Create opportunity from lead
@@ -70,33 +81,32 @@ class OpportunityService:
                 converted_by_user_id=converted_by_user_id,
                 approved_by_user_id=approved_by_user_id
             )
-            
+
             # Add conversion notes if provided
             if conversion_notes:
                 opportunity.notes = conversion_notes
-            
+
             self.db.add(opportunity)
-            self.db.flush()  # Get the opportunity ID
-            
-            # Create initial sales process stages
+            self.db.flush()  # Assign ID without committing
+
+            # Initialize sales process
             self._initialize_sales_processes(opportunity.id, converted_by_user_id)
-            
+
             # Update lead status
             lead.converted = True
             lead.converted_to_opportunity_id = opportunity.pot_id
             lead.conversion_date = datetime.utcnow()
             lead.conversion_notes = conversion_notes
             lead.status = LeadStatus.CONVERTED
-            
+
             self.db.commit()
             self.db.refresh(opportunity)
-            
+
             return opportunity
-            
+
         except Exception as e:
             self.db.rollback()
             raise e
-
     def _initialize_sales_processes(self, opportunity_id: int, created_by: int):
         """Initialize all sales process stages for new opportunity"""
         stages = [

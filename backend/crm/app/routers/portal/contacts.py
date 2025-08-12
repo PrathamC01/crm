@@ -92,9 +92,7 @@ async def create_contact(
             contact_data.dict(exclude_unset=True), current_user["id"]
         )
 
-        return StandardResponse(
-            status=True, message="Contact created successfully"
-        )
+        return StandardResponse(status=True, message="Contact created successfully")
     except Exception as e:
         if "duplicate key" in str(e).lower():
             raise HTTPException(status_code=400, detail="Email already exists")
@@ -151,7 +149,7 @@ async def get_decision_makers(
     """Get decision makers for a company (needed for opportunity creation)"""
     try:
         contacts = contact_service.get_decision_makers(company_id)
-
+        print(contacts)
         return StandardResponse(
             status=True,
             message="Decision makers retrieved successfully",

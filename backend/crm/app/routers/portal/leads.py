@@ -196,6 +196,7 @@ async def get_lead(
     lead = lead_service.get_lead_by_id(lead_id)
     if not lead:
         from ...exceptions.custom_exceptions import NotFoundError
+
         raise NotFoundError("Lead", lead_id)
 
     # Transform to response format (same as in get_leads)
@@ -449,11 +450,6 @@ async def convert_to_opportunity(
         opportunity_data = {
             "lead_id": lead.id,
             "company_id": lead.company_id,
-            "contact_id": (
-                primary_contact.get("contact_id")
-                if primary_contact.get("contact_id")
-                else None
-            ),  # This would need to be mapped
             "name": opportunity_name,
             "amount": lead.expected_revenue,
             "notes": f"Converted from lead: {lead.project_title}\n"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiRequest } from "../../../utils/api";
+import api from "../../../utils/api";
 import ConversionButton from "./ConversionButton";
 import AdminReviewPanel from "./AdminReviewPanel";
 
@@ -64,7 +64,7 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
   const getStatusColor = (status) => {
     const colors = {
       New: "bg-blue-100 text-blue-800",
-      Active: "bg-green-100 text-green-800", 
+      Active: "bg-green-100 text-green-800",
       Contacted: "bg-yellow-100 text-yellow-800",
       Qualified: "bg-green-100 text-green-800",
       Unqualified: "bg-red-100 text-red-800",
@@ -78,7 +78,7 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
   const handleStatusChange = async (leadId, newStatus) => {
     try {
       const response = await apiRequest(`/api/leads/${leadId}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -86,11 +86,14 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
         alert(`Lead status updated to ${newStatus} successfully!`);
         onRefresh(); // Refresh the leads list
       } else {
-        alert('Failed to update lead status: ' + (response?.message || 'Unknown error'));
+        alert(
+          "Failed to update lead status: " +
+            (response?.message || "Unknown error")
+        );
       }
     } catch (error) {
-      console.error('Failed to update lead status:', error);
-      alert('Error updating lead status. Please try again.');
+      console.error("Failed to update lead status:", error);
+      alert("Error updating lead status. Please try again.");
     }
   };
 
@@ -98,13 +101,13 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
   const StatusChangeDropdown = ({ lead }) => {
     const [isOpen, setIsOpen] = useState(false);
     const statusOptions = [
-      { value: 'New', label: 'New' },
-      { value: 'Active', label: 'Active' },
-      { value: 'Contacted', label: 'Contacted' },
-      { value: 'Qualified', label: 'Qualified' },
-      { value: 'Unqualified', label: 'Unqualified' },
-      { value: 'Converted', label: 'Converted' },
-      { value: 'Rejected', label: 'Rejected' },
+      { value: "New", label: "New" },
+      { value: "Active", label: "Active" },
+      { value: "Contacted", label: "Contacted" },
+      { value: "Qualified", label: "Qualified" },
+      { value: "Unqualified", label: "Unqualified" },
+      { value: "Converted", label: "Converted" },
+      { value: "Rejected", label: "Rejected" },
     ];
 
     return (
@@ -115,18 +118,18 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
         >
           Change Status
         </button>
-        
+
         {isOpen && (
           <>
             {/* Overlay to close dropdown when clicking outside */}
-            <div 
-              className="fixed inset-0 z-10" 
+            <div
+              className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
             ></div>
-            
+
             <div className="absolute right-0 z-20 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
               <div className="py-1">
-                {statusOptions.map(option => (
+                {statusOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => {
@@ -134,17 +137,31 @@ const LeadList = ({ leads, loading, onEdit, onView, onDelete, onRefresh }) => {
                       setIsOpen(false);
                     }}
                     className={`block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${
-                      lead.status === option.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                      lead.status === option.value
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700"
                     }`}
                     disabled={lead.status === option.value}
                   >
                     <div className="flex items-center">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mr-2 ${getStatusColor(option.value)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mr-2 ${getStatusColor(
+                          option.value
+                        )}`}
+                      >
                         {option.label}
                       </span>
                       {lead.status === option.value && (
-                        <svg className="w-4 h-4 ml-auto text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="w-4 h-4 ml-auto text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                     </div>

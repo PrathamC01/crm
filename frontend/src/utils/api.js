@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { showGlobalError } from "./errorHandler"; // we'll create this
+
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
@@ -29,14 +31,26 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+    let message = "Something went wrong.";
+
+    if (error.response) {
+      // Server responded with a status outside 2xx
+      message = error.response.data?.message || `Error ${error.response.status}`;
+    } else if (error.request) {
+      // No response received
+      message = "No response from server.";
+    } else {
+      // Request setup error
+      message = error.message;
     }
+
+    // Trigger global error popup
+    showGlobalError(message);
+
     return Promise.reject(error);
   }
 );
+
 
 // Enhanced API methods
 export const apiMethods = {
@@ -145,7 +159,8 @@ export const apiMethods = {
     createLead: (data) => api.post('/api/leads', data),
     getLead: (id) => api.get(`/api/leads/${id}`),
     updateLead: (id, data) => api.put(`/api/leads/${id}`, data),
-    updateLeadStatus: (id, status) => api.patch(`/api/leads/${id}/status`, { status }),
+    updateLeadStatus: (id, status) => api.put(`/api/leads/${id}`, { status }),
+    approveLead: (id, data) => api.post(`/api/leads/${id}/review`, data),
     convertToOpportunity: (id, data = {}) => api.post(`/api/leads/${id}/convert-to-opportunity`, data)
   },
 
@@ -207,6 +222,116 @@ export const apiMethods = {
     login: (credentials) => api.post('/api/login', credentials),
     logout: () => api.post('/api/logout')
   }
+};
+
+
+
+
+//  opportunity-specific API functions
+export const opportunityAPI = {
+  // Get all opportunities
+  getOpportunities: (params = {}) => {
+    const queryParams = new URLSearchParams(params);
+    return api.get(`/api/opportunities?${queryParams}`);
+  },
+
+  // Get single opportunity
+  getOpportunity: (id) => api.get(`/api/opportunities/${id}`),
+
+  // Create opportunity
+  createOpportunity: (data) => api.post('/api/opportunities', JSON.stringify(data)),
+
+  // Update opportunity
+  updateOpportunity: (id, data) => api.put(`/api/opportunities/${id}`, JSON.stringify(data)),
+
+  // Update stage
+  updateStage: (id, stageData) => api.patch(`/api/opportunities/${id}/stage`, JSON.stringify(stageData)
+  ),
+
+  // Stage-specific task updates
+  updateQualificationTasks: (id, data) => api.patch(`/api/opportunities/${id}/qualification`, JSON.stringify(data)),
+
+  updateDemoTasks: (id, data) => api.patch(`/api/opportunities/${id}/demo`, JSON.stringify(data)),
+
+  updateProposalTasks: (id, data) => api.patch(`/api/opportunities/${id}/proposal`, JSON.stringify(data)),
+
+  updateNegotiationTasks: (id, data) => api.patch(`/api/opportunities/${id}/negotiation`, JSON.stringify(data)),
+
+  updateWonTasks: (id, data) => api.patch(`/api/opportunities/${id}/won-tasks`, JSON.stringify(data)),
+
+  // Close opportunity
+  closeOpportunity: (id, closeData) => api.patch(`/api/opportunities/${id}/close`, JSON.stringify(closeData)),
+
+  // Delete opportunity
+  deleteOpportunity: (id) => api.delete(`/api/opportunities/${id}`),
+
+  // Upload document
+  uploadDocument: (id, file, documentType) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return uploadFile(`/api/opportunities/${id}/upload?document_type=${documentType}`, formData);
+  },
+
+  // Get pipeline summary
+  getPipelineSummary: (userId) => {
+    const params = userId ? `?user_id=${userId}` : '';
+    return api.get(`/api/opportunities/pipeline/summary${params}`);
+  },
+
+  // Get metrics
+  getMetrics: (userId) => {
+    const params = userId ? `?user_id=${userId}` : '';
+    return api.get(`/api/opportunities/analytics/metrics${params}`);
+  }
+};
+
+// Opportunity stage constants
+export const OPPORTUNITY_STAGES = {
+  L1_PROSPECT: 'L1_Prospect',
+  L1_QUALIFICATION: 'L1_Qualification',
+  L2_NEED_ANALYSIS: 'L2_Need_Analysis',
+  L3_PROPOSAL: 'L3_Proposal',
+  L4_NEGOTIATION: 'L4_Negotiation',
+  L5_WON: 'L5_Won',
+  L6_LOST: 'L6_Lost',
+  L7_DROPPED: 'L7_Dropped'
+};
+
+export const OPPORTUNITY_STAGE_LABELS = {
+  [OPPORTUNITY_STAGES.L1_PROSPECT]: 'L1 - Prospect',
+  [OPPORTUNITY_STAGES.L1_QUALIFICATION]: 'L1 - Qualification (15%)',
+  [OPPORTUNITY_STAGES.L2_NEED_ANALYSIS]: 'L2 - Need Analysis / Demo (40%)',
+  [OPPORTUNITY_STAGES.L3_PROPOSAL]: 'L3 - Proposal / Bid Submission (60%)',
+  [OPPORTUNITY_STAGES.L4_NEGOTIATION]: 'L4 - Negotiation (80%)',
+  [OPPORTUNITY_STAGES.L5_WON]: 'L5 - Won (100%)',
+  [OPPORTUNITY_STAGES.L6_LOST]: 'L6 - Lost',
+  [OPPORTUNITY_STAGES.L7_DROPPED]: 'L7 - Dropped'
+};
+
+export const OPPORTUNITY_STATUSES = {
+  OPEN: 'Open',
+  WON: 'Won',
+  LOST: 'Lost',
+  DROPPED: 'Dropped'
+};
+
+export const QUALIFICATION_STATUSES = {
+  QUALIFIED: 'Qualified',
+  NOT_NOW: 'Not_Now',
+  DISQUALIFIED: 'Disqualified'
+};
+
+export const GO_NO_GO_STATUSES = {
+  GO: 'Go',
+  NO_GO: 'No_Go',
+  PENDING: 'Pending'
+};
+
+export const QUOTATION_STATUSES = {
+  DRAFT: 'Draft',
+  SUBMITTED: 'Submitted',
+  APPROVED: 'Approved',
+  REVISION_REQUIRED: 'Revision_Required'
 };
 
 export default api;

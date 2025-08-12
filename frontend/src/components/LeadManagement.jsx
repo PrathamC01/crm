@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AddNewLeadForm, LeadList, LeadView } from "./modules/lead";
-import { apiRequest } from "../utils/api";
+import api from "../utils/api";
 
 const LeadManagement = () => {
   const [view, setView] = useState("list"); // 'list', 'form', 'view'

@@ -100,7 +100,7 @@ class LeadService:
             self.db.commit()
             self.db.refresh(db_lead)
             for contact in lead_data.get("contacts", []):
-                ContactService.create_contact(
+                (ContactService(self.db)).create_contact(
                     contact_data={"company_id": lead_data.get("company_id"), **contact},
                     created_by=created_by,
                 )

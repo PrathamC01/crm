@@ -1,59 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../../utils/api';
+import React, { useState, useEffect } from "react";
+import api, { apiMethods } from "../../utils/api";
 
 const AdminReviewPanel = ({ onClose }) => {
   const [pendingLeads, setPendingLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [reviewComments, setReviewComments] = useState('');
-  const [reviewAction, setReviewAction] = useState(''); // 'approve' or 'reject'
-
-  useEffect(() => {
-    fetchPendingLeads();
-  }, []);
-
+  const [reviewComments, setReviewComments] = useState("");
+  const [reviewAction, setReviewAction] = useState(""); // 'approve' or 'reject'
   const fetchPendingLeads = async () => {
     try {
       setLoading(true);
-      const response = await apiRequest('/api/leads/pending-review');
+      const response = await api("/api/leads/pending-review");
       if (response.status) {
-        setPendingLeads(response.data.leads || []);
+        setPendingLeads(response.data.data.leads || []);
       }
     } catch (err) {
-      console.error('Failed to fetch pending leads:', err);
+      console.error("Failed to fetch pending leads:", err);
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchPendingLeads();
+  }, []);
 
   const handleReviewAction = async (leadId, decision) => {
     if (!reviewComments.trim()) {
-      alert('Please enter comments for your review decision.');
+      alert("Please enter comments for your review decision.");
       return;
     }
 
     setActionLoading(true);
     try {
-      const response = await apiRequest(`/api/leads/${leadId}/review`, {
-        method: 'POST',
-        body: JSON.stringify({
+      const response = await apiMethods.leads.approveLead(
+        leadId,
+        JSON.stringify({
           decision: decision,
-          comments: reviewComments.trim()
+          comments: reviewComments.trim(),
         })
-      });
+      );
 
       if (response.status) {
         alert(`Lead ${decision.toLowerCase()} successfully!`);
         setSelectedLead(null);
-        setReviewComments('');
-        setReviewAction('');
+        setReviewComments("");
+        setReviewAction("");
         fetchPendingLeads(); // Refresh the list
       } else {
-        alert('Failed to process review: ' + response.message);
+        alert("Failed to process review: " + response.message);
       }
     } catch (err) {
-      alert('Network error occurred');
+      console.log(err);
+      alert("Network error occurred");
     } finally {
       setActionLoading(false);
     }
@@ -62,22 +61,22 @@ const AdminReviewPanel = ({ onClose }) => {
   const openReviewModal = (lead, action) => {
     setSelectedLead(lead);
     setReviewAction(action);
-    setReviewComments('');
+    setReviewComments("");
   };
 
   const closeReviewModal = () => {
     setSelectedLead(null);
-    setReviewAction('');
-    setReviewComments('');
+    setReviewAction("");
+    setReviewComments("");
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return 'Not specified';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    if (!amount) return "Not specified";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -86,7 +85,9 @@ const AdminReviewPanel = ({ onClose }) => {
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Admin Review Panel</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Admin Review Panel
+            </h3>
             <p className="text-sm text-gray-600 mt-1">
               Review and approve/reject lead conversion requests
             </p>
@@ -95,8 +96,18 @@ const AdminReviewPanel = ({ onClose }) => {
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -109,7 +120,9 @@ const AdminReviewPanel = ({ onClose }) => {
           ) : pendingLeads.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-500 text-lg">✅ No pending reviews</div>
-              <p className="text-gray-400 mt-2">All conversion requests have been reviewed.</p>
+              <p className="text-gray-400 mt-2">
+                All conversion requests have been reviewed.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -149,12 +162,15 @@ const AdminReviewPanel = ({ onClose }) => {
                               {lead.project_title}
                             </div>
                             <div className="text-sm text-gray-500">
-                              Status: {lead.status} | Review: {lead.review_status}
+                              Status: {lead.status} | Review:{" "}
+                              {lead.review_status}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">{lead.company_name}</div>
+                          <div className="text-sm text-gray-900">
+                            {lead.company_name}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">
@@ -165,20 +181,22 @@ const AdminReviewPanel = ({ onClose }) => {
                           <div className="text-sm text-gray-900">
                             <div>By: {lead.conversion_requester_name}</div>
                             <div className="text-gray-500">
-                              {new Date(lead.conversion_request_date).toLocaleDateString()}
+                              {new Date(
+                                lead.conversion_request_date
+                              ).toLocaleDateString()}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => openReviewModal(lead, 'Approved')}
+                              onClick={() => openReviewModal(lead, "Approved")}
                               className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
                             >
                               Approve
                             </button>
                             <button
-                              onClick={() => openReviewModal(lead, 'Rejected')}
+                              onClick={() => openReviewModal(lead, "Rejected")}
                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
                             >
                               Reject
@@ -224,10 +242,20 @@ const AdminReviewPanel = ({ onClose }) => {
 
               <div className="bg-gray-50 p-3 rounded-lg mb-4">
                 <div className="text-sm">
-                  <div><strong>Lead:</strong> {selectedLead.project_title}</div>
-                  <div><strong>Company:</strong> {selectedLead.company_name}</div>
-                  <div><strong>Expected Revenue:</strong> {formatCurrency(selectedLead.expected_revenue)}</div>
-                  <div><strong>Requested By:</strong> {selectedLead.conversion_requester_name}</div>
+                  <div>
+                    <strong>Lead:</strong> {selectedLead.project_title}
+                  </div>
+                  <div>
+                    <strong>Company:</strong> {selectedLead.company_name}
+                  </div>
+                  <div>
+                    <strong>Expected Revenue:</strong>{" "}
+                    {formatCurrency(selectedLead.expected_revenue)}
+                  </div>
+                  <div>
+                    <strong>Requested By:</strong>{" "}
+                    {selectedLead.conversion_requester_name}
+                  </div>
                 </div>
               </div>
 
@@ -240,15 +268,17 @@ const AdminReviewPanel = ({ onClose }) => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleReviewAction(selectedLead.id, reviewAction)}
+                  onClick={() =>
+                    handleReviewAction(selectedLead.id, reviewAction)
+                  }
                   disabled={actionLoading || !reviewComments.trim()}
                   className={`px-4 py-2 rounded-lg font-medium disabled:opacity-50 transition-colors ${
-                    reviewAction === 'Approved'
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'bg-red-600 hover:bg-red-700 text-white'
+                    reviewAction === "Approved"
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-red-600 hover:bg-red-700 text-white"
                   }`}
                 >
-                  {actionLoading ? 'Processing...' : `${reviewAction}`}
+                  {actionLoading ? "Processing..." : `${reviewAction}`}
                 </button>
               </div>
             </div>

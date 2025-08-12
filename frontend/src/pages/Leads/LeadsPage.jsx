@@ -1,125 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { apiMethods } from '../../utils/api';
-import DataTable from '../../components/common/DataTable';
-import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import LeadForm from '../../components/leads/LeadForm';
+import React, { useState, useEffect } from "react";
+import { apiMethods } from "../../utils/api";
+import DataTable from "../../components/common/DataTable";
+import Modal from "../../components/common/Modal";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import AddNewLeadForm from "../../components/leads/AddNewLeadForm";
+import AdminReviewPanel from "../../components/leads/AdminReviewPanel";
+import ConversionButton from "../../components/leads/ConversionButton";
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [editingLead, setEditingLead] = useState(null);
   const [stats, setStats] = useState({});
   const [filters, setFilters] = useState({
-    status: '',
-    search: ''
+    status: "",
+    search: "",
   });
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [click, setClick] = useState(false);
+  useEffect(() => {
+    async function fetchUser() {
+      const userData = await apiMethods.session.getInfo();
+      // console.log(userData.data.data);
+      setCurrentUser(userData.data.data);
+    }
+    fetchUser();
+  }, []);
+
+  const isAdmin =
+    currentUser?.role_name?.includes("admin") ||
+    currentUser?.role_name?.includes("reviewer");
 
   const statusOptions = [
-    { value: '', label: 'All Statuses' },
-    { value: 'New', label: 'New' },
-    { value: 'Contacted', label: 'Contacted' },
-    { value: 'Qualified', label: 'Qualified' },
-    { value: 'Unqualified', label: 'Unqualified' },
-    { value: 'Converted', label: 'Converted' },
-    { value: 'Rejected', label: 'Rejected' }
+    { value: "", label: "All Statuses" },
+    { value: "New", label: "New" },
+    { value: "Contacted", label: "Contacted" },
+    { value: "Qualified", label: "Qualified" },
+    { value: "Unqualified", label: "Unqualified" },
+    { value: "Converted", label: "Converted" },
+    { value: "Rejected", label: "Rejected" },
   ];
 
   const leadColumns = [
     {
-      key: 'project_title',
-      label: 'Project Title',
+      key: "project_title",
+      label: "Project Title",
       sortable: true,
       render: (lead) => (
         <div>
           <div className="font-medium text-gray-900">{lead.project_title}</div>
           <div className="text-sm text-gray-500">{lead.company_name}</div>
         </div>
-      )
+      ),
     },
     {
-      key: 'lead_source',
-      label: 'Source',
+      key: "lead_source",
+      label: "Source",
       render: (lead) => (
         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
           {lead.lead_source}
         </span>
-      )
+      ),
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       render: (lead) => {
         const statusColors = {
-          'New': 'bg-gray-100 text-gray-800',
-          'Contacted': 'bg-blue-100 text-blue-800',
-          'Qualified': 'bg-green-100 text-green-800',
-          'Unqualified': 'bg-red-100 text-red-800',
-          'Converted': 'bg-purple-100 text-purple-800',
-          'Rejected': 'bg-red-100 text-red-800'
+          New: "bg-gray-100 text-gray-800",
+          Contacted: "bg-blue-100 text-blue-800",
+          Qualified: "bg-green-100 text-green-800",
+          Unqualified: "bg-red-100 text-red-800",
+          Converted: "bg-purple-100 text-purple-800",
+          Rejected: "bg-red-100 text-red-800",
         };
         return (
-          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[lead.status] || 'bg-gray-100 text-gray-800'}`}>
+          <span
+            className={`px-2 py-1 text-xs font-semibold rounded-full ${
+              statusColors[lead.status] || "bg-gray-100 text-gray-800"
+            }`}
+          >
             {lead.status}
           </span>
         );
-      }
+      },
     },
     {
-      key: 'priority',
-      label: 'Priority',
+      key: "priority",
+      label: "Priority",
       render: (lead) => {
         const priorityColors = {
-          'High': 'text-red-600',
-          'Medium': 'text-yellow-600',
-          'Low': 'text-green-600'
+          High: "text-red-600",
+          Medium: "text-yellow-600",
+          Low: "text-green-600",
         };
         return (
-          <span className={`font-medium ${priorityColors[lead.priority] || 'text-gray-600'}`}>
+          <span
+            className={`font-medium ${
+              priorityColors[lead.priority] || "text-gray-600"
+            }`}
+          >
             {lead.priority}
           </span>
         );
-      }
+      },
     },
     {
-      key: 'expected_revenue',
-      label: 'Expected Revenue',
+      key: "expected_revenue",
+      label: "Expected Revenue",
       render: (lead) => (
         <div className="text-right">
-          <div className="font-medium">₹{Number(lead.expected_revenue).toLocaleString()}</div>
+          <div className="font-medium">
+            ₹{Number(lead.expected_revenue).toLocaleString()}
+          </div>
           <div className="text-sm text-gray-500">{lead.revenue_currency}</div>
         </div>
-      )
+      ),
     },
     {
-      key: 'created_on',
-      label: 'Created',
-      render: (lead) => new Date(lead.created_on).toLocaleDateString()
-    }
+      key: "created_on",
+      label: "Created",
+      render: (lead) => new Date(lead.created_on).toLocaleDateString(),
+    },
   ];
 
   useEffect(() => {
     fetchLeads();
     fetchStats();
   }, [filters]);
-
-  const fetchLeads = async () => {
-    try {
-      setLoading(true);
-      const response = await apiMethods.leads.getLeads(filters);
-      if (response.data?.data?.leads) {
-        setLeads(response.data.data.leads);
-      }
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-      // For now, set empty array on error
-      setLeads([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchStats = async () => {
     try {
@@ -129,22 +141,128 @@ const LeadsPage = () => {
           total: response.data.data.total || 0,
           new: 0,
           qualified: 0,
-          converted: 0
+          converted: 0,
         });
       }
     } catch (error) {
-      console.error('Error fetching lead stats:', error);
+      console.error("Error fetching lead stats:", error);
       setStats({ total: 0, new: 0, qualified: 0, converted: 0 });
     }
   };
 
+  const fetchLeads = async () => {
+    try {
+      setLoading(true);
+      const response = await apiMethods.leads.getLeads(filters);
+      if (response.data?.data?.leads) {
+        setLeads(response.data.data.leads);
+      }
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+      // For now, set empty array on error
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      New: "bg-blue-100 text-blue-800",
+      Active: "bg-green-100 text-green-800",
+      Contacted: "bg-yellow-100 text-yellow-800",
+      Qualified: "bg-green-100 text-green-800",
+      Unqualified: "bg-red-100 text-red-800",
+      Converted: "bg-purple-100 text-purple-800",
+      Rejected: "bg-gray-100 text-gray-800",
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
   const handleStatusChange = async (leadId, newStatus) => {
     try {
       await apiMethods.leads.updateLeadStatus(leadId, newStatus);
-      fetchLeads(); // Refresh the list
+      await fetchLeads();
     } catch (error) {
-      console.error('Error updating lead status:', error);
+      console.error("Error updating lead status:", error);
     }
+  };
+  const StatusChangeDropdown = ({ lead }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const statusOptions = [
+      { value: "New", label: "New" },
+      { value: "Active", label: "Active" },
+      { value: "Contacted", label: "Contacted" },
+      { value: "Qualified", label: "Qualified" },
+      { value: "Unqualified", label: "Unqualified" },
+      { value: "Converted", label: "Converted" },
+      { value: "Rejected", label: "Rejected" },
+    ];
+
+    return (
+      !lead.converted && (
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-red-600 hover:text-red-900"
+          >
+            Change Status
+          </button>
+
+          {isOpen && (
+            <>
+              {/* Overlay to close dropdown when clicking outside */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsOpen(false)}
+              ></div>
+
+              <div className="fixed right-20 z-20 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
+                <div className="py-1">
+                  {statusOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        handleStatusChange(lead.id, option.value);
+                        setIsOpen(false);
+                      }}
+                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${
+                        lead.status === option.value
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700"
+                      }`}
+                      disabled={lead.status === option.value}
+                    >
+                      <div className="flex items-center">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mr-2 ${getStatusColor(
+                            option.value
+                          )}`}
+                        >
+                          {option.label}
+                        </span>
+                        {lead.status === option.value && (
+                          <svg
+                            className="w-4 h-4 ml-auto text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )
+    );
   };
 
   const handleViewLead = (lead) => {
@@ -156,17 +274,17 @@ const LeadsPage = () => {
   };
 
   const handleConvertLead = async (lead) => {
-    if (lead.status === 'Qualified') {
+    if (lead.status === "Qualified") {
       try {
         // Call conversion API
         const response = await apiMethods.leads.convertToOpportunity(lead.id);
         if (response.data?.status) {
-          alert('Lead converted to opportunity successfully!');
+          alert("Lead converted to opportunity successfully!");
           fetchLeads(); // Refresh the list
         }
       } catch (error) {
-        console.error('Error converting lead:', error);
-        alert('Failed to convert lead to opportunity');
+        console.error("Error converting lead:", error);
+        alert("Failed to convert lead to opportunity");
       }
     }
   };
@@ -175,23 +293,39 @@ const LeadsPage = () => {
     setShowCreateModal(true);
   };
 
+  // Status dropdown component
+
+  const getReviewStatusColor = (status) => {
+    const colors = {
+      Pending: "bg-yellow-100 text-yellow-800",
+      Approved: "bg-green-100 text-green-800",
+      Rejected: "bg-red-100 text-red-800",
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
+
   const actions = [
     {
-      label: 'View',
+      label: "View",
       onClick: handleViewLead,
-      className: 'text-blue-600 hover:text-blue-900'
+      className: "text-blue-600 hover:text-blue-900",
     },
     {
-      label: 'Edit',
+      label: "Edit",
       onClick: handleEditLead,
-      className: 'text-green-600 hover:text-green-900'
+      className: "text-green-600 hover:text-green-900",
     },
-    {
-      label: 'Convert',
-      onClick: handleConvertLead,
-      className: 'text-purple-600 hover:text-purple-900',
-      show: (lead) => lead.status === 'Qualified'
-    }
+    // {
+    //   label: "",
+    //   // onClick: StatusChangeDropdown,
+    //   className: "text-green-600 hover:text-green-900",
+    // },
+    // {
+    //   label: "Convert",
+    //   onClick: handleConvertLead,
+    //   className: "text-purple-600 hover:text-purple-900",
+    //   show: (lead) => lead.status === "Qualified",
+    // },
   ];
 
   return (
@@ -216,8 +350,18 @@ const LeadsPage = () => {
               <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <div className="p-3 rounded-md bg-blue-50">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <svg
+                className="w-6 h-6 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
             </div>
           </div>
@@ -230,8 +374,18 @@ const LeadsPage = () => {
               <p className="text-3xl font-bold text-blue-600">{stats.new}</p>
             </div>
             <div className="p-3 rounded-md bg-blue-50">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-6 h-6 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
             </div>
           </div>
@@ -241,11 +395,23 @@ const LeadsPage = () => {
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Qualified</p>
-              <p className="text-3xl font-bold text-green-600">{stats.qualified}</p>
+              <p className="text-3xl font-bold text-green-600">
+                {stats.qualified}
+              </p>
             </div>
             <div className="p-3 rounded-md bg-green-50">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
           </div>
@@ -255,11 +421,23 @@ const LeadsPage = () => {
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Converted</p>
-              <p className="text-3xl font-bold text-purple-600">{stats.converted}</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {stats.converted}
+              </p>
             </div>
             <div className="p-3 rounded-md bg-purple-50">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg
+                className="w-6 h-6 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
               </svg>
             </div>
           </div>
@@ -277,7 +455,9 @@ const LeadsPage = () => {
               type="text"
               placeholder="Search leads..."
               value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, search: e.target.value }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -287,16 +467,46 @@ const LeadsPage = () => {
             </label>
             <select
               value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, status: e.target.value }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {statusOptions.map(option => (
+              {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
           </div>
+
+          {isAdmin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Review Panel
+              </label>
+              <button
+                onClick={() => setShowAdminPanel(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                style={{ width: "30%", alignContent: "center" }}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span></span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -312,18 +522,39 @@ const LeadsPage = () => {
             data={leads}
             actions={actions}
             emptyMessage="No leads found. Create your first lead to get started."
+            renderHtml={(lead) => {
+              return (
+                <>
+                  <StatusChangeDropdown lead={lead} />
+                  <ConversionButton
+                    lead={lead}
+                    currentUser={currentUser}
+                    onUpdate={() => {}}
+                  />
+                </>
+              );
+            }}
           />
         )}
       </div>
+
+      {showAdminPanel && (
+        <AdminReviewPanel
+          onClose={() => {
+            setShowAdminPanel(false);
+            fetchLeads(); // Refresh leads after admin actions
+          }}
+        />
+      )}
 
       {/* Create Lead Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Create New Lead"
-        size="large"
+        size="full"
       >
-        <LeadForm
+        <AddNewLeadForm
           onSave={(newLead) => {
             setShowCreateModal(false);
             fetchLeads(); // Refresh the leads list
@@ -337,10 +568,10 @@ const LeadsPage = () => {
         isOpen={!!editingLead}
         onClose={() => setEditingLead(null)}
         title="Edit Lead"
-        size="large"
+        size="full"
       >
         {editingLead && (
-          <LeadForm
+          <AddNewLeadForm
             lead={editingLead}
             onSave={(updatedLead) => {
               setEditingLead(null);
@@ -374,11 +605,15 @@ const LeadsPage = () => {
                 <p className="text-gray-900">{selectedLead.status}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-700">Expected Revenue</h3>
-                <p className="text-gray-900">₹{Number(selectedLead.expected_revenue).toLocaleString()}</p>
+                <h3 className="font-semibold text-gray-700">
+                  Expected Revenue
+                </h3>
+                <p className="text-gray-900">
+                  ₹{Number(selectedLead.expected_revenue).toLocaleString()}
+                </p>
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <button
                 onClick={() => setSelectedLead(null)}
@@ -386,11 +621,11 @@ const LeadsPage = () => {
               >
                 Close
               </button>
-              {selectedLead.status === 'Qualified' && (
+              {selectedLead.status === "Qualified" && (
                 <button
                   onClick={() => {
                     // Handle conversion
-                    console.log('Converting to opportunity');
+                    console.log("Converting to opportunity");
                   }}
                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >

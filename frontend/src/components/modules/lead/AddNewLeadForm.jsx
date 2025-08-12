@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiRequest } from "../../../utils/api";
+import api from "../../../utils/api";
 
 const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -47,12 +47,12 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
     
     // Important Dates Section
     important_dates: [
-      { label: "Tender Publish Date", key: "tender_publish_date", value: "" },
-      { label: "Query Submission Date", key: "query_submission_date", value: "" },
-      { label: "Pre-Bid Meeting Date", key: "pre_bid_meeting_date", value: "" },
-      { label: "Tender Submission Date", key: "tender_submission_date", value: "" },
-      { label: "Technical Opening Date", key: "technical_opening_date", value: "" },
-      { label: "Presentation Date", key: "presentation_date", value: "" },
+      { label: "Tender Publish Date", key: "tender_publish_date", value: null },
+      { label: "Query Submission Date", key: "query_submission_date", value: null },
+      { label: "Pre-Bid Meeting Date", key: "pre_bid_meeting_date", value: null },
+      { label: "Tender Submission Date", key: "tender_submission_date", value: null },
+      { label: "Technical Opening Date", key: "technical_opening_date", value: null },
+      { label: "Presentation Date", key: "presentation_date", value: null },
     ],
     
     // Clauses Section
@@ -61,7 +61,7 @@ const AddNewLeadForm = ({ lead, onSave, onCancel }) => {
     // Tab 4: Other Details
     expected_revenue: 0,
     revenue_currency: "INR",
-    convert_to_opportunity_date: "",
+    convert_to_opportunity_date: null,
     
     // Competitors Section
     competitor: "",
