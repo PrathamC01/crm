@@ -124,17 +124,26 @@ def seed_initial_data():
         db.add_all([admin_user, reviewer_user, sales_user])
         db.flush()
 
-        # Create sample companies
+        # Create sample companies with new required fields
         company1 = Company(
             name="Tech Corp Ltd",
+            company_type="DOMESTIC_GST",
+            industry="IT_ITeS",
+            sub_industry="Software Development",
+            annual_revenue=50000000.00,  # 5 crores
             gst_number="29ABCDE1234F1Z1",
             pan_number="ABCDE1234F",
-            industry_category="Technology",
-            address="123 Tech Street",
+            supporting_documents=["gst_cert.pdf", "pan_card.pdf"],
+            verification_source="GST",
+            verification_date=datetime.utcnow(),
+            verified_by=admin_user.id,
+            address="123 Tech Street, Electronic City",
             city="Bangalore",
             state="Karnataka",
             country="India",
-            postal_code="560001",
+            pin_code="560001",
+            parent_child_mapping_confirmed=True,
+            linked_subsidiaries=["None"],
             website="www.techcorp.com",
             description="Leading technology company",
             created_by=admin_user.id,
