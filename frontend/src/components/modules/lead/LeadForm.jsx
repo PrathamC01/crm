@@ -357,6 +357,27 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
             </select>
             {errors.sales_person_id && <p className="text-red-500 text-sm mt-1">{errors.sales_person_id}</p>}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lead Sub-Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="leadSubType"
+              required
+              value={formData.leadSubType}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.leadSubType ? 'border-red-300' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Select lead sub-type</option>
+              {leadSubTypes.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+            {errors.leadSubType && <p className="text-red-500 text-sm mt-1">{errors.leadSubType}</p>}
+          </div>
         </div>
 
         {/* Products and Services Multi-Select */}
