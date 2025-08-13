@@ -10,9 +10,8 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '127.0.0.1',
-      // 'lead-manager-6.preview.emergentagent.com',
-      'swayatta-crm.preview.emergentagent.com'
-      // "*"
+      'codebase-cleanup-7.preview.emergentagent.com',
+      (host) => host.endsWith('.preview.emergentagent.com')
     ]
   },
 })
