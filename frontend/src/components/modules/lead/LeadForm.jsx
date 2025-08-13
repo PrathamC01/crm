@@ -10,7 +10,9 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     status: 'New',
     notes: '',
     priority: 'Medium',
-    expected_close_date: ''
+    expected_close_date: '',
+    products: [],
+    services: []
   });
   
   const [companies, setCompanies] = useState([]);
