@@ -5,15 +5,22 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({
+    status: '',
+    company_type: '',
+    approval_stage: '',
+    industry: '',
+    is_high_revenue: ''
+  });
   const [pagination, setPagination] = useState({
     skip: 0,
-    limit: 10,
+    limit: 20,
     total: 0
   });
 
   useEffect(() => {
     fetchCompanies();
-  }, [search, pagination.skip]);
+  }, [search, filters, pagination.skip]);
 
   const fetchCompanies = async () => {
     try {
@@ -21,7 +28,8 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
       const params = new URLSearchParams({
         skip: pagination.skip,
         limit: pagination.limit,
-        ...(search && { search })
+        ...(search && { search }),
+        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''))
       });
       
       const response = await apiRequest(`/api/companies?${params}`);
@@ -39,8 +47,31 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
     }
   };
 
+  const handleApproval = async (company, action, reason = '') => {
+    if (!window.confirm(`Are you sure you want to ${action.toLowerCase()} "${company.name}"?`)) return;
+    
+    try {
+      const response = await apiRequest(`/api/companies/${company.id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: action,
+          reason: reason || undefined
+        })
+      });
+
+      if (response.status) {
+        await fetchCompanies();
+        alert(`Company ${action.toLowerCase()} successful`);
+      } else {
+        alert('Failed to process approval: ' + response.message);
+      }
+    } catch (err) {
+      alert('Network error occurred');
+    }
+  };
+
   const handleDelete = async (companyId, companyName) => {
-    if (!window.confirm(`Are you sure you want to delete "${companyName}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete "${companyName}"? This action cannot be undone.`)) return;
     
     try {
       const response = await apiRequest(`/api/companies/${companyId}`, {
@@ -49,6 +80,7 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
 
       if (response.status) {
         await fetchCompanies();
+        alert('Company deleted successfully');
       } else {
         alert('Failed to delete company: ' + response.message);
       }
@@ -61,23 +93,168 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
     setPagination(prev => ({ ...prev, skip: newSkip }));
   };
 
+  const handleFilterChange = (filterName, value) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+    setPagination(prev => ({ ...prev, skip: 0 }));
+  };
+
+  const getStatusBadge = (status, approvalStage) => {
+    let bgColor, textColor, text;
+    
+    switch (status) {
+      case 'ACTIVE':
+        bgColor = 'bg-green-100';
+        textColor = 'text-green-800';
+        text = 'Active';
+        break;
+      case 'INACTIVE':
+        bgColor = 'bg-red-100';
+        textColor = 'text-red-800';
+        text = 'Inactive';
+        break;
+      case 'PENDING_APPROVAL':
+        switch (approvalStage) {
+          case 'DRAFT':
+            bgColor = 'bg-gray-100';
+            textColor = 'text-gray-800';
+            text = 'Draft';
+            break;
+          case 'L1_PENDING':
+            bgColor = 'bg-yellow-100';
+            textColor = 'text-yellow-800';
+            text = 'L1 Pending';
+            break;
+          case 'ADMIN_PENDING':
+            bgColor = 'bg-blue-100';
+            textColor = 'text-blue-800';
+            text = 'Admin Pending';
+            break;
+          case 'REJECTED':
+            bgColor = 'bg-red-100';
+            textColor = 'text-red-800';
+            text = 'Rejected';
+            break;
+          default:
+            bgColor = 'bg-orange-100';
+            textColor = 'text-orange-800';
+            text = 'Pending';
+        }
+        break;
+      default:
+        bgColor = 'bg-gray-100';
+        textColor = 'text-gray-800';
+        text = status;
+    }
+
+    return (
+      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${bgColor} ${textColor}`}>
+        {text}
+      </span>
+    );
+  };
+
+  const getCompanyTypeBadge = (type) => {
+    const typeMap = {
+      'DOMESTIC_GST': { label: 'Domestic GST', color: 'bg-blue-100 text-blue-800' },
+      'DOMESTIC_NONGST': { label: 'Domestic Non-GST', color: 'bg-purple-100 text-purple-800' },
+      'NGO': { label: 'NGO', color: 'bg-green-100 text-green-800' },
+      'OVERSEAS': { label: 'Overseas', color: 'bg-orange-100 text-orange-800' }
+    };
+    
+    const typeInfo = typeMap[type] || { label: type, color: 'bg-gray-100 text-gray-800' };
+    
+    return (
+      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${typeInfo.color}`}>
+        {typeInfo.label}
+      </span>
+    );
+  };
+
   const totalPages = Math.ceil(pagination.total / pagination.limit);
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1;
 
   return (
-    <div className="space-y-4">
-      {/* Search */}
-      <div className="flex gap-4">
-        <input
-          type="text"
-          placeholder="Search companies by name, industry, or city..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPagination(prev => ({ ...prev, skip: 0 }));
-          }}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+    <div className="space-y-6">
+      {/* Search and Filters */}
+      <div className="bg-white p-4 rounded-lg shadow space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search companies by name, industry, city, GST, or PAN..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPagination(prev => ({ ...prev, skip: 0 }));
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+        
+        {/* Advanced Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="PENDING_APPROVAL">Pending Approval</option>
+          </select>
+
+          <select
+            value={filters.company_type}
+            onChange={(e) => handleFilterChange('company_type', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Types</option>
+            <option value="DOMESTIC_GST">Domestic GST</option>
+            <option value="DOMESTIC_NONGST">Domestic Non-GST</option>
+            <option value="NGO">NGO</option>
+            <option value="OVERSEAS">Overseas</option>
+          </select>
+
+          <select
+            value={filters.approval_stage}
+            onChange={(e) => handleFilterChange('approval_stage', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Stages</option>
+            <option value="DRAFT">Draft</option>
+            <option value="L1_PENDING">L1 Pending</option>
+            <option value="ADMIN_PENDING">Admin Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+
+          <select
+            value={filters.industry}
+            onChange={(e) => handleFilterChange('industry', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Industries</option>
+            <option value="BFSI">BFSI</option>
+            <option value="Government">Government</option>
+            <option value="IT_ITeS">IT/ITeS</option>
+            <option value="Manufacturing">Manufacturing</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Education">Education</option>
+            <option value="Telecom">Telecom</option>
+          </select>
+
+          <select
+            value={filters.is_high_revenue}
+            onChange={(e) => handleFilterChange('is_high_revenue', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Revenue</option>
+            <option value="true">High Revenue (>₹2Cr)</option>
+            <option value="false">Standard Revenue</option>
+          </select>
+        </div>
       </div>
 
       {/* Table */}
@@ -89,10 +266,13 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
                 Company Details
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Industry & Location
+                Type & Industry
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tax Information
+                Compliance
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status & Revenue
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -102,7 +282,7 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan="4" className="px-6 py-8 text-center">
+                <td colSpan="5" className="px-6 py-8 text-center">
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                   </div>
@@ -110,8 +290,8 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
               </tr>
             ) : companies.length === 0 ? (
               <tr>
-                <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                  {search ? 'No companies found matching your search' : 'No companies found'}
+                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                  {search || Object.values(filters).some(f => f) ? 'No companies found matching your criteria' : 'No companies found'}
                 </td>
               </tr>
             ) : (
@@ -119,7 +299,14 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
                 <tr key={company.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{company.name}</div>
+                      <div className="text-sm font-medium text-gray-900 flex items-center">
+                        {company.name}
+                        {company.is_high_revenue && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                            💰 High Revenue
+                          </span>
+                        )}
+                      </div>
                       {company.website && (
                         <div className="text-sm text-blue-600 hover:text-blue-800">
                           <a href={company.website} target="_blank" rel="noopener noreferrer">
@@ -127,56 +314,132 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
                           </a>
                         </div>
                       )}
-                      {company.description && (
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {company.description}
+                      <div className="text-sm text-gray-500">
+                        {[company.city, company.state, company.country].filter(Boolean).join(', ')}
+                      </div>
+                      {company.parent_company_name && (
+                        <div className="text-xs text-gray-400">
+                          Parent: {company.parent_company_name}
                         </div>
                       )}
                     </div>
                   </td>
+                  
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {company.industry_category && (
-                        <div className="font-medium">{company.industry_category}</div>
-                      )}
-                      <div className="text-gray-500">
-                        {[company.city, company.state, company.country].filter(Boolean).join(', ')}
+                    <div className="space-y-1">
+                      {getCompanyTypeBadge(company.company_type)}
+                      <div className="text-sm text-gray-900">
+                        {company.industry?.replace(/_/g, ' ')}
                       </div>
+                      {company.sub_industry && (
+                        <div className="text-xs text-gray-500">
+                          {company.sub_industry}
+                        </div>
+                      )}
                     </div>
                   </td>
+                  
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
                       {company.gst_number && (
-                        <div>GST: <span className="font-mono">{company.gst_number}</span></div>
+                        <div>GST: <span className="font-mono text-xs">{company.gst_number}</span></div>
                       )}
                       {company.pan_number && (
-                        <div>PAN: <span className="font-mono">{company.pan_number}</span></div>
+                        <div>PAN: <span className="font-mono text-xs">{company.pan_number}</span></div>
                       )}
-                      {!company.gst_number && !company.pan_number && (
-                        <span className="text-gray-400">Not provided</span>
+                      {company.international_unique_id && (
+                        <div>ID: <span className="font-mono text-xs">{company.international_unique_id}</span></div>
+                      )}
+                      {!company.gst_number && !company.pan_number && !company.international_unique_id && (
+                        <span className="text-gray-400 text-xs">Not provided</span>
+                      )}
+                      {company.verification_source && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Verified: {company.verification_source}
+                        </div>
                       )}
                     </div>
                   </td>
+                  
+                  <td className="px-6 py-4">
+                    <div className="space-y-2">
+                      {getStatusBadge(company.status, company.approval_stage)}
+                      {company.annual_revenue && (
+                        <div className="text-sm text-gray-600">
+                          ₹{(company.annual_revenue / 10000000).toFixed(1)}Cr
+                        </div>
+                      )}
+                      {company.sla_breach_date && (
+                        <div className="text-xs text-red-600 flex items-center">
+                          ⚠️ SLA Breach
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  
                   <td className="px-6 py-4 text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => onView(company)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => onEdit(company)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(company.id, company.name)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => onView(company)}
+                          className="text-indigo-600 hover:text-indigo-900 text-sm"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => onEdit(company)}
+                          className="text-blue-600 hover:text-blue-900 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(company.id, company.name)}
+                          className="text-red-600 hover:text-red-900 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                      
+                      {/* Approval Actions */}
+                      {company.approval_stage === 'L1_PENDING' && (
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => handleApproval(company, 'APPROVE')}
+                            className="text-green-600 hover:text-green-900 text-xs"
+                          >
+                            L1 Approve
+                          </button>
+                          <button
+                            onClick={() => {
+                              const reason = prompt('Reason for rejection:');
+                              if (reason) handleApproval(company, 'REJECT', reason);
+                            }}
+                            className="text-red-600 hover:text-red-900 text-xs"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                      
+                      {company.approval_stage === 'ADMIN_PENDING' && (
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => handleApproval(company, 'APPROVE')}
+                            className="text-green-600 hover:text-green-900 text-xs"
+                          >
+                            Activate
+                          </button>
+                          <button
+                            onClick={() => {
+                              const reason = prompt('Reason for rejection:');
+                              if (reason) handleApproval(company, 'REJECT', reason);
+                            }}
+                            className="text-red-600 hover:text-red-900 text-xs"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
