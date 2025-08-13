@@ -78,7 +78,7 @@ class Company(BaseModel):
     
     # Auto-tagging fields
     is_high_revenue = Column(Boolean, default=False)
-    tags = Column(ARRAY(String), nullable=True)
+    tags = Column(JSON, nullable=True)
     
     # Approval workflow tracking
     l1_approved_by = Column(Integer, ForeignKey('users.id'), nullable=True)
