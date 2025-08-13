@@ -157,6 +157,13 @@ class LeadService:
                     value = LeadStatus(value)
                 elif field == "priority" and value:
                     value = LeadPriority(value)
+                elif field == "tender_details" and value:
+                    # Handle nested tender_details mapping
+                    if isinstance(value, dict):
+                        setattr(db_lead, "tender_id", value.get("tender_id"))
+                        setattr(db_lead, "tender_authority_name", value.get("authority"))
+                        setattr(db_lead, "bid_due_date", value.get("bid_due_date"))
+                    continue  # Skip setattr for this field since we handled it above
 
                 setattr(db_lead, field, value)
 
