@@ -151,16 +151,25 @@ def seed_initial_data():
 
         company2 = Company(
             name="Business Solutions Inc",
+            company_type="DOMESTIC_GST",
+            industry="BFSI",
+            sub_industry="Financial Services",
+            annual_revenue=15000000.00,  # 1.5 crores
             gst_number="27FGHIJ5678K2L3",
             pan_number="FGHIJ5678K",
-            industry_category="Consulting",
-            address="456 Business Ave",
+            supporting_documents=["gst_cert.pdf", "pan_card.pdf"],
+            verification_source="MCA",
+            verification_date=datetime.utcnow(),
+            verified_by=admin_user.id,
+            address="456 Business Avenue, BKC",
             city="Mumbai",
             state="Maharashtra",
             country="India",
-            postal_code="400001",
-            website="www.bizsolve.com",
-            description="Business consulting services",
+            pin_code="400051",
+            parent_child_mapping_confirmed=True,
+            linked_subsidiaries=["None"],
+            website="www.bizsoln.com",
+            description="Leading business consulting firm",
             created_by=admin_user.id,
         )
 
