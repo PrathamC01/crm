@@ -89,7 +89,7 @@ class Company(BaseModel):
     
     # Go/No-Go checklist
     go_nogo_checklist_completed = Column(Boolean, default=False)
-    checklist_items = Column(ARRAY(String), nullable=True)  # Completed checklist items
+    checklist_items = Column(JSON, nullable=True)  # Completed checklist items
     
     # SLA tracking
     sla_breach_date = Column(DateTime, nullable=True)
