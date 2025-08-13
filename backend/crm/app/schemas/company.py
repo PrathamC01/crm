@@ -266,7 +266,7 @@ class CompanyStats(BaseModel):
 class DuplicateCheckResult(BaseModel):
     """Schema for duplicate check result"""
     is_duplicate: bool
-    match_type: str = Field(..., regex="^(EXACT|FUZZY|NONE)$")
+    match_type: str = Field(..., pattern="^(EXACT|FUZZY|NONE)$")
     matched_companies: List[dict] = []
     similarity_score: Optional[float] = None
     can_override: bool = False
