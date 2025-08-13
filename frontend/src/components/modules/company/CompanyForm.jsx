@@ -356,6 +356,71 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     { value: "OVERSEAS", label: "Overseas" },
   ];
 
+  const industryTypes = [
+    { value: "GOVERNMENT", label: "Government" },
+    { value: "BFSI", label: "BFSI" },
+    { value: "ENTERPRISE", label: "Enterprise" },
+  ];
+
+  const subTypeOptions = {
+    GOVERNMENT: [
+      "CENTRAL / FEDERAL — Ministries & Departments",
+      "CENTRAL / FEDERAL — National Agencies & Regulatory Authorities", 
+      "CENTRAL / FEDERAL — Law Enforcement & Security Forces",
+      "STATE / PROVINCIAL — State Departments & Authorities",
+      "STATE / PROVINCIAL — State Regulatory Agencies",
+      "STATE / PROVINCIAL — State Police & Emergency Services",
+      "LOCAL — Municipal Corporations & City Councils",
+      "LOCAL — District / County Administrations",
+      "LOCAL — Local Utility Boards (Water, Power, Waste)",
+      "SPECIALIZED — Judiciary & Courts",
+      "SPECIALIZED — Public Sector Undertakings (PSUs)",
+      "SPECIALIZED — Research & Development Institutions"
+    ],
+    BFSI: [
+      "BANKING — Retail Banking",
+      "BANKING — Corporate Banking", 
+      "BANKING — Private Banking / Wealth Management",
+      "BANKING — Cooperative Banks",
+      "BANKING — Central Banks & Monetary Authorities",
+      "FINANCIAL SERVICES — Capital Markets (Exchanges, Brokerages)",
+      "FINANCIAL SERVICES — Asset Management Companies (AMCs)",
+      "FINANCIAL SERVICES — Investment Banking",
+      "FINANCIAL SERVICES — Payment Gateways & Fintech",
+      "FINANCIAL SERVICES — Microfinance & NBFCs",
+      "INSURANCE — Life Insurance",
+      "INSURANCE — General Insurance (Health, Auto, Property)",
+      "INSURANCE — Reinsurance",
+      "INSURANCE — Insurtech Companies"
+    ],
+    ENTERPRISE: [
+      "TECHNOLOGY & IT SERVICES — Software Development",
+      "TECHNOLOGY & IT SERVICES — Cloud Computing & Data Centers",
+      "TECHNOLOGY & IT SERVICES — Cybersecurity & Networking", 
+      "TECHNOLOGY & IT SERVICES — IT Consulting",
+      "MANUFACTURING & INDUSTRIAL — Automotive",
+      "MANUFACTURING & INDUSTRIAL — Electronics & Electricals",
+      "MANUFACTURING & INDUSTRIAL — Heavy Engineering",
+      "MANUFACTURING & INDUSTRIAL — FMCG",
+      "HEALTHCARE & LIFE SCIENCES — Hospitals & Clinics",
+      "HEALTHCARE & LIFE SCIENCES — Pharmaceuticals",
+      "HEALTHCARE & LIFE SCIENCES — Medical Devices",
+      "HEALTHCARE & LIFE SCIENCES — Biotechnology",
+      "RETAIL & CONSUMER — E-commerce",
+      "RETAIL & CONSUMER — Fashion & Apparel",
+      "RETAIL & CONSUMER — Food & Beverage Chains",
+      "RETAIL & CONSUMER — Consumer Electronics",
+      "ENERGY & UTILITIES — Oil & Gas",
+      "ENERGY & UTILITIES — Renewable Energy",
+      "ENERGY & UTILITIES — Power Generation & Distribution",
+      "ENERGY & UTILITIES — Water Management",
+      "TRANSPORT & LOGISTICS — Airlines & Airports",
+      "TRANSPORT & LOGISTICS — Shipping & Ports",
+      "TRANSPORT & LOGISTICS — Rail & Road Freight",
+      "TRANSPORT & LOGISTICS — Warehousing"
+    ]
+  };
+
   const verificationSources = [
     { value: "GST", label: "GST" },
     { value: "MCA", label: "MCA" },
