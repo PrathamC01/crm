@@ -619,11 +619,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {/* Conditional fields based on company type */}
           {formData.company_type === "DOMESTIC_GST" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 GST Number <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 ml-2">(15 alphanumeric characters)</span>
               </label>
               <input
                 type="text"
@@ -634,12 +634,17 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
                   errors.gst_number ? "border-red-300" : "border-gray-300"
                 }`}
-                placeholder="22AAAAA0000A1Z5"
+                placeholder="ABCDE1234FGHIJ5"
                 maxLength="15"
+                style={{ textTransform: 'uppercase' }}
+                onInput={(e) => {
+                  e.target.value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+                }}
               />
               {errors.gst_number && (
                 <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">Manual entry - 15 characters (A-Z, 0-9)</p>
             </div>
           )}
 
@@ -647,6 +652,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 PAN Number <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 ml-2">(Indian PAN format)</span>
               </label>
               <input
                 type="text"
@@ -657,12 +663,17 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
                   errors.pan_number ? "border-red-300" : "border-gray-300"
                 }`}
-                placeholder="AAAAA0000A"
+                placeholder="ABCDE1234F"
                 maxLength="10"
+                style={{ textTransform: 'uppercase' }}
+                onInput={(e) => {
+                  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                }}
               />
               {errors.pan_number && (
                 <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">Manual entry - Format: AAAAA0000A</p>
             </div>
           )}
 
