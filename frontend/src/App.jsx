@@ -95,6 +95,9 @@ function App() {
                 <Route path="roles" element={<RolesPage />} />
               </Route>
 
+              {/* Companies Routes */}
+              <Route path="companies" element={<CompaniesPage />} />
+
               {/* Leads Routes */}
               <Route path="leads">
                 <Route index element={<LeadsPage />} />
