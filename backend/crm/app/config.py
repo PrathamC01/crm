@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     APP_NAME: str = "Enterprise CRM"
     APP_VERSION: str = "1.0.0"
-    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000")
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000, https://codebase-cleanup-7.preview.emergentagent.com")
     
     class Config:
         env_file = ".env"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../../../utils/api';
+import DataTable from '../../common/DataTable';
 
 const CompanyList = ({ onEdit, onView, onDelete }) => {
   const [companies, setCompanies] = useState([]);
@@ -89,7 +90,8 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
     }
   };
 
-  const handlePageChange = (newSkip) => {
+  const handlePageChange = (newPage) => {
+    const newSkip = (newPage - 1) * pagination.limit;
     setPagination(prev => ({ ...prev, skip: newSkip }));
   };
 
@@ -170,8 +172,189 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
     );
   };
 
+  const renderApprovalActions = (company) => {
+    const actions = [];
+    
+    if (company.approval_stage === 'L1_PENDING') {
+      actions.push(
+        <button
+          key="l1-approve"
+          onClick={() => handleApproval(company, 'APPROVE')}
+          className="text-green-600 hover:text-green-900 text-xs mr-2"
+        >
+          L1 Approve
+        </button>
+      );
+      actions.push(
+        <button
+          key="l1-reject"
+          onClick={() => {
+            const reason = prompt('Reason for rejection:');
+            if (reason) handleApproval(company, 'REJECT', reason);
+          }}
+          className="text-red-600 hover:text-red-900 text-xs"
+        >
+          Reject
+        </button>
+      );
+    }
+    
+    if (company.approval_stage === 'ADMIN_PENDING') {
+      actions.push(
+        <button
+          key="admin-approve"
+          onClick={() => handleApproval(company, 'APPROVE')}
+          className="text-green-600 hover:text-green-900 text-xs mr-2"
+        >
+          Activate
+        </button>
+      );
+      actions.push(
+        <button
+          key="admin-reject"
+          onClick={() => {
+            const reason = prompt('Reason for rejection:');
+            if (reason) handleApproval(company, 'REJECT', reason);
+          }}
+          className="text-red-600 hover:text-red-900 text-xs"
+        >
+          Reject
+        </button>
+      );
+    }
+    
+    return actions.length > 0 ? (
+      <div className="mt-2">
+        {actions}
+      </div>
+    ) : null;
+  };
+
+  // Define columns for DataTable
+  const columns = [
+    {
+      key: 'name',
+      label: 'Company Details',
+      render: (company) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900 flex items-center">
+            {company.name}
+            {company.is_high_revenue && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                💰 High Revenue
+              </span>
+            )}
+          </div>
+          {company.website && (
+            <div className="text-sm text-blue-600 hover:text-blue-800">
+              <a href={company.website} target="_blank" rel="noopener noreferrer">
+                {company.website}
+              </a>
+            </div>
+          )}
+          <div className="text-sm text-gray-500">
+            {[company.city, company.state, company.country].filter(Boolean).join(', ')}
+          </div>
+          {company.parent_company_name && (
+            <div className="text-xs text-gray-400">
+              Parent: {company.parent_company_name}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'type',
+      label: 'Type & Industry',
+      render: (company) => (
+        <div className="space-y-1">
+          {getCompanyTypeBadge(company.company_type)}
+          <div className="text-sm text-gray-900">
+            {company.industry?.replace(/_/g, ' ')}
+          </div>
+          {company.sub_industry && (
+            <div className="text-xs text-gray-500">
+              {company.sub_industry}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'compliance',
+      label: 'Compliance',
+      render: (company) => (
+        <div className="text-sm text-gray-900">
+          {company.gst_number && (
+            <div>GST: <span className="font-mono text-xs">{company.gst_number}</span></div>
+          )}
+          {company.pan_number && (
+            <div>PAN: <span className="font-mono text-xs">{company.pan_number}</span></div>
+          )}
+          {company.international_unique_id && (
+            <div>ID: <span className="font-mono text-xs">{company.international_unique_id}</span></div>
+          )}
+          {!company.gst_number && !company.pan_number && !company.international_unique_id && (
+            <span className="text-gray-400 text-xs">Not provided</span>
+          )}
+          {company.verification_source && (
+            <div className="text-xs text-gray-500 mt-1">
+              Verified: {company.verification_source}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status & Revenue',
+      render: (company) => (
+        <div className="space-y-2">
+          {getStatusBadge(company.status, company.approval_stage)}
+          {company.annual_revenue && (
+            <div className="text-sm text-gray-600">
+              ₹{(company.annual_revenue / 10000000).toFixed(1)}Cr
+            </div>
+          )}
+          {company.sla_breach_date && (
+            <div className="text-xs text-red-600 flex items-center">
+              ⚠️ SLA Breach
+            </div>
+          )}
+        </div>
+      )
+    }
+  ];
+
+  // Define actions for DataTable
+  const actions = [
+    {
+      label: 'View',
+      onClick: (company) => onView(company),
+      className: 'text-indigo-600 hover:text-indigo-900'
+    },
+    {
+      label: 'Edit',
+      onClick: (company) => onEdit(company),
+      className: 'text-blue-600 hover:text-blue-900'
+    },
+    {
+      label: 'Delete',
+      onClick: (company) => handleDelete(company.id, company.name),
+      className: 'text-red-600 hover:text-red-900'
+    }
+  ];
+
+  // Prepare pagination data for DataTable
   const totalPages = Math.ceil(pagination.total / pagination.limit);
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1;
+  
+  const paginationData = {
+    page: currentPage,
+    pages: totalPages,
+    per_page: pagination.limit,
+    total: pagination.total
+  };
 
   return (
     <div className="space-y-6">
@@ -257,250 +440,22 @@ const CompanyList = ({ onEdit, onView, onDelete }) => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* DataTable */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Company Details
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type & Industry
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Compliance
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status & Revenue
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="px-6 py-8 text-center">
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  </div>
-                </td>
-              </tr>
-            ) : companies.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                  {search || Object.values(filters).some(f => f) ? 'No companies found matching your criteria' : 'No companies found'}
-                </td>
-              </tr>
-            ) : (
-              companies.map((company) => (
-                <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 flex items-center">
-                        {company.name}
-                        {company.is_high_revenue && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                            💰 High Revenue
-                          </span>
-                        )}
-                      </div>
-                      {company.website && (
-                        <div className="text-sm text-blue-600 hover:text-blue-800">
-                          <a href={company.website} target="_blank" rel="noopener noreferrer">
-                            {company.website}
-                          </a>
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-500">
-                        {[company.city, company.state, company.country].filter(Boolean).join(', ')}
-                      </div>
-                      {company.parent_company_name && (
-                        <div className="text-xs text-gray-400">
-                          Parent: {company.parent_company_name}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      {getCompanyTypeBadge(company.company_type)}
-                      <div className="text-sm text-gray-900">
-                        {company.industry?.replace(/_/g, ' ')}
-                      </div>
-                      {company.sub_industry && (
-                        <div className="text-xs text-gray-500">
-                          {company.sub_industry}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {company.gst_number && (
-                        <div>GST: <span className="font-mono text-xs">{company.gst_number}</span></div>
-                      )}
-                      {company.pan_number && (
-                        <div>PAN: <span className="font-mono text-xs">{company.pan_number}</span></div>
-                      )}
-                      {company.international_unique_id && (
-                        <div>ID: <span className="font-mono text-xs">{company.international_unique_id}</span></div>
-                      )}
-                      {!company.gst_number && !company.pan_number && !company.international_unique_id && (
-                        <span className="text-gray-400 text-xs">Not provided</span>
-                      )}
-                      {company.verification_source && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Verified: {company.verification_source}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="space-y-2">
-                      {getStatusBadge(company.status, company.approval_stage)}
-                      {company.annual_revenue && (
-                        <div className="text-sm text-gray-600">
-                          ₹{(company.annual_revenue / 10000000).toFixed(1)}Cr
-                        </div>
-                      )}
-                      {company.sla_breach_date && (
-                        <div className="text-xs text-red-600 flex items-center">
-                          ⚠️ SLA Breach
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 text-sm font-medium">
-                    <div className="flex flex-col space-y-1">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => onView(company)}
-                          className="text-indigo-600 hover:text-indigo-900 text-sm"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => onEdit(company)}
-                          className="text-blue-600 hover:text-blue-900 text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(company.id, company.name)}
-                          className="text-red-600 hover:text-red-900 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      
-                      {/* Approval Actions */}
-                      {company.approval_stage === 'L1_PENDING' && (
-                        <div className="flex space-x-1">
-                          <button
-                            onClick={() => handleApproval(company, 'APPROVE')}
-                            className="text-green-600 hover:text-green-900 text-xs"
-                          >
-                            L1 Approve
-                          </button>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Reason for rejection:');
-                              if (reason) handleApproval(company, 'REJECT', reason);
-                            }}
-                            className="text-red-600 hover:text-red-900 text-xs"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                      
-                      {company.approval_stage === 'ADMIN_PENDING' && (
-                        <div className="flex space-x-1">
-                          <button
-                            onClick={() => handleApproval(company, 'APPROVE')}
-                            className="text-green-600 hover:text-green-900 text-xs"
-                          >
-                            Activate
-                          </button>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Reason for rejection:');
-                              if (reason) handleApproval(company, 'REJECT', reason);
-                            }}
-                            className="text-red-600 hover:text-red-900 text-xs"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => handlePageChange(Math.max(0, pagination.skip - pagination.limit))}
-                disabled={pagination.skip === 0}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => handlePageChange(pagination.skip + pagination.limit)}
-                disabled={pagination.skip + pagination.limit >= pagination.total}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{pagination.skip + 1}</span> to{' '}
-                  <span className="font-medium">
-                    {Math.min(pagination.skip + pagination.limit, pagination.total)}
-                  </span>{' '}
-                  of <span className="font-medium">{pagination.total}</span> results
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    onClick={() => handlePageChange(Math.max(0, pagination.skip - pagination.limit))}
-                    disabled={pagination.skip === 0}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                    {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(pagination.skip + pagination.limit)}
-                    disabled={pagination.skip + pagination.limit >= pagination.total}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={companies}
+          loading={loading}
+          pagination={paginationData}
+          onPageChange={handlePageChange}
+          actions={actions}
+          renderHtml={renderApprovalActions}
+          emptyMessage={
+            search || Object.values(filters).some(f => f) 
+              ? 'No companies found matching your criteria' 
+              : 'No companies found'
+          }
+        />
       </div>
     </div>
   );
