@@ -124,22 +124,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       newErrors.annual_revenue = "Annual revenue is required and must be positive";
     }
 
-    // Enhanced GST validation (15 alphanumeric characters)
-    if (formData.company_type === "DOMESTIC_GST") {
-      if (!formData.gst_number) {
-        newErrors.gst_number = "GST number is required for Domestic GST companies";
-      } else if (!/^[0-9A-Z]{15}$/.test(formData.gst_number)) {
-        newErrors.gst_number = "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
-      }
+    // GST validation - always required for manual entry
+    if (!formData.gst_number) {
+      newErrors.gst_number = "GST number is required";
+    } else if (!/^[0-9A-Z]{15}$/.test(formData.gst_number)) {
+      newErrors.gst_number = "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
     }
 
-    // Enhanced PAN validation (Indian PAN format)
-    if (["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type)) {
-      if (!formData.pan_number) {
-        newErrors.pan_number = "PAN number is required for domestic companies";
-      } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan_number)) {
-        newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
-      }
+    // PAN validation - always required for manual entry
+    if (!formData.pan_number) {
+      newErrors.pan_number = "PAN number is required";
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan_number)) {
+      newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
     }
 
     if (formData.company_type === "OVERSEAS") {
