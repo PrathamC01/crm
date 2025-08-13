@@ -105,6 +105,24 @@ class DocumentBase(BaseModel):
     description: Optional[str] = None
 
 
+class TenderDetailsBase(BaseModel):
+    tender_id: Optional[str] = None
+    authority: Optional[str] = None
+    bid_due_date: Optional[date] = None
+
+    @validator("tender_id")
+    def validate_tender_id(cls, v):
+        if v and (len(v.strip()) < 2 or len(v.strip()) > 100):
+            raise ValueError("Tender ID must be between 2 and 100 characters")
+        return v.strip() if v else v
+
+    @validator("authority")
+    def validate_authority(cls, v):
+        if v and (len(v.strip()) < 2 or len(v.strip()) > 200):
+            raise ValueError("Authority must be between 2 and 200 characters")
+        return v.strip() if v else v
+
+
 class LeadBase(BaseModel):
     # Basic Lead Information
     project_title: str
