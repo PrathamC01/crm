@@ -30,7 +30,9 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         status: lead.status || 'New',
         notes: lead.notes || '',
         priority: lead.priority || 'Medium',
-        expected_close_date: lead.expected_close_date || ''
+        expected_close_date: lead.expected_close_date || '',
+        products: lead.products || [],
+        services: lead.services || []
       });
     }
     fetchCompanies();
