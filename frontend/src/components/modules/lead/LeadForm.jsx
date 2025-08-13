@@ -12,7 +12,13 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     priority: 'Medium',
     expected_close_date: '',
     products: [],
-    services: []
+    services: [],
+    leadSubType: '',
+    tenderDetails: {
+      tenderId: '',
+      authority: '',
+      bidDueDate: ''
+    }
   });
   
   const [companies, setCompanies] = useState([]);
