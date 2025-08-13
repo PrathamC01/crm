@@ -167,7 +167,7 @@ def seed_initial_data():
             country="India",
             pin_code="400051",
             parent_child_mapping_confirmed=True,
-            linked_subsidiaries=["None"],
+            linked_subsidiaries=None,
             website="www.bizsoln.com",
             description="Leading business consulting firm",
             created_by=admin_user.id,
