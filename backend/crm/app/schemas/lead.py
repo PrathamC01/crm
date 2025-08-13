@@ -149,6 +149,9 @@ class LeadBase(BaseModel):
     submission_type: Optional[SubmissionType] = None
     tender_authority: Optional[str] = None
     tender_for: Optional[str] = None
+    
+    # New Tender Details (Frontend mapping)
+    tender_details: Optional[TenderDetailsBase] = None
 
     # EMD Details
     emd_required: bool = False
