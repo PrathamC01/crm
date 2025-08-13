@@ -75,7 +75,7 @@ class CompanyBase(BaseModel):
     country: str = Field(default="India", description="Country")
     state: str = Field(..., min_length=2, max_length=100, description="State")
     city: str = Field(..., min_length=2, max_length=100, description="City")
-    pin_code: str = Field(..., regex=r"^[0-9]{6}$", description="PIN code")
+    pin_code: str = Field(..., pattern=r"^[0-9]{6}$", description="PIN code")
     
     # Hierarchy & Linkages (All Required)
     parent_child_mapping_confirmed: bool = Field(..., description="Parent-child mapping confirmation")
