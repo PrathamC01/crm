@@ -173,6 +173,32 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     { value: 'Urgent', label: 'Urgent' }
   ];
 
+  const productOptions = [
+    'CRM Software',
+    'ERP Solutions',
+    'Marketing Automation',
+    'Sales Analytics',
+    'Customer Support Platform',
+    'Business Intelligence',
+    'Project Management Tools',
+    'HR Management System',
+    'Financial Management',
+    'Inventory Management'
+  ];
+
+  const serviceOptions = [
+    'Implementation Services',
+    'Training & Support',
+    'Custom Development',
+    'Data Migration',
+    'System Integration',
+    'Consulting Services',
+    'Maintenance & Support',
+    'Cloud Migration',
+    'Security Audit',
+    'Performance Optimization'
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.submit && (
