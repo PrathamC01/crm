@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../utils/api';
+import { apiRequest } from '../../../utils/api';
 
 const CompanyList = ({ onEdit, onView, onDelete }) => {
   const [companies, setCompanies] = useState([]);
