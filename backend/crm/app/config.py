@@ -10,7 +10,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Database URLs
-    POSTGRES_URL: str = os.getenv("POSTGRES_URL", "postgresql://crm:Test@localhost:5432/crm_db")
+    POSTGRES_URL: str = os.getenv("POSTGRES_URL", "postgresql://postgres@localhost:5432/crm_db")
     MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017/crm_logs")
     
     # Redis Configuration
