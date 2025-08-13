@@ -35,6 +35,8 @@ class LeadPriority(str, Enum):
 
 
 class LeadSubType(str, Enum):
+    TENDER = "Tender"
+    NON_TENDER = "Non-Tender"
     PRE_TENDER = "Pre-Tender"
     POST_TENDER = "Post-Tender"
 
