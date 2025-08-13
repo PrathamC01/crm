@@ -64,7 +64,7 @@ class Company(BaseModel):
     
     # Hierarchy & Linkages
     parent_child_mapping_confirmed = Column(Boolean, nullable=False, default=False)
-    linked_subsidiaries = Column(ARRAY(Integer), nullable=True)  # Array of company IDs
+    linked_subsidiaries = Column(JSON, nullable=True)  # Array of company IDs
     associated_channel_partner = Column(String(255), nullable=True)
     
     # System Metadata
