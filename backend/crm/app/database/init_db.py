@@ -143,7 +143,7 @@ def seed_initial_data():
             country="India",
             pin_code="560001",
             parent_child_mapping_confirmed=True,
-            linked_subsidiaries=["None"],
+            linked_subsidiaries=None,
             website="www.techcorp.com",
             description="Leading technology company",
             created_by=admin_user.id,
