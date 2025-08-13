@@ -25,6 +25,12 @@ const Sidebar = ({ isOpen, onToggle, currentPath }) => {
       ]
     },
     {
+      name: 'Companies',
+      href: '/companies',
+      icon: BuildingOfficeIcon,
+      children: []
+    },
+    {
       name: 'Leads',
       href: '/leads',
       icon: UserGroupIcon,
