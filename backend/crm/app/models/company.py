@@ -3,7 +3,6 @@ Enhanced SQLAlchemy Company model for Swayatta 4.0
 """
 from sqlalchemy import Column, String, Text, ForeignKey, Integer, Boolean, DateTime, Numeric, Enum, JSON
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from datetime import datetime
 import uuid
 import enum
