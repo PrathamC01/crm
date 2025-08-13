@@ -272,7 +272,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    // Block submit until all validations pass
+    if (!validateForm()) {
+      return;
+    }
+
+    // Additional validation check for industry-dependent sub-type
+    if (formData.industry && !formData.sub_industry) {
+      setErrors(prev => ({
+        ...prev,
+        sub_industry: "Sub-industry is required when industry is selected"
+      }));
+      return;
+    }
 
     // Check for duplicates before submission
     const noDuplicates = await checkDuplicates();
