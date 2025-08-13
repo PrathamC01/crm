@@ -14,7 +14,7 @@ from io import BytesIO
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://swayatta-crm.preview.emergentagent.com"
+BACKEND_URL = "https://codebase-cleanup-7.preview.emergentagent.com"
 TEST_SESSION_ID = "test_session_123"
 
 class EnhancedLeadsTester:

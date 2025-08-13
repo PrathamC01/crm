@@ -13,7 +13,7 @@ from datetime import datetime, date
 from decimal import Decimal
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://swayatta-crm.preview.emergentagent.com"
+BACKEND_URL = "https://codebase-cleanup-7.preview.emergentagent.com"
 TEST_SESSION_ID = "test_session_123"
 
 class LeadSubTypeTenderTester:

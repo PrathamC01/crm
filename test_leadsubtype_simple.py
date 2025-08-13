@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import date
 
-BACKEND_URL = "https://swayatta-crm.preview.emergentagent.com"
+BACKEND_URL = "https://codebase-cleanup-7.preview.emergentagent.com"
 
 def authenticate():
     """Get JWT token"""
