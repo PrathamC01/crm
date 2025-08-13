@@ -379,7 +379,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const companyTypes = [
     { value: "DOMESTIC_GST", label: "Domestic GST" },
     { value: "DOMESTIC_NONGST", label: "Domestic Non-GST" },
-    { value: "NGO", label: "NGO" },
+    { value: "INTERNATIONAL", label: "International" },
     { value: "OVERSEAS", label: "Overseas" },
   ];
 
