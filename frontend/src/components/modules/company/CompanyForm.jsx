@@ -342,11 +342,29 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
     
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+    // Clear sub-industry when industry changes
+    if (name === "industry") {
+      setFormData((prev) => ({ 
+        ...prev, 
+        [name]: newValue,
+        sub_industry: "" // Reset sub-industry when industry changes
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: newValue }));
+    }
 
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Clear sub_industry error when industry changes
+    if (name === "industry" && errors.sub_industry) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.sub_industry;
+        return newErrors;
+      });
     }
 
     // Clear duplicate check when key fields change
