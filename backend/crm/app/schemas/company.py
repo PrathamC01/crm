@@ -214,13 +214,13 @@ class CompanyResponse(CompanyBase):
     # Workflow fields
     approval_stage: ApprovalStage
     status: CompanyStatus
-    change_log_id: str
+    change_log_id: Optional[str] = None  # Convert UUID to string
     
     # Auto-tagging
     is_high_revenue: bool = False
     tags: Optional[List[str]] = None
     
-    # Approval tracking
+    # Approval tracking - convert user IDs to usernames
     l1_approved_by: Optional[str] = None
     l1_approved_date: Optional[datetime] = None
     admin_approved_by: Optional[str] = None
@@ -233,6 +233,19 @@ class CompanyResponse(CompanyBase):
 
     class Config:
         from_attributes = True
+        
+    @classmethod
+    def from_db_model(cls, company_model):
+        """Create response from database model with proper conversions"""
+        data = {
+            **company_model.__dict__,
+            'change_log_id': str(company_model.change_log_id) if company_model.change_log_id else None,
+            'verified_by': getattr(company_model.verifier, 'username', None) if hasattr(company_model, 'verifier') and company_model.verifier else str(company_model.verified_by),
+            'l1_approved_by': getattr(company_model.l1_approver, 'username', None) if hasattr(company_model, 'l1_approver') and company_model.l1_approver else None,
+            'admin_approved_by': getattr(company_model.admin_approver, 'username', None) if hasattr(company_model, 'admin_approver') and company_model.admin_approver else None,
+            'linked_subsidiaries': company_model.linked_subsidiaries or []
+        }
+        return cls(**data)
 
 class CompanyListResponse(BaseModel):
     """Schema for company list response"""
