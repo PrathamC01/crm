@@ -268,6 +268,13 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     'Performance Optimization'
   ];
 
+  const leadSubTypes = [
+    { value: 'TENDER', label: 'Tender' },
+    { value: 'NON_TENDER', label: 'Non-Tender' },
+    { value: 'PRE_TENDER', label: 'Pre-Tender' },
+    { value: 'POST_TENDER', label: 'Post-Tender' }
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.submit && (
