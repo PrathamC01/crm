@@ -273,6 +273,7 @@ class LeadUpdate(BaseModel):
     submission_type: Optional[SubmissionType] = None
     tender_authority: Optional[str] = None
     tender_for: Optional[str] = None
+    tender_details: Optional[TenderDetailsBase] = None
     emd_required: Optional[bool] = None
     emd_amount: Optional[Decimal] = None
     emd_currency: Optional[str] = None
