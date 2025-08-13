@@ -271,13 +271,19 @@ async def get_lead(
 
 @router.post("/", response_model=StandardResponse)
 async def create_lead(
-    lead_data: LeadCreate,
+    lead_data: dict,  # Changed from LeadCreate to dict to handle frontend format
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
 ):
     """Create new lead"""
     try:
-        lead = lead_service.create_lead(lead_data.dict(), current_user["id"])
+        # Transform frontend format to backend format
+        transformed_data = transform_frontend_lead_data(lead_data)
+        
+        # Validate the transformed data
+        validated_data = LeadCreate(**transformed_data)
+        
+        lead = lead_service.create_lead(validated_data.dict(), current_user["id"])
 
         return StandardResponse(
             status=True,
@@ -293,6 +299,38 @@ async def create_lead(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def transform_frontend_lead_data(lead_data: dict) -> dict:
+    """Transform frontend lead data structure to backend format"""
+    transformed = lead_data.copy()
+    
+    # Map leadSubType to lead_sub_type
+    if "leadSubType" in transformed:
+        # Frontend uses TENDER, NON_TENDER, etc, backend expects the full label 
+        mapping = {
+            "TENDER": "Tender",
+            "NON_TENDER": "Non-Tender", 
+            "PRE_TENDER": "Pre-Tender",
+            "POST_TENDER": "Post-Tender"
+        }
+        frontend_value = transformed.pop("leadSubType")
+        if frontend_value in mapping:
+            transformed["lead_sub_type"] = mapping[frontend_value]
+    
+    # Map tenderDetails to tender_details
+    if "tenderDetails" in transformed:
+        tender_details = transformed.pop("tenderDetails")
+        if tender_details:
+            # Map field names
+            mapped_tender_details = {
+                "tender_id": tender_details.get("tenderId"),
+                "authority": tender_details.get("authority"),
+                "bid_due_date": tender_details.get("bidDueDate")
+            }
+            transformed["tender_details"] = mapped_tender_details
+    
+    return transformed
 
 
 @router.put("/{lead_id}", response_model=StandardResponse)
