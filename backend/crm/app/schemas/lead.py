@@ -223,7 +223,7 @@ class LeadBase(BaseModel):
                 values[field] = json_safe(values[field])
         return values
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_tender_details(cls, values):
         """Validate tender details based on lead sub type"""
         lead_sub_type = values.get("lead_sub_type")
