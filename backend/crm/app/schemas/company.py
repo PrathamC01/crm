@@ -246,7 +246,7 @@ class CompanyListResponse(BaseModel):
 
 class CompanyApprovalRequest(BaseModel):
     """Schema for approval actions"""
-    action: str = Field(..., regex="^(APPROVE|REJECT|SEND_BACK)$")
+    action: str = Field(..., pattern="^(APPROVE|REJECT|SEND_BACK)$")
     reason: Optional[str] = Field(None, description="Reason for rejection or send back")
     checklist_items: Optional[List[str]] = Field(None, description="Completed checklist items")
 
