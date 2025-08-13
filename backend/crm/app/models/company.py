@@ -70,7 +70,7 @@ class Company(BaseModel):
     # System Metadata
     approval_stage = Column(Enum(ApprovalStage), nullable=False, default=ApprovalStage.DRAFT)
     status = Column(Enum(CompanyStatus), nullable=False, default=CompanyStatus.PENDING_APPROVAL)
-    change_log_id = Column(UUID(as_uuid=True), nullable=False, default=uuid.uuid4)
+    change_log_id = Column(String(36), nullable=False, default=lambda: str(uuid.uuid4()))
     
     # Additional fields
     website = Column(String(255))
