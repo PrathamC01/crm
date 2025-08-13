@@ -179,7 +179,7 @@ class CompanyUpdate(BaseModel):
     country: Optional[str] = None
     state: Optional[str] = Field(None, min_length=2, max_length=100)
     city: Optional[str] = Field(None, min_length=2, max_length=100)
-    pin_code: Optional[str] = Field(None, regex=r"^[0-9]{6}$")
+    pin_code: Optional[str] = Field(None, pattern=r"^[0-9]{6}$")
     parent_child_mapping_confirmed: Optional[bool] = None
     linked_subsidiaries: Optional[List[str]] = None
     associated_channel_partner: Optional[str] = None
