@@ -156,7 +156,7 @@ async def create_company(
             override_reason=override_reason
         )
         
-        company_response = CompanyResponse.model_validate(company)
+        company_response = CompanyResponse.from_db_model(company)
         
         return StandardResponse(
             status=True, 
