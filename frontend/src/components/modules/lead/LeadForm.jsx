@@ -38,7 +38,13 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         priority: lead.priority || 'Medium',
         expected_close_date: lead.expected_close_date || '',
         products: lead.products || [],
-        services: lead.services || []
+        services: lead.services || [],
+        leadSubType: lead.leadSubType || '',
+        tenderDetails: {
+          tenderId: lead.tenderDetails?.tenderId || '',
+          authority: lead.tenderDetails?.authority || '',
+          bidDueDate: lead.tenderDetails?.bidDueDate || ''
+        }
       });
     }
     fetchCompanies();
