@@ -24,6 +24,9 @@ import UsersPage from "./pages/Masters/UsersPage";
 import DepartmentsPage from "./pages/Masters/DepartmentsPage";
 import RolesPage from "./pages/Masters/RolesPage";
 
+// Companies Page
+import CompaniesPage from "./pages/Companies/CompaniesPage";
+
 // Leads Pages
 import LeadsPage from "./pages/Leads/LeadsPage";
 import MyLeadsPage from "./pages/Leads/MyLeadsPage";
