@@ -3,7 +3,7 @@ Enhanced Lead management service with conversion workflow
 """
 
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_, func
 from ..models import (
@@ -19,6 +19,23 @@ from ..models import (
     LeadPriority,
 )
 from .contact_service import ContactService
+
+
+def parse_date_field(date_value):
+    """Parse date field from string to date object"""
+    if not date_value:
+        return None
+    if isinstance(date_value, date):
+        return date_value
+    if isinstance(date_value, str):
+        try:
+            return datetime.strptime(date_value, "%Y-%m-%d").date()
+        except ValueError:
+            try:
+                return datetime.strptime(date_value, "%Y-%m-%dT%H:%M:%S").date()
+            except ValueError:
+                return None
+    return None
 
 
 class LeadService:
