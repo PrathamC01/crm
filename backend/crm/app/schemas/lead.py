@@ -223,6 +223,29 @@ class LeadBase(BaseModel):
                 values[field] = json_safe(values[field])
         return values
 
+    @root_validator
+    def validate_tender_details(cls, values):
+        """Validate tender details based on lead sub type"""
+        lead_sub_type = values.get("lead_sub_type")
+        tender_details = values.get("tender_details")
+        
+        # If lead_sub_type is not NON_TENDER, tender_details should be provided and valid
+        if lead_sub_type and lead_sub_type != LeadSubType.NON_TENDER:
+            if not tender_details:
+                raise ValueError("Tender details are required when lead sub-type is not 'Non-Tender'")
+            
+            # Validate required fields in tender_details
+            if not tender_details.tender_id or len(tender_details.tender_id.strip()) == 0:
+                raise ValueError("Tender ID is required when lead sub-type is not 'Non-Tender'")
+            
+            if not tender_details.authority or len(tender_details.authority.strip()) == 0:
+                raise ValueError("Tender authority is required when lead sub-type is not 'Non-Tender'")
+                
+            if not tender_details.bid_due_date:
+                raise ValueError("Bid due date is required when lead sub-type is not 'Non-Tender'")
+        
+        return values
+
     def dict(self, *args, **kwargs):
         """Ensure dict output is JSON-safe before DB insert."""
         raw = super().dict(*args, **kwargs)
