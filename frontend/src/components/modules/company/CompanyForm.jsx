@@ -3,78 +3,200 @@ import api from "../../../utils/api";
 
 const CompanyForm = ({ company, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
+    // Basic Information - ALL REQUIRED
     name: "",
+    parent_company_name: "",
+    company_type: "",
+    industry: "",
+    sub_industry: "",
+    annual_revenue: "",
+    
+    // Identification & Compliance - CONDITIONALLY REQUIRED
     gst_number: "",
     pan_number: "",
-    parent_company_id: null,
-    industry_category: "",
+    international_unique_id: "",
+    supporting_documents: [],
+    verification_source: "",
+    verification_date: "",
+    verified_by: "",
+    
+    // Registered Address - ALL REQUIRED
     address: "",
-    city: "",
-    state: "",
     country: "India",
-    postal_code: "",
+    state: "",
+    city: "",
+    pin_code: "",
+    
+    // Hierarchy & Linkages - ALL REQUIRED
+    parent_child_mapping_confirmed: false,
+    linked_subsidiaries: ["None"],
+    associated_channel_partner: "",
+    
+    // Optional fields
     website: "",
     description: "",
   });
 
   const [companies, setCompanies] = useState([]);
+  const [industryMasters, setIndustryMasters] = useState({});
+  const [countryStateMasters, setCountryStateMasters] = useState({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [duplicateCheck, setDuplicateCheck] = useState(null);
 
   useEffect(() => {
     if (company) {
       setFormData({
         name: company.name || "",
+        parent_company_name: company.parent_company_name || "",
+        company_type: company.company_type || "",
+        industry: company.industry || "",
+        sub_industry: company.sub_industry || "",
+        annual_revenue: company.annual_revenue || "",
         gst_number: company.gst_number || "",
         pan_number: company.pan_number || "",
-        parent_company_id: company.parent_company_id || "",
-        industry_category: company.industry_category || "",
+        international_unique_id: company.international_unique_id || "",
+        supporting_documents: company.supporting_documents || [],
+        verification_source: company.verification_source || "",
+        verification_date: company.verification_date ? company.verification_date.split('T')[0] : "",
+        verified_by: company.verified_by || "",
         address: company.address || "",
-        city: company.city || "",
-        state: company.state || "",
         country: company.country || "India",
-        postal_code: company.postal_code || "",
+        state: company.state || "",
+        city: company.city || "",
+        pin_code: company.pin_code || "",
+        parent_child_mapping_confirmed: company.parent_child_mapping_confirmed || false,
+        linked_subsidiaries: company.linked_subsidiaries || ["None"],
+        associated_channel_partner: company.associated_channel_partner || "",
         website: company.website || "",
         description: company.description || "",
       });
     }
-    fetchCompanies();
+    fetchMasterData();
   }, [company]);
 
-  const fetchCompanies = async () => {
+  const fetchMasterData = async () => {
     try {
-      const response = await apiRequest("/api/companies");
-      if (response.status) {
-        setCompanies(response.data.companies || []);
+      const [companiesRes, industriesRes, countriesRes] = await Promise.all([
+        apiRequest("/api/companies"),
+        apiRequest("/api/companies/masters/industries"),
+        apiRequest("/api/companies/masters/countries-states")
+      ]);
+
+      if (companiesRes.status) {
+        setCompanies(companiesRes.data.companies || []);
+      }
+      if (industriesRes.status) {
+        setIndustryMasters(industriesRes.data || {});
+      }
+      if (countriesRes.status) {
+        setCountryStateMasters(countriesRes.data || {});
       }
     } catch (err) {
-      console.error("Failed to fetch companies:", err);
+      console.error("Failed to fetch master data:", err);
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
+    // Basic Information - All Required
     if (!formData.name.trim()) {
       newErrors.name = "Company name is required";
+    } else if (formData.name.length < 2) {
+      newErrors.name = "Company name must be at least 2 characters";
     }
 
-    if (
-      formData.gst_number &&
-      !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(
-        formData.gst_number
-      )
-    ) {
-      newErrors.gst_number = "Invalid GST format. Expected: 22AAAAA0000A1Z5";
+    if (!formData.company_type) {
+      newErrors.company_type = "Company type is required";
     }
 
-    if (
-      formData.pan_number &&
-      !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number)
-    ) {
-      newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A";
+    if (!formData.industry) {
+      newErrors.industry = "Industry is required";
     }
 
+    if (!formData.sub_industry) {
+      newErrors.sub_industry = "Sub-industry is required";
+    }
+
+    if (!formData.annual_revenue || formData.annual_revenue <= 0) {
+      newErrors.annual_revenue = "Annual revenue is required and must be positive";
+    }
+
+    // Conditional validation based on company type
+    if (formData.company_type === "DOMESTIC_GST") {
+      if (!formData.gst_number) {
+        newErrors.gst_number = "GST number is required for Domestic GST companies";
+      } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(formData.gst_number)) {
+        newErrors.gst_number = "Invalid GST format. Expected: 22AAAAA0000A1Z5";
+      }
+    }
+
+    if (["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type)) {
+      if (!formData.pan_number) {
+        newErrors.pan_number = "PAN number is required for domestic companies";
+      } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number)) {
+        newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A";
+      }
+    }
+
+    if (formData.company_type === "OVERSEAS") {
+      if (!formData.international_unique_id) {
+        newErrors.international_unique_id = "International unique identifier is required for overseas companies";
+      } else if (!/^[A-Z0-9-]{5,20}$/.test(formData.international_unique_id)) {
+        newErrors.international_unique_id = "Invalid international ID format (5-20 alphanumeric characters)";
+      }
+    }
+
+    // Supporting documents validation
+    if (uploadedFiles.length === 0 && (!formData.supporting_documents || formData.supporting_documents.length === 0)) {
+      newErrors.supporting_documents = "At least one supporting document is required";
+    }
+
+    if (!formData.verification_source) {
+      newErrors.verification_source = "Verification source is required";
+    }
+
+    if (!formData.verification_date) {
+      newErrors.verification_date = "Verification date is required";
+    }
+
+    if (!formData.verified_by) {
+      newErrors.verified_by = "Verified by (Admin name) is required";
+    }
+
+    // Address validation - All Required
+    if (!formData.address.trim() || formData.address.length < 10) {
+      newErrors.address = "Complete address is required (minimum 10 characters)";
+    }
+
+    if (!formData.country) {
+      newErrors.country = "Country is required";
+    }
+
+    if (!formData.state) {
+      newErrors.state = "State is required";
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = "City is required";
+    }
+
+    if (!formData.pin_code || !/^[0-9]{6}$/.test(formData.pin_code)) {
+      newErrors.pin_code = "Valid 6-digit PIN code is required";
+    }
+
+    // Hierarchy validation
+    if (formData.parent_child_mapping_confirmed === undefined || formData.parent_child_mapping_confirmed === null) {
+      newErrors.parent_child_mapping_confirmed = "Parent-child mapping confirmation is required";
+    }
+
+    if (!formData.linked_subsidiaries || formData.linked_subsidiaries.length === 0) {
+      newErrors.linked_subsidiaries = "Please specify linked subsidiaries or select 'None'";
+    }
+
+    // Website validation (optional but must be valid if provided)
     if (formData.website && !formData.website.match(/^https?:\/\/.+/)) {
       if (!formData.website.startsWith("http")) {
         setFormData((prev) => ({
@@ -88,10 +210,74 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkDuplicates = async () => {
+    try {
+      const response = await apiRequest("/api/companies/check-duplicates", {
+        method: "POST",
+        body: JSON.stringify(formData),
+      });
+
+      if (response.status && response.data) {
+        setDuplicateCheck(response.data);
+        if (response.data.is_duplicate) {
+          setErrors(prev => ({
+            ...prev,
+            duplicate: `${response.data.match_type} duplicate detected. Admin override may be required.`
+          }));
+          return false;
+        }
+      }
+      return true;
+    } catch (err) {
+      console.error("Duplicate check failed:", err);
+      return true; // Continue if check fails
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        setErrors(prev => ({
+          ...prev,
+          supporting_documents: "Only PDF, JPEG, and PNG files are allowed"
+        }));
+        return;
+      }
+      if (file.size > maxSize) {
+        setErrors(prev => ({
+          ...prev,
+          supporting_documents: `File ${file.name} exceeds 10MB limit`
+        }));
+        return;
+      }
+    }
+
+    setUploadedFiles(prev => [...prev, ...files]);
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors.supporting_documents;
+      return newErrors;
+    });
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
+
+    // Check for duplicates before submission
+    const noDuplicates = await checkDuplicates();
+    if (!noDuplicates && !window.confirm("Duplicate company detected. Continue anyway? (Admin approval may be required)")) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -100,12 +286,34 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         : "/api/companies";
       const method = company ? "PUT" : "POST";
 
+      // Prepare form data with proper types
+      const submitData = {
+        ...formData,
+        annual_revenue: parseFloat(formData.annual_revenue),
+        parent_child_mapping_confirmed: Boolean(formData.parent_child_mapping_confirmed),
+        verification_date: new Date(formData.verification_date).toISOString(),
+      };
+
       const response = await apiRequest(endpoint, {
         method,
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (response.status) {
+        // Upload files if any
+        if (uploadedFiles.length > 0 && response.data?.id) {
+          const formDataFiles = new FormData();
+          uploadedFiles.forEach(file => {
+            formDataFiles.append('files', file);
+          });
+
+          await apiRequest(`/api/companies/${response.data.id}/documents`, {
+            method: "POST",
+            body: formDataFiles,
+            headers: {}, // Let browser set content-type for FormData
+          });
+        }
+
         onSave(response.data);
       } else {
         setErrors({ submit: response.message || "Operation failed" });
@@ -118,76 +326,72 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+    
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
 
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+
+    // Clear duplicate check when key fields change
+    if (["name", "gst_number", "city", "country"].includes(name)) {
+      setDuplicateCheck(null);
+      if (errors.duplicate) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.duplicate;
+          return newErrors;
+        });
+      }
+    }
   };
 
-  const industryCategories = [
-    "Technology",
-    "Manufacturing",
-    "Healthcare",
-    "Finance",
-    "Education",
-    "Retail",
-    "Construction",
-    "Agriculture",
-    "Transportation",
-    "Energy",
-    "Telecommunications",
-    "Media",
-    "Real Estate",
-    "Hospitality",
-    "Other",
+  const companyTypes = [
+    { value: "DOMESTIC_GST", label: "Domestic GST" },
+    { value: "DOMESTIC_NONGST", label: "Domestic Non-GST" },
+    { value: "NGO", label: "NGO" },
+    { value: "OVERSEAS", label: "Overseas" },
   ];
 
-  const indianStates = [
-    "Andhra Pradesh",
-    "Arunachal Pradesh",
-    "Assam",
-    "Bihar",
-    "Chhattisgarh",
-    "Goa",
-    "Gujarat",
-    "Haryana",
-    "Himachal Pradesh",
-    "Jharkhand",
-    "Karnataka",
-    "Kerala",
-    "Madhya Pradesh",
-    "Maharashtra",
-    "Manipur",
-    "Meghalaya",
-    "Mizoram",
-    "Nagaland",
-    "Odisha",
-    "Punjab",
-    "Rajasthan",
-    "Sikkim",
-    "Tamil Nadu",
-    "Telangana",
-    "Tripura",
-    "Uttar Pradesh",
-    "Uttarakhand",
-    "West Bengal",
+  const verificationSources = [
+    { value: "GST", label: "GST" },
+    { value: "MCA", label: "MCA" },
+    { value: "PAN_NSDL", label: "PAN/NSDL" },
+    { value: "DIGILOCKER", label: "Digilocker" },
+    { value: "GARTNER", label: "Gartner" },
+    { value: "MANUAL", label: "Manual" },
   ];
+
+  const getSubIndustries = () => {
+    return industryMasters[formData.industry] || [];
+  };
+
+  const getStatesForCountry = () => {
+    return countryStateMasters[formData.country] || [];
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {errors.submit && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           {errors.submit}
         </div>
       )}
 
+      {errors.duplicate && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+          {errors.duplicate}
+        </div>
+      )}
+
       {/* Basic Information */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">
-          Basic Information
+      <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span>
+          Basic Information (All Required)
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -212,19 +416,20 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Parent Company
+              Parent Company <span className="text-red-500">*</span>
             </label>
             <select
-              name="parent_company_id"
-              value={formData.parent_company_id}
+              name="parent_company_name"
+              value={formData.parent_company_name}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select parent company (optional)</option>
+              <option value="">Select parent company or create new</option>
+              <option value="Create New">Create New (Requires Approval)</option>
               {companies
-                .filter((c) => c.id !== company?.id) // Don't show self as parent
+                .filter((c) => c.id !== company?.id)
                 .map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} value={c.name}>
                     {c.name}
                   </option>
                 ))}
@@ -233,23 +438,513 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Industry Category
+              Company Type <span className="text-red-500">*</span>
             </label>
             <select
-              name="industry_category"
-              value={formData.industry_category}
+              name="company_type"
+              required
+              value={formData.company_type}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.company_type ? "border-red-300" : "border-gray-300"
+              }`}
             >
-              <option value="">Select industry</option>
-              {industryCategories.map((industry) => (
-                <option key={industry} value={industry}>
-                  {industry}
+              <option value="">Select company type</option>
+              {companyTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
                 </option>
               ))}
             </select>
+            {errors.company_type && (
+              <p className="text-red-500 text-sm mt-1">{errors.company_type}</p>
+            )}
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Industry <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="industry"
+              required
+              value={formData.industry}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.industry ? "border-red-300" : "border-gray-300"
+              }`}
+            >
+              <option value="">Select industry</option>
+              {Object.keys(industryMasters).map((industry) => (
+                <option key={industry} value={industry}>
+                  {industry.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+            {errors.industry && (
+              <p className="text-red-500 text-sm mt-1">{errors.industry}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Sub-Industry <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="sub_industry"
+              required
+              value={formData.sub_industry}
+              onChange={handleInputChange}
+              disabled={!formData.industry}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.sub_industry ? "border-red-300" : "border-gray-300"
+              }`}
+            >
+              <option value="">Select sub-industry</option>
+              {getSubIndustries().map((subIndustry) => (
+                <option key={subIndustry} value={subIndustry}>
+                  {subIndustry}
+                </option>
+              ))}
+            </select>
+            {errors.sub_industry && (
+              <p className="text-red-500 text-sm mt-1">{errors.sub_industry}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Annual Revenue (₹) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="annual_revenue"
+              required
+              min="0"
+              step="0.01"
+              value={formData.annual_revenue}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.annual_revenue ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="Enter annual revenue"
+            />
+            {errors.annual_revenue && (
+              <p className="text-red-500 text-sm mt-1">{errors.annual_revenue}</p>
+            )}
+            {formData.annual_revenue > 20000000 && (
+              <p className="text-green-600 text-sm mt-1">
+                ✓ Will be auto-tagged as High Revenue Company
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Identification & Compliance */}
+      <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span>
+          Identification & Compliance
+        </h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Conditional fields based on company type */}
+          {formData.company_type === "DOMESTIC_GST" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                GST Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="gst_number"
+                required
+                value={formData.gst_number}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                  errors.gst_number ? "border-red-300" : "border-gray-300"
+                }`}
+                placeholder="22AAAAA0000A1Z5"
+                maxLength="15"
+              />
+              {errors.gst_number && (
+                <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
+              )}
+            </div>
+          )}
+
+          {["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type) && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                PAN Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="pan_number"
+                required
+                value={formData.pan_number}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                  errors.pan_number ? "border-red-300" : "border-gray-300"
+                }`}
+                placeholder="AAAAA0000A"
+                maxLength="10"
+              />
+              {errors.pan_number && (
+                <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
+              )}
+            </div>
+          )}
+
+          {formData.company_type === "OVERSEAS" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                International Unique ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="international_unique_id"
+                required
+                value={formData.international_unique_id}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                  errors.international_unique_id ? "border-red-300" : "border-gray-300"
+                }`}
+                placeholder="VAT/DUNS/EIN/etc."
+                maxLength="20"
+              />
+              {errors.international_unique_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.international_unique_id}</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Verification Source <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="verification_source"
+              required
+              value={formData.verification_source}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.verification_source ? "border-red-300" : "border-gray-300"
+              }`}
+            >
+              <option value="">Select verification source</option>
+              {verificationSources.map((source) => (
+                <option key={source.value} value={source.value}>
+                  {source.label}
+                </option>
+              ))}
+            </select>
+            {errors.verification_source && (
+              <p className="text-red-500 text-sm mt-1">{errors.verification_source}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Verification Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              name="verification_date"
+              required
+              value={formData.verification_date}
+              onChange={handleInputChange}
+              max={new Date().toISOString().split('T')[0]}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.verification_date ? "border-red-300" : "border-gray-300"
+              }`}
+            />
+            {errors.verification_date && (
+              <p className="text-red-500 text-sm mt-1">{errors.verification_date}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Verified By (Admin Name) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="verified_by"
+              required
+              value={formData.verified_by}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.verified_by ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="Admin username/name"
+            />
+            {errors.verified_by && (
+              <p className="text-red-500 text-sm mt-1">{errors.verified_by}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Supporting Documents */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Supporting Documents <span className="text-red-500">*</span>
+            <span className="text-xs text-gray-500 ml-2">
+              (PDF, JPEG, PNG only, max 10MB each)
+            </span>
+          </label>
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileUpload}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+          {errors.supporting_documents && (
+            <p className="text-red-500 text-sm mt-1">{errors.supporting_documents}</p>
+          )}
+          
+          {/* Display uploaded files */}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {uploadedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded">
+                  <span className="text-sm">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Registered Address */}
+      <div className="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span>
+          Registered Address (All Required)
+        </h4>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Complete Address <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="address"
+              required
+              value={formData.address}
+              onChange={handleInputChange}
+              rows="3"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.address ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="Enter complete registered address (minimum 10 characters)"
+            />
+            {errors.address && (
+              <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Country <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="country"
+                required
+                value={formData.country}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.country ? "border-red-300" : "border-gray-300"
+                }`}
+              >
+                {Object.keys(countryStateMasters).map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+              {errors.country && (
+                <p className="text-red-500 text-sm mt-1">{errors.country}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                State <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="state"
+                required
+                value={formData.state}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.state ? "border-red-300" : "border-gray-300"
+                }`}
+              >
+                <option value="">Select state</option>
+                {getStatesForCountry().map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+              {errors.state && (
+                <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                City <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="city"
+                required
+                value={formData.city}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.city ? "border-red-300" : "border-gray-300"
+                }`}
+                placeholder="Enter city"
+              />
+              {errors.city && (
+                <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PIN Code <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="pin_code"
+              required
+              value={formData.pin_code}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.pin_code ? "border-red-300" : "border-gray-300"
+              }`}
+              placeholder="000000"
+              maxLength="6"
+              pattern="[0-9]{6}"
+            />
+            {errors.pin_code && (
+              <p className="text-red-500 text-sm mt-1">{errors.pin_code}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Hierarchy & Linkages */}
+      <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">4</span>
+          Hierarchy & Linkages (All Required)
+        </h4>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Parent-Child Mapping Confirmation <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="parent_child_mapping_confirmed"
+                  value="true"
+                  checked={formData.parent_child_mapping_confirmed === true}
+                  onChange={(e) => setFormData(prev => ({ ...prev, parent_child_mapping_confirmed: true }))}
+                  className="mr-2"
+                  required
+                />
+                Yes
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="parent_child_mapping_confirmed"
+                  value="false"
+                  checked={formData.parent_child_mapping_confirmed === false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, parent_child_mapping_confirmed: false }))}
+                  className="mr-2"
+                  required
+                />
+                No
+              </label>
+            </div>
+            {errors.parent_child_mapping_confirmed && (
+              <p className="text-red-500 text-sm mt-1">{errors.parent_child_mapping_confirmed}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Linked Subsidiaries <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="linked_subsidiaries"
+              multiple
+              value={formData.linked_subsidiaries}
+              onChange={(e) => {
+                const values = Array.from(e.target.selectedOptions, option => option.value);
+                setFormData(prev => ({ ...prev, linked_subsidiaries: values }));
+              }}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.linked_subsidiaries ? "border-red-300" : "border-gray-300"
+              }`}
+              size="4"
+            >
+              <option value="None">None</option>
+              {companies
+                .filter((c) => c.id !== company?.id)
+                .map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Hold Ctrl (Cmd on Mac) to select multiple. Select "None" if no subsidiaries.
+            </p>
+            {errors.linked_subsidiaries && (
+              <p className="text-red-500 text-sm mt-1">{errors.linked_subsidiaries}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Associated Channel Partner
+            </label>
+            <input
+              type="text"
+              name="associated_channel_partner"
+              value={formData.associated_channel_partner}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter channel partner name (if applicable)"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Optional Information */}
+      <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-gray-400">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="bg-gray-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">5</span>
+          Additional Information (Optional)
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Website
@@ -263,142 +958,21 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               placeholder="https://company.com"
             />
           </div>
-        </div>
-      </div>
 
-      {/* Tax Information */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">
-          Tax Information
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              GST Number
-            </label>
-            <input
-              type="text"
-              name="gst_number"
-              value={formData.gst_number}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.gst_number ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="22AAAAA0000A1Z5"
-              maxLength="15"
-            />
-            {errors.gst_number && (
-              <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              PAN Number
-            </label>
-            <input
-              type="text"
-              name="pan_number"
-              value={formData.pan_number}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.pan_number ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="AAAAA0000A"
-              maxLength="10"
-            />
-            {errors.pan_number && (
-              <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Address Information */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">
-          Address Information
-        </h4>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address
+              Description
             </label>
             <textarea
-              name="address"
-              value={formData.address}
+              name="description"
+              value={formData.description}
               onChange={handleInputChange}
               rows="3"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter complete address"
+              placeholder="Brief description about the company..."
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                City
-              </label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter city"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                State
-              </label>
-              <select
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select state</option>
-                {indianStates.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code
-              </label>
-              <input
-                type="text"
-                name="postal_code"
-                value={formData.postal_code}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="000000"
-                maxLength="6"
-              />
-            </div>
-          </div>
         </div>
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          rows="4"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          placeholder="Brief description about the company..."
-        />
       </div>
 
       {/* Form Actions */}
@@ -406,14 +980,14 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+          className="px-6 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
           {loading ? (
             <div className="flex items-center">
