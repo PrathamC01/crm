@@ -209,7 +209,7 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
 
       {/* Basic Information */}
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Lead Information</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">General Details</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -282,6 +282,76 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
             {errors.sales_person_id && <p className="text-red-500 text-sm mt-1">{errors.sales_person_id}</p>}
           </div>
         </div>
+
+        {/* Products and Services Multi-Select */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Products Multi-Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Products <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Select at least one product or service)</span>
+            </label>
+            <div className={`border rounded-lg p-3 max-h-48 overflow-y-auto ${
+              errors.productsServices ? 'border-red-300' : 'border-gray-300'
+            }`}>
+              {productOptions.map((product) => (
+                <label key={product} className="flex items-center space-x-2 py-1 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.products.includes(product)}
+                    onChange={() => handleMultiSelectChange('products', product)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{product}</span>
+                </label>
+              ))}
+              {formData.products.length === 0 && (
+                <p className="text-gray-500 text-sm italic">No products selected</p>
+              )}
+            </div>
+            {formData.products.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                Selected: {formData.products.join(', ')}
+              </p>
+            )}
+          </div>
+
+          {/* Services Multi-Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Services <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Select at least one product or service)</span>
+            </label>
+            <div className={`border rounded-lg p-3 max-h-48 overflow-y-auto ${
+              errors.productsServices ? 'border-red-300' : 'border-gray-300'
+            }`}>
+              {serviceOptions.map((service) => (
+                <label key={service} className="flex items-center space-x-2 py-1 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.services.includes(service)}
+                    onChange={() => handleMultiSelectChange('services', service)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{service}</span>
+                </label>
+              ))}
+              {formData.services.length === 0 && (
+                <p className="text-gray-500 text-sm italic">No services selected</p>
+              )}
+            </div>
+            {formData.services.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                Selected: {formData.services.join(', ')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Products/Services Validation Error */}
+        {errors.productsServices && (
+          <p className="text-red-500 text-sm mt-2">{errors.productsServices}</p>
+        )}
       </div>
 
       {/* Status & Priority */}
