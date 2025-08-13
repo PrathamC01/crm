@@ -152,7 +152,46 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Handle nested tenderDetails fields
+    if (name.startsWith('tenderDetails.')) {
+      const fieldName = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        tenderDetails: {
+          ...prev.tenderDetails,
+          [fieldName]: value
+        }
+      }));
+      
+      // Clear tender-specific errors
+      if (errors[fieldName]) {
+        setErrors(prev => ({ ...prev, [fieldName]: '' }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      
+      // Clear tenderDetails when switching to NON_TENDER
+      if (name === 'leadSubType' && value === 'NON_TENDER') {
+        setFormData(prev => ({
+          ...prev,
+          tenderDetails: {
+            tenderId: '',
+            authority: '',
+            bidDueDate: ''
+          }
+        }));
+        
+        // Clear tender-related errors
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.tenderId;
+          delete newErrors.authority;
+          delete newErrors.bidDueDate;
+          return newErrors;
+        });
+      }
+    }
     
     // Clear error when user starts typing
     if (errors[name]) {
