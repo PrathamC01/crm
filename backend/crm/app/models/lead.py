@@ -99,6 +99,11 @@ class Lead(BaseModel):
     submission_type = Column(SQLEnum(SubmissionType))
     tender_authority = Column(String(255))
     tender_for = Column(Text)
+    
+    # New Tender Details from Frontend
+    tender_id = Column(String(100))  # From tenderDetails.tenderId
+    tender_authority_name = Column(String(200))  # From tenderDetails.authority  
+    bid_due_date = Column(Date)  # From tenderDetails.bidDueDate
 
     # EMD Details
     emd_required = Column(Boolean, default=False)
