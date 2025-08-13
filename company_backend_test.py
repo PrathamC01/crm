@@ -32,7 +32,7 @@ class CompanyManagementTester:
         print("\n=== Authenticating with Admin Credentials ===")
         try:
             login_data = {
-                "username": "admin",
+                "email_or_username": "admin",
                 "password": "admin123"
             }
             response = self.make_request("POST", "/api/login", data=login_data)
