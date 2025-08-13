@@ -335,3 +335,30 @@ export const QUOTATION_STATUSES = {
 };
 
 export default api;
+
+// Legacy apiRequest function for backward compatibility
+export const apiRequest = async (url, options = {}) => {
+  try {
+    const config = {
+      ...options,
+      url,
+      method: options.method || 'GET',
+    };
+    
+    // Handle FormData
+    if (options.body instanceof FormData) {
+      config.data = options.body;
+      if (options.headers) {
+        config.headers = { ...config.headers, ...options.headers };
+      }
+    } else if (options.body) {
+      config.data = options.body;
+    }
+    
+    const response = await api.request(config);
+    return response.data;
+  } catch (error) {
+    // Let the interceptor handle the error display
+    throw error;
+  }
+};
