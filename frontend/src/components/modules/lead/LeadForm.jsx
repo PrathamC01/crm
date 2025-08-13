@@ -130,6 +130,22 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     }
   };
 
+  const handleMultiSelectChange = (fieldName, option) => {
+    setFormData(prev => {
+      const currentValues = prev[fieldName] || [];
+      const newValues = currentValues.includes(option)
+        ? currentValues.filter(item => item !== option)
+        : [...currentValues, option];
+      
+      return { ...prev, [fieldName]: newValues };
+    });
+
+    // Clear validation error when user selects products/services
+    if ((fieldName === 'products' || fieldName === 'services') && errors.productsServices) {
+      setErrors(prev => ({ ...prev, productsServices: '' }));
+    }
+  };
+
   const leadSources = [
     { value: 'Web', label: 'Web' },
     { value: 'Partner', label: 'Partner' },
