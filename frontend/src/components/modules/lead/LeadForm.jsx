@@ -451,6 +451,72 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         )}
       </div>
 
+      {/* Tender Details Section - Conditional */}
+      {formData.leadSubType && formData.leadSubType !== 'NON_TENDER' && (
+        <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">Tender Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tender ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="tenderDetails.tenderId"
+                required
+                value={formData.tenderDetails.tenderId}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.tenderId ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter tender ID"
+                minLength="2"
+                maxLength="100"
+              />
+              {errors.tenderId && <p className="text-red-500 text-sm mt-1">{errors.tenderId}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Authority <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="tenderDetails.authority"
+                required
+                value={formData.tenderDetails.authority}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.authority ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter tendering authority"
+                minLength="2"
+                maxLength="200"
+              />
+              {errors.authority && <p className="text-red-500 text-sm mt-1">{errors.authority}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bid Due Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="tenderDetails.bidDueDate"
+                required
+                value={formData.tenderDetails.bidDueDate}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.bidDueDate ? 'border-red-300' : 'border-gray-300'
+                }`}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              {errors.bidDueDate && <p className="text-red-500 text-sm mt-1">{errors.bidDueDate}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status & Priority */}
       <div className="bg-gray-50 p-4 rounded-lg">
         <h4 className="text-lg font-medium text-gray-900 mb-4">Status & Priority</h4>
