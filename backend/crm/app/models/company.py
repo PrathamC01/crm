@@ -50,7 +50,7 @@ class Company(BaseModel):
     gst_number = Column(String(15), nullable=True, index=True)
     pan_number = Column(String(10), nullable=True, index=True)
     international_unique_id = Column(String(50), nullable=True, index=True)
-    supporting_documents = Column(ARRAY(String), nullable=False)  # File paths/URLs
+    supporting_documents = Column(JSON, nullable=False)  # File paths/URLs
     verification_source = Column(Enum(VerificationSource), nullable=False)
     verification_date = Column(DateTime, nullable=False)
     verified_by = Column(Integer, ForeignKey('users.id'), nullable=False)
