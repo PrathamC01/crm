@@ -68,7 +68,7 @@ async def get_companies(
     )
     
     company_response_list = [
-        CompanyResponse.model_validate(company) for company in companies
+        CompanyResponse.from_db_model(company) for company in companies
     ]
     
     return StandardResponse(
