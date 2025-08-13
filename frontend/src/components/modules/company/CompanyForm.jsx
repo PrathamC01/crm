@@ -541,9 +541,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               }`}
             >
               <option value="">Select industry</option>
-              {Object.keys(industryMasters).map((industry) => (
-                <option key={industry} value={industry}>
-                  {industry.replace(/_/g, " ")}
+              {industryTypes.map((industry) => (
+                <option key={industry.value} value={industry.value}>
+                  {industry.label}
                 </option>
               ))}
             </select>
@@ -567,14 +567,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               }`}
             >
               <option value="">Select sub-industry</option>
-              {getSubIndustries().map((subIndustry) => (
-                <option key={subIndustry} value={subIndustry}>
-                  {subIndustry}
-                </option>
-              ))}
+              {formData.industry && subTypeOptions[formData.industry] && 
+                subTypeOptions[formData.industry].map((subType) => (
+                  <option key={subType} value={subType}>
+                    {subType}
+                  </option>
+                ))}
             </select>
             {errors.sub_industry && (
               <p className="text-red-500 text-sm mt-1">{errors.sub_industry}</p>
+            )}
+            {!formData.industry && (
+              <p className="text-gray-500 text-sm mt-1">Select industry first to see sub-industries</p>
             )}
           </div>
 
