@@ -296,6 +296,18 @@ backend:
         agent: "testing"
         comment: "Health check endpoints tested successfully. Root and health endpoints return proper status responses."
 
+  - task: "Lead Form - leadSubType and tenderDetails Backend Support"
+    implemented: true
+    working: false
+    file: "/app/backend/crm/app/models/lead.py, /app/backend/crm/app/schemas/lead.py, /app/backend/crm/app/routers/portal/leads.py, /app/backend/crm/app/services/lead_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Initial implementation of backend support for leadSubType (TENDER, NON_TENDER, PRE_TENDER, POST_TENDER) and tenderDetails (tenderId, authority, bidDueDate) fields from frontend. Updated models, schemas, router and service to handle the new data structure."
+
 frontend:
   - task: "Frontend Integration Testing"
     implemented: false
