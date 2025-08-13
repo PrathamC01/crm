@@ -38,8 +38,8 @@ class CompanyManagementTester:
             response = self.make_request("POST", "/api/login", data=login_data)
             if response.status_code == 200:
                 data = response.json()
-                if data.get("status") and data.get("data", {}).get("access_token"):
-                    self.jwt_token = data["data"]["access_token"]
+                if data.get("status") and data.get("data", {}).get("token"):
+                    self.jwt_token = data["data"]["token"]
                     self.auth_headers = {"Authorization": f"Bearer {self.jwt_token}"}
                     self.log_test("Authentication", True, "Successfully authenticated with admin credentials")
                     return True
