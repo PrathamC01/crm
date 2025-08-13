@@ -82,6 +82,11 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
       }
     }
 
+    // Validate that at least one product or service is selected
+    if (formData.products.length === 0 && formData.services.length === 0) {
+      newErrors.productsServices = 'Please select at least one product or one service';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
