@@ -13,8 +13,8 @@ import tempfile
 from io import BytesIO
 from datetime import datetime
 
-# Backend URL from frontend environment (using the correct port)
-BACKEND_URL = "http://localhost:8001"
+# Backend URL from frontend environment
+BACKEND_URL = "https://swayatta-crm.preview.emergentagent.com"
 TEST_SESSION_ID = "test_session_123"
 
 class EnhancedLeadsTester:
