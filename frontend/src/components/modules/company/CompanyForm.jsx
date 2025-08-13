@@ -656,59 +656,123 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              GST Number <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(15 alphanumeric characters)</span>
-            </label>
-            <input
-              type="text"
-              name="gst_number"
-              required
-              value={formData.gst_number}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.gst_number ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="ABCDE1234FGHIJ5"
-              maxLength="15"
-              style={{ textTransform: 'uppercase' }}
-              onInput={(e) => {
-                e.target.value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
-              }}
-            />
-            {errors.gst_number && (
-              <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">Manual entry - 15 characters (A-Z, 0-9)</p>
-          </div>
+          {/* Conditional fields based on company type - Domestic companies */}
+          {["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type) && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  GST Number <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(15 alphanumeric characters)</span>
+                </label>
+                <input
+                  type="text"
+                  name="gst_number"
+                  required
+                  value={formData.gst_number}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                    errors.gst_number ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder="ABCDE1234FGHIJ5"
+                  maxLength="15"
+                  style={{ textTransform: 'uppercase' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+                  }}
+                />
+                {errors.gst_number && (
+                  <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">Manual entry - 15 characters (A-Z, 0-9)</p>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              PAN Number <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Indian PAN format)</span>
-            </label>
-            <input
-              type="text"
-              name="pan_number"
-              required
-              value={formData.pan_number}
-              onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                errors.pan_number ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="ABCDE1234F"
-              maxLength="10"
-              style={{ textTransform: 'uppercase' }}
-              onInput={(e) => {
-                e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-              }}
-            />
-            {errors.pan_number && (
-              <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">Manual entry - Format: AAAAA0000A</p>
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  PAN Number <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(Indian PAN format)</span>
+                </label>
+                <input
+                  type="text"
+                  name="pan_number"
+                  required
+                  value={formData.pan_number}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                    errors.pan_number ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder="ABCDE1234F"
+                  maxLength="10"
+                  style={{ textTransform: 'uppercase' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  }}
+                />
+                {errors.pan_number && (
+                  <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">Manual entry - Format: AAAAA0000A</p>
+              </div>
+            </>
+          )}
+
+          {/* Conditional fields based on company type - International/Overseas companies */}
+          {["INTERNATIONAL", "OVERSEAS"].includes(formData.company_type) && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tax Identification Number <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(VAT/GST/TIN)</span>
+                </label>
+                <input
+                  type="text"
+                  name="tax_identification_number"
+                  required
+                  value={formData.tax_identification_number}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                    errors.tax_identification_number ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder="VAT123456789"
+                  maxLength="20"
+                  style={{ textTransform: 'uppercase' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+                  }}
+                />
+                {errors.tax_identification_number && (
+                  <p className="text-red-500 text-sm mt-1">{errors.tax_identification_number}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">6-20 characters (A-Z, 0-9, -)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Registration Number <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(CRN)</span>
+                </label>
+                <input
+                  type="text"
+                  name="company_registration_number"
+                  required
+                  value={formData.company_registration_number}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
+                    errors.company_registration_number ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder="CRN12345/67890"
+                  maxLength="30"
+                  style={{ textTransform: 'uppercase' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9\-\/]/g, '');
+                  }}
+                />
+                {errors.company_registration_number && (
+                  <p className="text-red-500 text-sm mt-1">{errors.company_registration_number}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">5-30 characters (A-Z, 0-9, -, /)</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
