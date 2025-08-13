@@ -89,7 +89,7 @@ class LeadService:
                 # New tender details fields
                 tender_id=lead_data.get("tender_details", {}).get("tender_id") if lead_data.get("tender_details") else None,
                 tender_authority_name=lead_data.get("tender_details", {}).get("authority") if lead_data.get("tender_details") else None,
-                bid_due_date=lead_data.get("tender_details", {}).get("bid_due_date") if lead_data.get("tender_details") else None,
+                bid_due_date=parse_date_field(lead_data.get("tender_details", {}).get("bid_due_date")) if lead_data.get("tender_details") else None,
                 emd_required=lead_data.get("emd_required", False),
                 emd_amount=lead_data.get("emd_amount"),
                 emd_currency=lead_data.get("emd_currency", "INR"),
