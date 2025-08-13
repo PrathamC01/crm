@@ -126,18 +126,37 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       newErrors.annual_revenue = "Annual revenue is required and must be positive";
     }
 
-    // GST validation - always required for manual entry
-    if (!formData.gst_number) {
-      newErrors.gst_number = "GST number is required";
-    } else if (!/^[0-9A-Z]{15}$/.test(formData.gst_number)) {
-      newErrors.gst_number = "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
+    // Conditional validation based on company type
+    if (["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type)) {
+      // GST validation for domestic companies
+      if (!formData.gst_number) {
+        newErrors.gst_number = "GST number is required for domestic companies";
+      } else if (!/^[0-9A-Z]{15}$/.test(formData.gst_number)) {
+        newErrors.gst_number = "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
+      }
+
+      // PAN validation for domestic companies
+      if (!formData.pan_number) {
+        newErrors.pan_number = "PAN number is required for domestic companies";
+      } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan_number)) {
+        newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
+      }
     }
 
-    // PAN validation - always required for manual entry
-    if (!formData.pan_number) {
-      newErrors.pan_number = "PAN number is required";
-    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan_number)) {
-      newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
+    if (["INTERNATIONAL", "OVERSEAS"].includes(formData.company_type)) {
+      // Tax ID validation for international/overseas companies
+      if (!formData.tax_identification_number) {
+        newErrors.tax_identification_number = "Tax Identification Number is required for international/overseas companies";
+      } else if (!/^[A-Z0-9\-]{6,20}$/.test(formData.tax_identification_number)) {
+        newErrors.tax_identification_number = "Tax ID must be 6-20 characters (A-Z, 0-9, -)";
+      }
+
+      // Company Registration Number validation for international/overseas companies
+      if (!formData.company_registration_number) {
+        newErrors.company_registration_number = "Company Registration Number is required for international/overseas companies";
+      } else if (!/^[A-Z0-9\-\/]{5,30}$/.test(formData.company_registration_number)) {
+        newErrors.company_registration_number = "CRN must be 5-30 characters (A-Z, 0-9, -, /)";
+      }
     }
 
     if (formData.company_type === "OVERSEAS") {
