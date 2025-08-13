@@ -11,10 +11,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     sub_industry: "",
     annual_revenue: "",
     
-    // Identification & Compliance - CONDITIONALLY REQUIRED
+    // gst_number, pan_number, tax_identification_number, company_registration_number
     gst_number: "",
     pan_number: "",
-    international_unique_id: "",
+    tax_identification_number: "",
+    company_registration_number: "",
     supporting_documents: [],
     verification_source: "",
     verification_date: "",
