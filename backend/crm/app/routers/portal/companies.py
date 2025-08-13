@@ -107,7 +107,7 @@ async def get_company(
         from ...exceptions.custom_exceptions import NotFoundError
         raise NotFoundError("Company", company_id)
 
-    company_response = CompanyResponse.model_validate(company)
+    company_response = CompanyResponse.from_db_model(company)
     return StandardResponse(
         status=True, 
         message="Company retrieved successfully", 
