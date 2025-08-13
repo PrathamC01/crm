@@ -100,9 +100,7 @@ class LeadService:
                 clauses=lead_data.get("clauses", []),
                 expected_revenue=lead_data.get("expected_revenue"),
                 revenue_currency=lead_data.get("revenue_currency", "INR"),
-                convert_to_opportunity_date=lead_data.get(
-                    "convert_to_opportunity_date"
-                ),
+                convert_to_opportunity_date=parse_date_field(lead_data.get("convert_to_opportunity_date")),
                 competitors=lead_data.get("competitors", []),
                 documents=lead_data.get("documents", []),
                 status=safe_enum_convert(
