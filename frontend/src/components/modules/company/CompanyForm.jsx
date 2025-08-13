@@ -359,8 +359,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
     
-    // Clear sub-industry when industry changes
-    if (name === "industry") {
+    // Clear conditional fields when company type changes
+    if (name === "company_type") {
+      setFormData((prev) => ({ 
+        ...prev, 
+        [name]: newValue,
+        // Clear all compliance fields when company type changes
+        gst_number: "",
+        pan_number: "",
+        tax_identification_number: "",
+        company_registration_number: ""
+      }));
+    } else if (name === "industry") {
+      // Clear sub-industry when industry changes
       setFormData((prev) => ({ 
         ...prev, 
         [name]: newValue,
@@ -373,6 +384,18 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Clear related errors when company type changes
+    if (name === "company_type") {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.gst_number;
+        delete newErrors.pan_number;
+        delete newErrors.tax_identification_number;
+        delete newErrors.company_registration_number;
+        return newErrors;
+      });
     }
 
     // Clear sub_industry error when industry changes
