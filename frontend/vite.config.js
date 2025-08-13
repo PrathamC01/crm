@@ -11,7 +11,7 @@ export default defineConfig({
       'localhost',
       '127.0.0.1',
       // 'lead-manager-6.preview.emergentagent.com',
-      'eab94d3d-6f7f-4abd-b1bf-e8d0351be7a9.preview.emergentagent.com'
+      'swayatta-crm.preview.emergentagent.com'
       // "*"
     ]
   },

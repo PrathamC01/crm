@@ -35,6 +35,8 @@ class LeadPriority(str, Enum):
 
 
 class LeadSubType(str, Enum):
+    TENDER = "Tender"
+    NON_TENDER = "Non-Tender"
     PRE_TENDER = "Pre-Tender"
     POST_TENDER = "Post-Tender"
 
@@ -103,6 +105,24 @@ class DocumentBase(BaseModel):
     description: Optional[str] = None
 
 
+class TenderDetailsBase(BaseModel):
+    tender_id: Optional[str] = None
+    authority: Optional[str] = None
+    bid_due_date: Optional[date] = None
+
+    @validator("tender_id")
+    def validate_tender_id(cls, v):
+        if v and (len(v.strip()) < 2 or len(v.strip()) > 100):
+            raise ValueError("Tender ID must be between 2 and 100 characters")
+        return v.strip() if v else v
+
+    @validator("authority")
+    def validate_authority(cls, v):
+        if v and (len(v.strip()) < 2 or len(v.strip()) > 200):
+            raise ValueError("Authority must be between 2 and 200 characters")
+        return v.strip() if v else v
+
+
 class LeadBase(BaseModel):
     # Basic Lead Information
     project_title: str
@@ -129,6 +149,9 @@ class LeadBase(BaseModel):
     submission_type: Optional[SubmissionType] = None
     tender_authority: Optional[str] = None
     tender_for: Optional[str] = None
+    
+    # New Tender Details (Frontend mapping)
+    tender_details: Optional[TenderDetailsBase] = None
 
     # EMD Details
     emd_required: bool = False
@@ -200,6 +223,29 @@ class LeadBase(BaseModel):
                 values[field] = json_safe(values[field])
         return values
 
+    @root_validator(skip_on_failure=True)
+    def validate_tender_details(cls, values):
+        """Validate tender details based on lead sub type"""
+        lead_sub_type = values.get("lead_sub_type")
+        tender_details = values.get("tender_details")
+        
+        # If lead_sub_type is not NON_TENDER, tender_details should be provided and valid
+        if lead_sub_type and lead_sub_type != LeadSubType.NON_TENDER:
+            if not tender_details:
+                raise ValueError("Tender details are required when lead sub-type is not 'Non-Tender'")
+            
+            # Validate required fields in tender_details
+            if not tender_details.tender_id or len(tender_details.tender_id.strip()) == 0:
+                raise ValueError("Tender ID is required when lead sub-type is not 'Non-Tender'")
+            
+            if not tender_details.authority or len(tender_details.authority.strip()) == 0:
+                raise ValueError("Tender authority is required when lead sub-type is not 'Non-Tender'")
+                
+            if not tender_details.bid_due_date:
+                raise ValueError("Bid due date is required when lead sub-type is not 'Non-Tender'")
+        
+        return values
+
     def dict(self, *args, **kwargs):
         """Ensure dict output is JSON-safe before DB insert."""
         raw = super().dict(*args, **kwargs)
@@ -227,6 +273,7 @@ class LeadUpdate(BaseModel):
     submission_type: Optional[SubmissionType] = None
     tender_authority: Optional[str] = None
     tender_for: Optional[str] = None
+    tender_details: Optional[TenderDetailsBase] = None
     emd_required: Optional[bool] = None
     emd_amount: Optional[Decimal] = None
     emd_currency: Optional[str] = None

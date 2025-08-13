@@ -24,6 +24,9 @@ import UsersPage from "./pages/Masters/UsersPage";
 import DepartmentsPage from "./pages/Masters/DepartmentsPage";
 import RolesPage from "./pages/Masters/RolesPage";
 
+// Companies Page
+import CompaniesPage from "./pages/Companies/CompaniesPage";
+
 // Leads Pages
 import LeadsPage from "./pages/Leads/LeadsPage";
 import MyLeadsPage from "./pages/Leads/MyLeadsPage";
@@ -91,6 +94,9 @@ function App() {
                 <Route path="departments" element={<DepartmentsPage />} />
                 <Route path="roles" element={<RolesPage />} />
               </Route>
+
+              {/* Companies Routes */}
+              <Route path="companies" element={<CompaniesPage />} />
 
               {/* Leads Routes */}
               <Route path="leads">

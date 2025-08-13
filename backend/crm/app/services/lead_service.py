@@ -3,7 +3,7 @@ Enhanced Lead management service with conversion workflow
 """
 
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_, func
 from ..models import (
@@ -19,6 +19,23 @@ from ..models import (
     LeadPriority,
 )
 from .contact_service import ContactService
+
+
+def parse_date_field(date_value):
+    """Parse date field from string to date object"""
+    if not date_value:
+        return None
+    if isinstance(date_value, date):
+        return date_value
+    if isinstance(date_value, str):
+        try:
+            return datetime.strptime(date_value, "%Y-%m-%d").date()
+        except ValueError:
+            try:
+                return datetime.strptime(date_value, "%Y-%m-%dT%H:%M:%S").date()
+            except ValueError:
+                return None
+    return None
 
 
 class LeadService:
@@ -69,6 +86,10 @@ class LeadService:
                 ),
                 tender_authority=lead_data.get("tender_authority"),
                 tender_for=lead_data.get("tender_for"),
+                # New tender details fields
+                tender_id=lead_data.get("tender_details", {}).get("tender_id") if lead_data.get("tender_details") else None,
+                tender_authority_name=lead_data.get("tender_details", {}).get("authority") if lead_data.get("tender_details") else None,
+                bid_due_date=parse_date_field(lead_data.get("tender_details", {}).get("bid_due_date")) if lead_data.get("tender_details") else None,
                 emd_required=lead_data.get("emd_required", False),
                 emd_amount=lead_data.get("emd_amount"),
                 emd_currency=lead_data.get("emd_currency", "INR"),
@@ -79,9 +100,7 @@ class LeadService:
                 clauses=lead_data.get("clauses", []),
                 expected_revenue=lead_data.get("expected_revenue"),
                 revenue_currency=lead_data.get("revenue_currency", "INR"),
-                convert_to_opportunity_date=lead_data.get(
-                    "convert_to_opportunity_date"
-                ),
+                convert_to_opportunity_date=parse_date_field(lead_data.get("convert_to_opportunity_date")),
                 competitors=lead_data.get("competitors", []),
                 documents=lead_data.get("documents", []),
                 status=safe_enum_convert(
@@ -153,6 +172,13 @@ class LeadService:
                     value = LeadStatus(value)
                 elif field == "priority" and value:
                     value = LeadPriority(value)
+                elif field == "tender_details" and value:
+                    # Handle nested tender_details mapping
+                    if isinstance(value, dict):
+                        setattr(db_lead, "tender_id", value.get("tender_id"))
+                        setattr(db_lead, "tender_authority_name", value.get("authority"))
+                        setattr(db_lead, "bid_due_date", value.get("bid_due_date"))
+                    continue  # Skip setattr for this field since we handled it above
 
                 setattr(db_lead, field, value)
 

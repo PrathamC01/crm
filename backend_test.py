@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Enhanced Leads Functionality Testing for Enterprise CRM System
-Focus on leads management, companies, contacts, and authentication permissions
+Company Management Module Testing for Swayatta 4.0 CRM System
+Focus on comprehensive company management functionality, validation, and workflows
 """
 
 import requests
@@ -11,9 +11,10 @@ import os
 from typing import Dict, Any, Optional
 import tempfile
 from io import BytesIO
+from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = "https://swayatta-crm.preview.emergentagent.com"
 TEST_SESSION_ID = "test_session_123"
 
 class EnhancedLeadsTester:

@@ -43,6 +43,94 @@ async def get_opportunity_service(
     return OpportunityService(postgres_pool)
 
 
+def transform_backend_lead_data_to_frontend(lead) -> dict:
+    """Transform backend lead data to frontend format"""
+    # Backend to frontend leadSubType mapping
+    lead_sub_type_mapping = {
+        "Tender": "TENDER",
+        "Non-Tender": "NON_TENDER", 
+        "Pre-Tender": "PRE_TENDER",
+        "Post-Tender": "POST_TENDER"
+    }
+    
+    # Basic lead data transformation
+    lead_dict = {
+        "id": lead.id,
+        "project_title": lead.project_title,
+        "lead_source": lead.lead_source.value,
+        "lead_sub_type": lead.lead_sub_type.value,
+        "leadSubType": lead_sub_type_mapping.get(lead.lead_sub_type.value, lead.lead_sub_type.value),
+        "tender_sub_type": lead.tender_sub_type.value,
+        "products_services": lead.products_services or [],
+        "company_id": lead.company_id,
+        "sub_business_type": lead.sub_business_type,
+        "end_customer_id": lead.end_customer_id,
+        "end_customer_region": lead.end_customer_region,
+        "partner_involved": lead.partner_involved,
+        "partners_data": lead.partners_data or [],
+        "tender_fee": lead.tender_fee,
+        "currency": lead.currency,
+        "submission_type": (
+            lead.submission_type.value if lead.submission_type else None
+        ),
+        "tender_authority": lead.tender_authority,
+        "tender_for": lead.tender_for,
+        "emd_required": lead.emd_required,
+        "emd_amount": lead.emd_amount,
+        "emd_currency": lead.emd_currency,
+        "bg_required": lead.bg_required,
+        "bg_amount": lead.bg_amount,
+        "bg_currency": lead.bg_currency,
+        "important_dates": lead.important_dates or [],
+        "clauses": lead.clauses or [],
+        "expected_revenue": lead.expected_revenue,
+        "revenue_currency": lead.revenue_currency,
+        "convert_to_opportunity_date": lead.convert_to_opportunity_date,
+        "competitors": lead.competitors or [],
+        "documents": lead.documents or [],
+        "status": lead.status.value,
+        "priority": lead.priority.value,
+        "qualification_notes": lead.qualification_notes,
+        "lead_score": lead.lead_score,
+        "contacts": lead.contacts or [],
+        "company_name": lead.company_name,
+        "end_customer_name": lead.end_customer_name,
+        "creator_name": lead.creator_name,
+        "conversion_requester_name": lead.conversion_requester_name,
+        "reviewer_name": lead.reviewer_name,
+        "ready_for_conversion": lead.ready_for_conversion,
+        "conversion_requested": lead.conversion_requested,
+        "conversion_request_date": lead.conversion_request_date,
+        "reviewed": lead.reviewed,
+        "review_status": lead.review_status.value,
+        "review_date": lead.review_date,
+        "review_comments": lead.review_comments,
+        "converted": lead.converted,
+        "converted_to_opportunity_id": lead.converted_to_opportunity_id,
+        "conversion_date": lead.conversion_date,
+        "conversion_notes": lead.conversion_notes,
+        "can_request_conversion": lead.can_request_conversion,
+        "can_convert_to_opportunity": lead.can_convert_to_opportunity,
+        "needs_admin_review": lead.needs_admin_review,
+        "is_active": lead.is_active,
+        "created_on": lead.created_on,
+        "updated_on": lead.updated_on,
+    }
+    
+    # Add tenderDetails for frontend
+    tender_details = {}
+    if hasattr(lead, 'tender_id') and lead.tender_id:
+        tender_details["tenderId"] = lead.tender_id
+    if hasattr(lead, 'tender_authority_name') and lead.tender_authority_name:
+        tender_details["authority"] = lead.tender_authority_name
+    if hasattr(lead, 'bid_due_date') and lead.bid_due_date:
+        tender_details["bidDueDate"] = lead.bid_due_date.isoformat() if lead.bid_due_date else None
+    
+    lead_dict["tenderDetails"] = tender_details
+    
+    return lead_dict
+
+
 @router.get("/", response_model=StandardResponse)
 async def get_leads(
     skip: int = Query(0, ge=0),
@@ -64,67 +152,7 @@ async def get_leads(
         # Transform to response models
         lead_responses = []
         for lead in leads:
-            lead_dict = {
-                "id": lead.id,
-                "project_title": lead.project_title,
-                "lead_source": lead.lead_source.value,
-                "lead_sub_type": lead.lead_sub_type.value,
-                "tender_sub_type": lead.tender_sub_type.value,
-                "products_services": lead.products_services or [],
-                "company_id": lead.company_id,
-                "sub_business_type": lead.sub_business_type,
-                "end_customer_id": lead.end_customer_id,
-                "end_customer_region": lead.end_customer_region,
-                "partner_involved": lead.partner_involved,
-                "partners_data": lead.partners_data or [],
-                "tender_fee": lead.tender_fee,
-                "currency": lead.currency,
-                "submission_type": (
-                    lead.submission_type.value if lead.submission_type else None
-                ),
-                "tender_authority": lead.tender_authority,
-                "tender_for": lead.tender_for,
-                "emd_required": lead.emd_required,
-                "emd_amount": lead.emd_amount,
-                "emd_currency": lead.emd_currency,
-                "bg_required": lead.bg_required,
-                "bg_amount": lead.bg_amount,
-                "bg_currency": lead.bg_currency,
-                "important_dates": lead.important_dates or [],
-                "clauses": lead.clauses or [],
-                "expected_revenue": lead.expected_revenue,
-                "revenue_currency": lead.revenue_currency,
-                "convert_to_opportunity_date": lead.convert_to_opportunity_date,
-                "competitors": lead.competitors or [],
-                "documents": lead.documents or [],
-                "status": lead.status.value,
-                "priority": lead.priority.value,
-                "qualification_notes": lead.qualification_notes,
-                "lead_score": lead.lead_score,
-                "contacts": lead.contacts or [],
-                "company_name": lead.company_name,
-                "end_customer_name": lead.end_customer_name,
-                "creator_name": lead.creator_name,
-                "conversion_requester_name": lead.conversion_requester_name,
-                "reviewer_name": lead.reviewer_name,
-                "ready_for_conversion": lead.ready_for_conversion,
-                "conversion_requested": lead.conversion_requested,
-                "conversion_request_date": lead.conversion_request_date,
-                "reviewed": lead.reviewed,
-                "review_status": lead.review_status.value,
-                "review_date": lead.review_date,
-                "review_comments": lead.review_comments,
-                "converted": lead.converted,
-                "converted_to_opportunity_id": lead.converted_to_opportunity_id,
-                "conversion_date": lead.conversion_date,
-                "conversion_notes": lead.conversion_notes,
-                "can_request_conversion": lead.can_request_conversion,
-                "can_convert_to_opportunity": lead.can_convert_to_opportunity,
-                "needs_admin_review": lead.needs_admin_review,
-                "is_active": lead.is_active,
-                "created_on": lead.created_on,
-                "updated_on": lead.updated_on,
-            }
+            lead_dict = transform_backend_lead_data_to_frontend(lead)
             lead_responses.append(lead_dict)
 
         return StandardResponse(
@@ -199,68 +227,8 @@ async def get_lead(
 
         raise NotFoundError("Lead", lead_id)
 
-    # Transform to response format (same as in get_leads)
-    lead_dict = {
-        "id": lead.id,
-        "project_title": lead.project_title,
-        "lead_source": lead.lead_source.value,
-        "lead_sub_type": lead.lead_sub_type.value,
-        "tender_sub_type": lead.tender_sub_type.value,
-        "products_services": lead.products_services or [],
-        "company_id": lead.company_id,
-        "sub_business_type": lead.sub_business_type,
-        "end_customer_id": lead.end_customer_id,
-        "end_customer_region": lead.end_customer_region,
-        "partner_involved": lead.partner_involved,
-        "partners_data": lead.partners_data or [],
-        "tender_fee": lead.tender_fee,
-        "currency": lead.currency,
-        "submission_type": (
-            lead.submission_type.value if lead.submission_type else None
-        ),
-        "tender_authority": lead.tender_authority,
-        "tender_for": lead.tender_for,
-        "emd_required": lead.emd_required,
-        "emd_amount": lead.emd_amount,
-        "emd_currency": lead.emd_currency,
-        "bg_required": lead.bg_required,
-        "bg_amount": lead.bg_amount,
-        "bg_currency": lead.bg_currency,
-        "important_dates": lead.important_dates or [],
-        "clauses": lead.clauses or [],
-        "expected_revenue": lead.expected_revenue,
-        "revenue_currency": lead.revenue_currency,
-        "convert_to_opportunity_date": lead.convert_to_opportunity_date,
-        "competitors": lead.competitors or [],
-        "documents": lead.documents or [],
-        "status": lead.status.value,
-        "priority": lead.priority.value,
-        "qualification_notes": lead.qualification_notes,
-        "lead_score": lead.lead_score,
-        "contacts": lead.contacts or [],
-        "company_name": lead.company_name,
-        "end_customer_name": lead.end_customer_name,
-        "creator_name": lead.creator_name,
-        "conversion_requester_name": lead.conversion_requester_name,
-        "reviewer_name": lead.reviewer_name,
-        "ready_for_conversion": lead.ready_for_conversion,
-        "conversion_requested": lead.conversion_requested,
-        "conversion_request_date": lead.conversion_request_date,
-        "reviewed": lead.reviewed,
-        "review_status": lead.review_status.value,
-        "review_date": lead.review_date,
-        "review_comments": lead.review_comments,
-        "converted": lead.converted,
-        "converted_to_opportunity_id": lead.converted_to_opportunity_id,
-        "conversion_date": lead.conversion_date,
-        "conversion_notes": lead.conversion_notes,
-        "can_request_conversion": lead.can_request_conversion,
-        "can_convert_to_opportunity": lead.can_convert_to_opportunity,
-        "needs_admin_review": lead.needs_admin_review,
-        "is_active": lead.is_active,
-        "created_on": lead.created_on,
-        "updated_on": lead.updated_on,
-    }
+    # Transform to response format using helper function
+    lead_dict = transform_backend_lead_data_to_frontend(lead)
 
     return StandardResponse(
         status=True,
@@ -271,13 +239,19 @@ async def get_lead(
 
 @router.post("/", response_model=StandardResponse)
 async def create_lead(
-    lead_data: LeadCreate,
+    lead_data: dict,  # Changed from LeadCreate to dict to handle frontend format
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
 ):
     """Create new lead"""
     try:
-        lead = lead_service.create_lead(lead_data.dict(), current_user["id"])
+        # Transform frontend format to backend format
+        transformed_data = transform_frontend_lead_data(lead_data)
+        
+        # Validate the transformed data
+        validated_data = LeadCreate(**transformed_data)
+        
+        lead = lead_service.create_lead(validated_data.dict(), current_user["id"])
 
         return StandardResponse(
             status=True,
@@ -295,18 +269,56 @@ async def create_lead(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def transform_frontend_lead_data(lead_data: dict) -> dict:
+    """Transform frontend lead data structure to backend format"""
+    transformed = lead_data.copy()
+    
+    # Map leadSubType to lead_sub_type
+    if "leadSubType" in transformed:
+        # Frontend uses TENDER, NON_TENDER, etc, backend expects the full label 
+        mapping = {
+            "TENDER": "Tender",
+            "NON_TENDER": "Non-Tender", 
+            "PRE_TENDER": "Pre-Tender",
+            "POST_TENDER": "Post-Tender"
+        }
+        frontend_value = transformed.pop("leadSubType")
+        if frontend_value in mapping:
+            transformed["lead_sub_type"] = mapping[frontend_value]
+    
+    # Map tenderDetails to tender_details
+    if "tenderDetails" in transformed:
+        tender_details = transformed.pop("tenderDetails")
+        if tender_details:
+            # Map field names
+            mapped_tender_details = {
+                "tender_id": tender_details.get("tenderId"),
+                "authority": tender_details.get("authority"),
+                "bid_due_date": tender_details.get("bidDueDate")
+            }
+            transformed["tender_details"] = mapped_tender_details
+    
+    return transformed
+
+
 @router.put("/{lead_id}", response_model=StandardResponse)
 async def update_lead(
     lead_id: str,
-    lead_data: LeadUpdate,
+    lead_data: dict,  # Changed from LeadUpdate to dict to handle frontend format
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
 ):
     """Update lead information"""
     try:
+        # Transform frontend format to backend format
+        transformed_data = transform_frontend_lead_data(lead_data)
+        
+        # Validate the transformed data  
+        validated_data = LeadUpdate(**transformed_data)
+        
         lead = lead_service.update_lead(
             lead_id,
-            lead_data.dict(exclude_unset=True),
+            validated_data.dict(exclude_unset=True),
             current_user["id"],
         )
         if not lead:

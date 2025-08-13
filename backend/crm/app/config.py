@@ -10,7 +10,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Database URLs
-    POSTGRES_URL: str = os.getenv("POSTGRES_URL", "postgresql://crm:Test@localhost:5432/crm_db")
+    POSTGRES_URL: str = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432/crm_db")
     MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017/crm_logs")
     
     # Redis Configuration
@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # JWT Configuration
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 500))
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "your-super-secret-jwt-key-change-in-production")
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_EXPIRATION_HOURS: int = int(os.getenv("JWT_EXPIRATION_HOURS", 24))
     
     # Session Configuration
     SESSION_EXPIRE_MINUTES: int = int(os.getenv("SESSION_EXPIRE_MINUTES", 500))
@@ -37,6 +40,7 @@ class Settings(BaseSettings):
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     APP_NAME: str = "Enterprise CRM"
     APP_VERSION: str = "1.0.0"
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000")
     
     class Config:
         env_file = ".env"

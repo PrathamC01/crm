@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../utils/api';
+import { apiRequest } from '../../../utils/api';
 
 const LeadForm = ({ lead, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -10,7 +10,15 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     status: 'New',
     notes: '',
     priority: 'Medium',
-    expected_close_date: ''
+    expected_close_date: '',
+    products: [],
+    services: [],
+    leadSubType: '',
+    tenderDetails: {
+      tenderId: '',
+      authority: '',
+      bidDueDate: ''
+    }
   });
   
   const [companies, setCompanies] = useState([]);
@@ -28,7 +36,15 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         status: lead.status || 'New',
         notes: lead.notes || '',
         priority: lead.priority || 'Medium',
-        expected_close_date: lead.expected_close_date || ''
+        expected_close_date: lead.expected_close_date || '',
+        products: lead.products || [],
+        services: lead.services || [],
+        leadSubType: lead.leadSubType || '',
+        tenderDetails: {
+          tenderId: lead.tenderDetails?.tenderId || '',
+          authority: lead.tenderDetails?.authority || '',
+          bidDueDate: lead.tenderDetails?.bidDueDate || ''
+        }
       });
     }
     fetchCompanies();
@@ -78,6 +94,29 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
       }
     }
 
+    // Validate that at least one product or service is selected
+    if (formData.products.length === 0 && formData.services.length === 0) {
+      newErrors.productsServices = 'Please select at least one product or one service';
+    }
+
+    // Validate leadSubType is required
+    if (!formData.leadSubType) {
+      newErrors.leadSubType = 'Lead sub-type is required';
+    }
+
+    // Validate tenderDetails if leadSubType is not NON_TENDER
+    if (formData.leadSubType && formData.leadSubType !== 'NON_TENDER') {
+      if (!formData.tenderDetails.tenderId || formData.tenderDetails.tenderId.trim().length < 2) {
+        newErrors.tenderId = 'Tender ID is required (minimum 2 characters)';
+      }
+      if (!formData.tenderDetails.authority || formData.tenderDetails.authority.trim().length < 2) {
+        newErrors.authority = 'Authority is required (minimum 2 characters)';
+      }
+      if (!formData.tenderDetails.bidDueDate) {
+        newErrors.bidDueDate = 'Bid due date is required';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,11 +152,66 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Handle nested tenderDetails fields
+    if (name.startsWith('tenderDetails.')) {
+      const fieldName = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        tenderDetails: {
+          ...prev.tenderDetails,
+          [fieldName]: value
+        }
+      }));
+      
+      // Clear tender-specific errors
+      if (errors[fieldName]) {
+        setErrors(prev => ({ ...prev, [fieldName]: '' }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      
+      // Clear tenderDetails when switching to NON_TENDER
+      if (name === 'leadSubType' && value === 'NON_TENDER') {
+        setFormData(prev => ({
+          ...prev,
+          tenderDetails: {
+            tenderId: '',
+            authority: '',
+            bidDueDate: ''
+          }
+        }));
+        
+        // Clear tender-related errors
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.tenderId;
+          delete newErrors.authority;
+          delete newErrors.bidDueDate;
+          return newErrors;
+        });
+      }
+    }
     
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleMultiSelectChange = (fieldName, option) => {
+    setFormData(prev => {
+      const currentValues = prev[fieldName] || [];
+      const newValues = currentValues.includes(option)
+        ? currentValues.filter(item => item !== option)
+        : [...currentValues, option];
+      
+      return { ...prev, [fieldName]: newValues };
+    });
+
+    // Clear validation error when user selects products/services
+    if ((fieldName === 'products' || fieldName === 'services') && errors.productsServices) {
+      setErrors(prev => ({ ...prev, productsServices: '' }));
     }
   };
 
@@ -148,6 +242,39 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
     { value: 'Urgent', label: 'Urgent' }
   ];
 
+  const productOptions = [
+    'CRM Software',
+    'ERP Solutions',
+    'Marketing Automation',
+    'Sales Analytics',
+    'Customer Support Platform',
+    'Business Intelligence',
+    'Project Management Tools',
+    'HR Management System',
+    'Financial Management',
+    'Inventory Management'
+  ];
+
+  const serviceOptions = [
+    'Implementation Services',
+    'Training & Support',
+    'Custom Development',
+    'Data Migration',
+    'System Integration',
+    'Consulting Services',
+    'Maintenance & Support',
+    'Cloud Migration',
+    'Security Audit',
+    'Performance Optimization'
+  ];
+
+  const leadSubTypes = [
+    { value: 'TENDER', label: 'Tender' },
+    { value: 'NON_TENDER', label: 'Non-Tender' },
+    { value: 'PRE_TENDER', label: 'Pre-Tender' },
+    { value: 'POST_TENDER', label: 'Post-Tender' }
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.submit && (
@@ -158,7 +285,7 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
 
       {/* Basic Information */}
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Lead Information</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">General Details</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -230,8 +357,165 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
             </select>
             {errors.sales_person_id && <p className="text-red-500 text-sm mt-1">{errors.sales_person_id}</p>}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lead Sub-Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="leadSubType"
+              required
+              value={formData.leadSubType}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.leadSubType ? 'border-red-300' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Select lead sub-type</option>
+              {leadSubTypes.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+            {errors.leadSubType && <p className="text-red-500 text-sm mt-1">{errors.leadSubType}</p>}
+          </div>
         </div>
+
+        {/* Products and Services Multi-Select */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Products Multi-Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Products <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Select at least one product or service)</span>
+            </label>
+            <div className={`border rounded-lg p-3 max-h-48 overflow-y-auto ${
+              errors.productsServices ? 'border-red-300' : 'border-gray-300'
+            }`}>
+              {productOptions.map((product) => (
+                <label key={product} className="flex items-center space-x-2 py-1 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.products.includes(product)}
+                    onChange={() => handleMultiSelectChange('products', product)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{product}</span>
+                </label>
+              ))}
+              {formData.products.length === 0 && (
+                <p className="text-gray-500 text-sm italic">No products selected</p>
+              )}
+            </div>
+            {formData.products.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                Selected: {formData.products.join(', ')}
+              </p>
+            )}
+          </div>
+
+          {/* Services Multi-Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Services <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Select at least one product or service)</span>
+            </label>
+            <div className={`border rounded-lg p-3 max-h-48 overflow-y-auto ${
+              errors.productsServices ? 'border-red-300' : 'border-gray-300'
+            }`}>
+              {serviceOptions.map((service) => (
+                <label key={service} className="flex items-center space-x-2 py-1 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.services.includes(service)}
+                    onChange={() => handleMultiSelectChange('services', service)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{service}</span>
+                </label>
+              ))}
+              {formData.services.length === 0 && (
+                <p className="text-gray-500 text-sm italic">No services selected</p>
+              )}
+            </div>
+            {formData.services.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                Selected: {formData.services.join(', ')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Products/Services Validation Error */}
+        {errors.productsServices && (
+          <p className="text-red-500 text-sm mt-2">{errors.productsServices}</p>
+        )}
       </div>
+
+      {/* Tender Details Section - Conditional */}
+      {formData.leadSubType && formData.leadSubType !== 'NON_TENDER' && (
+        <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">Tender Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tender ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="tenderDetails.tenderId"
+                required
+                value={formData.tenderDetails.tenderId}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.tenderId ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter tender ID"
+                minLength="2"
+                maxLength="100"
+              />
+              {errors.tenderId && <p className="text-red-500 text-sm mt-1">{errors.tenderId}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Authority <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="tenderDetails.authority"
+                required
+                value={formData.tenderDetails.authority}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.authority ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Enter tendering authority"
+                minLength="2"
+                maxLength="200"
+              />
+              {errors.authority && <p className="text-red-500 text-sm mt-1">{errors.authority}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bid Due Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="tenderDetails.bidDueDate"
+                required
+                value={formData.tenderDetails.bidDueDate}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  errors.bidDueDate ? 'border-red-300' : 'border-gray-300'
+                }`}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              {errors.bidDueDate && <p className="text-red-500 text-sm mt-1">{errors.bidDueDate}</p>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Status & Priority */}
       <div className="bg-gray-50 p-4 rounded-lg">
@@ -309,8 +593,14 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         </button>
         <button
           type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          disabled={loading || 
+            (formData.products.length === 0 && formData.services.length === 0) ||
+            !formData.leadSubType ||
+            (formData.leadSubType !== 'NON_TENDER' && 
+              (!formData.tenderDetails.tenderId || !formData.tenderDetails.authority || !formData.tenderDetails.bidDueDate)
+            )
+          }
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (
             <div className="flex items-center">
