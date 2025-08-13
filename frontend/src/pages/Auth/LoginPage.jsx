@@ -47,8 +47,8 @@ const LoginPage = () => {
 
   const handleTestLogin = () => {
     setFormData({
-      username: 'sales@company.com',
-      password: 'sales123'
+      username: 'admin@crm.com',
+      password: 'admin123'
     });
     setError('Use the demo credentials above or enter your own');
   };
@@ -77,8 +77,9 @@ const LoginPage = () => {
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-800">Demo Credentials</h3>
                   <div className="mt-2 text-sm text-blue-700">
-                    <p>Username: <strong>sales@company.com</strong></p>
-                    <p>Password: <strong>sales123</strong></p>
+                    <p>Username: <strong>admin@crm.com</strong></p>
+                    <p>Password: <strong>admin123
+                      </strong></p>
                     <button
                       type="button"
                       onClick={handleTestLogin}
