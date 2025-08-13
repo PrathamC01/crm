@@ -99,6 +99,24 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
       newErrors.productsServices = 'Please select at least one product or one service';
     }
 
+    // Validate leadSubType is required
+    if (!formData.leadSubType) {
+      newErrors.leadSubType = 'Lead sub-type is required';
+    }
+
+    // Validate tenderDetails if leadSubType is not NON_TENDER
+    if (formData.leadSubType && formData.leadSubType !== 'NON_TENDER') {
+      if (!formData.tenderDetails.tenderId || formData.tenderDetails.tenderId.trim().length < 2) {
+        newErrors.tenderId = 'Tender ID is required (minimum 2 characters)';
+      }
+      if (!formData.tenderDetails.authority || formData.tenderDetails.authority.trim().length < 2) {
+        newErrors.authority = 'Authority is required (minimum 2 characters)';
+      }
+      if (!formData.tenderDetails.bidDueDate) {
+        newErrors.bidDueDate = 'Bid due date is required';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
