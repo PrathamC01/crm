@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../utils/api';
+import { apiRequest } from '../../../utils/api';
 
 const LeadForm = ({ lead, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
