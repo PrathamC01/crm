@@ -593,7 +593,13 @@ const LeadForm = ({ lead, onSave, onCancel }) => {
         </button>
         <button
           type="submit"
-          disabled={loading || (formData.products.length === 0 && formData.services.length === 0)}
+          disabled={loading || 
+            (formData.products.length === 0 && formData.services.length === 0) ||
+            !formData.leadSubType ||
+            (formData.leadSubType !== 'NON_TENDER' && 
+              (!formData.tenderDetails.tenderId || !formData.tenderDetails.authority || !formData.tenderDetails.bidDueDate)
+            )
+          }
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (
