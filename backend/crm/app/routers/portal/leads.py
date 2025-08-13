@@ -336,15 +336,21 @@ def transform_frontend_lead_data(lead_data: dict) -> dict:
 @router.put("/{lead_id}", response_model=StandardResponse)
 async def update_lead(
     lead_id: str,
-    lead_data: LeadUpdate,
+    lead_data: dict,  # Changed from LeadUpdate to dict to handle frontend format
     current_user: dict = Depends(require_leads_write),
     lead_service: LeadService = Depends(get_lead_service),
 ):
     """Update lead information"""
     try:
+        # Transform frontend format to backend format
+        transformed_data = transform_frontend_lead_data(lead_data)
+        
+        # Validate the transformed data  
+        validated_data = LeadUpdate(**transformed_data)
+        
         lead = lead_service.update_lead(
             lead_id,
-            lead_data.dict(exclude_unset=True),
+            validated_data.dict(exclude_unset=True),
             current_user["id"],
         )
         if not lead:
