@@ -10,7 +10,10 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
 # Database URL from environment
-DATABASE_URL = os.getenv('POSTGRES_URL')
+DATABASE_URL = os.getenv('POSTGRES_URL', 'sqlite:///./crm_database.db')
+
+# Force SQLite for now since PostgreSQL is not available
+DATABASE_URL = 'sqlite:///./crm_database.db'
 
 if not DATABASE_URL:
     raise ValueError("POSTGRES_URL environment variable is required")
