@@ -126,6 +126,7 @@ class CRMAPITester:
             "annual_revenue": 50000000,
             "gst_number": "27ABCDE1234F1Z5",
             "pan_number": "ABCDE1234F",
+            "supporting_documents": ["GST_CERTIFICATE_test.pdf", "PAN_CARD_test.pdf"],
             "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
