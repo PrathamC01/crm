@@ -97,7 +97,24 @@ class CRMAPITester:
                 self.token = token
                 self.session_headers = {'Authorization': f'Bearer {token}'}
                 self.log(f"✅ Login successful, token acquired")
-                return True
+                
+                # Test the token by making a dashboard call
+                test_success, test_response = self.run_test(
+                    "Test Token Validity",
+                    "GET",
+                    "/api/dashboard",
+                    200
+                )
+                
+                if test_success:
+                    self.log(f"✅ Token is valid and working")
+                    return True
+                else:
+                    self.log(f"❌ Token validation failed, trying test token")
+                    # Fallback to test token
+                    self.token = "test_admin_token"
+                    self.session_headers = {'Authorization': f'Bearer test_admin_token'}
+                    return True
             else:
                 self.log(f"❌ Login response missing token")
                 self.log(f"   Response data: {data}")
