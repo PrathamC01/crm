@@ -338,7 +338,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       if (
         !noDuplicates &&
         !window.confirm(
-          "Duplicate company detected. Continue anyway? (Admin approval may be required)"
+          "Duplicate company detected. Continue anyway?"
         )
       ) {
         return;
