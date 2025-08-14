@@ -121,7 +121,7 @@ class CRMAPITester:
     def test_create_company_immediate_active(self):
         """Test creating a company that should be immediately active (no approval workflow)"""
         company_data = {
-            "name": f"Test Company {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "name": f"Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
             "company_type": "DOMESTIC_GST",
             "industry": "BFSI",
             "sub_industry": "BANKING — Retail Banking",
