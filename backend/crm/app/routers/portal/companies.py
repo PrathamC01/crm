@@ -112,12 +112,22 @@ async def update_company(
         if not company:
             raise HTTPException(status_code=404, detail="Company not found")
 
-        return StandardResponse(status=True, message="Company updated successfully")
+        # Convert to response model
+        company_response = CompanyResponse.from_orm(company)
+
+        return StandardResponse(
+            status=True, 
+            message="Company updated successfully", 
+            data=company_response
+        )
     except HTTPException as he:
         print(he)
         raise he
     except Exception as e:
-        print(e)
+        print(f"Error updating company: {e}")
+        if "duplicate key" in str(e).lower():
+            raise HTTPException(status_code=400, detail="Company name already exists")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{company_id}", response_model=StandardResponse)
