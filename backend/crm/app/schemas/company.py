@@ -1,5 +1,5 @@
 """
-Enhanced Company schemas for Swayatta 4.0 with comprehensive validation
+Enhanced Company schemas for Swayatta 4.0 - Simplified without approval workflow
 """
 
 from pydantic import BaseModel, validator, Field
@@ -19,17 +19,9 @@ class CompanyType(str, Enum):
     NGO = "NGO"
     OVERSEAS = "OVERSEAS"
 
-class ApprovalStage(str, Enum):
-    DRAFT = "DRAFT"
-    L1_PENDING = "L1_PENDING"
-    ADMIN_PENDING = "ADMIN_PENDING"
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
-
 class CompanyStatus(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
-    PENDING_APPROVAL = "PENDING_APPROVAL"
 
 class VerificationSource(str, Enum):
     GST = "GST"
@@ -126,9 +118,6 @@ class CompanyBase(BaseModel):
 
     @validator("supporting_documents")
     def validate_documents(cls, v, values):
-        # if not v or len(v) < 1:
-        #     raise ValueError("At least one supporting document is required")
-        
         company_type = values.get("company_type")
         required_docs = {
             CompanyType.DOMESTIC_GST: ["GST_CERTIFICATE", "PAN_CARD"],
@@ -186,7 +175,6 @@ class CompanyUpdate(BaseModel):
     website: Optional[str] = None
     description: Optional[str] = None
 
-    # Apply same validators as CompanyBase but for optional fields
     @validator("gst_number")
     def validate_gst(cls, v):
         if v:
@@ -211,25 +199,13 @@ class CompanyResponse(CompanyBase):
     updated_on: Optional[datetime] = None
     parent_company_name: Optional[str] = None
     
-    # Workflow fields
-    approval_stage: ApprovalStage
+    # System fields
     status: CompanyStatus
     change_log_id: Optional[str] = None  # Convert UUID to string
     
     # Auto-tagging
     is_high_revenue: bool = False
     tags: Optional[List[str]] = None
-    
-    # Approval tracking - convert user IDs to usernames
-    l1_approved_by: Optional[str] = None
-    l1_approved_date: Optional[datetime] = None
-    admin_approved_by: Optional[str] = None
-    admin_approved_date: Optional[datetime] = None
-    rejection_reason: Optional[str] = None
-    
-    # SLA tracking
-    sla_breach_date: Optional[datetime] = None
-    escalation_level: int = 0
 
     class Config:
         from_attributes = True
@@ -241,8 +217,6 @@ class CompanyResponse(CompanyBase):
             **company_model.__dict__,
             'change_log_id': str(company_model.change_log_id) if company_model.change_log_id else None,
             'verified_by': getattr(company_model.verifier, 'username', None) if hasattr(company_model, 'verifier') and company_model.verifier else str(company_model.verified_by),
-            'l1_approved_by': getattr(company_model.l1_approver, 'username', None) if hasattr(company_model, 'l1_approver') and company_model.l1_approver else None,
-            'admin_approved_by': getattr(company_model.admin_approver, 'username', None) if hasattr(company_model, 'admin_approver') and company_model.admin_approver else None,
             'linked_subsidiaries': company_model.linked_subsidiaries or []
         }
         return cls(**data)
@@ -257,21 +231,12 @@ class CompanyListResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class CompanyApprovalRequest(BaseModel):
-    """Schema for approval actions"""
-    action: str = Field(..., pattern="^(APPROVE|REJECT|SEND_BACK)$")
-    reason: Optional[str] = Field(None, description="Reason for rejection or send back")
-    checklist_items: Optional[List[str]] = Field(None, description="Completed checklist items")
-
 class CompanyStats(BaseModel):
     """Schema for company statistics"""
     total_companies: int = 0
     active_companies: int = 0
-    pending_approval: int = 0
-    high_revenue_companies: int = 0
     companies_by_type: dict = {}
     companies_by_industry: dict = {}
-    sla_breached: int = 0
 
     class Config:
         from_attributes = True
