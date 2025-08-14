@@ -54,14 +54,25 @@ def remove_approval_columns():
                     print(f"   ℹ️  Column {column} does not exist, skipping")
             
             # Update existing companies to have ACTIVE status if they have PENDING_APPROVAL
-            update_status = text("""
-                UPDATE companies 
-                SET status = 'ACTIVE' 
-                WHERE status = 'PENDING_APPROVAL';
+            # First check if PENDING_APPROVAL exists in the enum, if not skip this step
+            check_enum = text("""
+                SELECT unnest(enum_range(NULL::companystatus));
             """)
-            result = conn.execute(update_status)
-            updated_count = result.rowcount
-            print(f"   ✅ Updated {updated_count} companies from PENDING_APPROVAL to ACTIVE status")
+            try:
+                enum_values = [row[0] for row in conn.execute(check_enum).fetchall()]
+                if 'PENDING_APPROVAL' in enum_values:
+                    update_status = text("""
+                        UPDATE companies 
+                        SET status = 'ACTIVE' 
+                        WHERE status = 'PENDING_APPROVAL';
+                    """)
+                    result = conn.execute(update_status)
+                    updated_count = result.rowcount
+                    print(f"   ✅ Updated {updated_count} companies from PENDING_APPROVAL to ACTIVE status")
+                else:
+                    print("   ℹ️  PENDING_APPROVAL status no longer exists in enum, skipping status update")
+            except Exception as e:
+                print(f"   ℹ️  Could not check enum values: {e}. Status is likely already correct.")
             
             print("✅ Successfully removed approval workflow from companies table")
             
