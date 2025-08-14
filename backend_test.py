@@ -57,8 +57,10 @@ class CRMAPITester:
                 try:
                     error_data = response.json()
                     self.log(f"   Error: {error_data.get('message', 'Unknown error')}")
+                    if 'detail' in error_data:
+                        self.log(f"   Details: {error_data['detail']}")
                 except:
-                    self.log(f"   Raw response: {response.text[:200]}")
+                    self.log(f"   Raw response: {response.text[:500]}")
                 return False, {}
 
         except requests.exceptions.Timeout:
