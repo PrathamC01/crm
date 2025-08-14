@@ -3,7 +3,7 @@ Company related schemas
 """
 
 from pydantic import BaseModel, validator
-from typing import Optional, Any
+from typing import Optional, Any, List
 from datetime import datetime
 from ..utils.validators import (
     validate_gst_number,
@@ -95,12 +95,28 @@ class CompanyUpdate(BaseModel):
         return v
 
 
+class CompanyDocument(BaseModel):
+    id: int
+    filename: str
+    original_filename: str
+    file_path: str
+    file_size: int
+    document_type: str
+    uploaded_on: datetime
+    uploaded_by: int
+
+    class Config:
+        from_attributes = True
+        orm_mode = True
+
+
 class CompanyResponse(CompanyBase):
     id: int
     is_active: bool
     created_on: datetime
     updated_on: Optional[datetime] = None
     parent_company_name: Optional[str] = None
+    documents: Optional[List[CompanyDocument]] = []
 
     class Config:
         from_attributes = True
@@ -115,3 +131,15 @@ class CompanyListResponse(BaseModel):
 
     class Config:
         orm_mode = True  # Crucial!
+
+
+class DocumentUploadResponse(BaseModel):
+    id: int
+    filename: str
+    original_filename: str
+    document_type: str
+    file_size: int
+    message: str
+
+    class Config:
+        from_attributes = True
