@@ -90,8 +90,9 @@ class CRMAPITester:
             data={"email_or_username": username, "password": password}
         )
         
-        if success and response.get('status') and response.get('data'):
-            token = response['data'].get('token') or response['data'].get('access_token')
+        if success and response.get('status'):
+            data = response.get('data', {})
+            token = data.get('token')
             if token:
                 self.token = token
                 self.session_headers = {'Authorization': f'Bearer {token}'}
@@ -99,7 +100,7 @@ class CRMAPITester:
                 return True
             else:
                 self.log(f"❌ Login response missing token")
-                self.log(f"   Response data: {response.get('data', {})}")
+                self.log(f"   Response data: {data}")
                 return False
         return False
 
