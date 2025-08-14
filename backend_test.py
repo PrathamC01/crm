@@ -232,7 +232,7 @@ class CRMAPITester:
         
         if sales_login_success:
             company_data = {
-                "name": f"Sales Test Company {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "name": f"Sales Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
                 "company_type": "DOMESTIC_GST",
                 "industry": "BFSI",
                 "sub_industry": "BANKING — Retail Banking",
