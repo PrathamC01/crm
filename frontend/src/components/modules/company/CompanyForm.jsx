@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiRequest } from "../../../utils/api";
+import { apiRequest, uploadFile } from "../../../utils/api";
 
 const CompanyForm = ({ company, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -20,6 +20,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [documents, setDocuments] = useState([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   useEffect(() => {
     if (company) {
@@ -37,6 +39,10 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         website: company.website || "",
         description: company.description || "",
       });
+      // Load documents if editing existing company
+      if (company.id) {
+        fetchDocuments(company.id);
+      }
     }
     fetchCompanies();
   }, [company]);
@@ -49,6 +55,17 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       }
     } catch (err) {
       console.error("Failed to fetch companies:", err);
+    }
+  };
+
+  const fetchDocuments = async (companyId) => {
+    try {
+      const response = await apiRequest(`/api/companies/${companyId}/documents`);
+      if (response.status) {
+        setDocuments(response.data.documents || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch documents:", err);
     }
   };
 
@@ -127,6 +144,53 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     }
   };
 
+  const handleDocumentUpload = async (e) => {
+    const file = e.target.files[0];
+    const documentType = e.target.getAttribute('data-doc-type');
+    
+    if (!file || !company?.id) return;
+
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('document_type', documentType);
+
+      const response = await uploadFile(`/api/companies/${company.id}/upload`, formData);
+      
+      if (response.status) {
+        // Refresh documents list
+        fetchDocuments(company.id);
+        // Clear file input
+        e.target.value = '';
+      } else {
+        alert('Upload failed: ' + response.message);
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      const response = await apiRequest(`/api/companies/${company.id}/documents/${documentId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.status) {
+        fetchDocuments(company.id);
+      } else {
+        alert('Delete failed: ' + response.message);
+      }
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    }
+  };
+
   const industryCategories = [
     "Technology",
     "Manufacturing",
@@ -174,6 +238,15 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     "Uttar Pradesh",
     "Uttarakhand",
     "West Bengal",
+  ];
+
+  const documentTypes = [
+    { value: 'GST_CERTIFICATE', label: 'GST Certificate' },
+    { value: 'PAN_CARD', label: 'PAN Card' },
+    { value: 'INCORPORATION_CERTIFICATE', label: 'Incorporation Certificate' },
+    { value: 'TAX_DOCUMENT', label: 'Tax Document' },
+    { value: 'BANK_STATEMENT', label: 'Bank Statement' },
+    { value: 'OTHER', label: 'Other' }
   ];
 
   return (
@@ -400,6 +473,78 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
           placeholder="Brief description about the company..."
         />
       </div>
+
+      {/* Document Upload - Only show for existing companies */}
+      {company?.id && (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">
+            Documents
+          </h4>
+          
+          {/* Upload Section */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Documents
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {documentTypes.map((docType) => (
+                <div key={docType.value} className="border border-gray-200 rounded-lg p-3">
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    {docType.label}
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    data-doc-type={docType.value}
+                    onChange={handleDocumentUpload}
+                    disabled={uploadingDoc}
+                    className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
+              ))}
+            </div>
+            {uploadingDoc && (
+              <p className="text-blue-600 text-sm mt-2">Uploading document...</p>
+            )}
+          </div>
+
+          {/* Documents List */}
+          {documents.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-gray-700 mb-2">Uploaded Documents</h5>
+              <div className="space-y-2">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between bg-white border border-gray-200 rounded p-2">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{doc.original_filename}</p>
+                      <p className="text-xs text-gray-500">
+                        {doc.document_type.replace('_', ' ')} • {Math.round(doc.file_size / 1024)} KB
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <a
+                        href={`/api/companies/${company.id}/documents/${doc.id}/download`}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-6 border-t">
