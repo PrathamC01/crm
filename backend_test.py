@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import time
 
 class CRMAPITester:
-    def __init__(self, base_url="http://localhost:8001"):
+    def __init__(self, base_url="https://instant-company.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.session_headers = {}
