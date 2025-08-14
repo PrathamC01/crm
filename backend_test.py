@@ -276,7 +276,100 @@ class CRMAPITester:
             self.log(f"❌ FAIL: Could not login as sales user")
             return False
 
-    def test_no_approval_endpoints(self):
+    def test_countries_states_masters(self):
+        """Test the countries and states master data endpoint"""
+        success, response = self.run_test(
+            "Get Countries and States Masters",
+            "GET",
+            "/api/companies/masters/countries-states",
+            200
+        )
+        
+        if success and response.get('status'):
+            countries_data = response.get('data', {})
+            self.log(f"✅ Found {len(countries_data)} countries")
+            
+            # Check for specific countries mentioned in the requirements
+            expected_countries = [
+                "United States", "Germany", "Brazil", "China", "Japan", 
+                "South Korea", "India", "Canada"
+            ]
+            
+            found_countries = []
+            missing_countries = []
+            
+            for country in expected_countries:
+                if country in countries_data:
+                    found_countries.append(country)
+                    states = countries_data[country]
+                    self.log(f"✅ {country}: {len(states)} states/provinces")
+                    
+                    # Specific checks for countries with known state counts
+                    if country == "United States" and len(states) >= 51:
+                        self.log(f"✅ US has {len(states)} states (including DC)")
+                    elif country == "Germany" and len(states) >= 16:
+                        self.log(f"✅ Germany has {len(states)} states")
+                    elif country == "India" and len(states) >= 28:
+                        self.log(f"✅ India has {len(states)} states/territories")
+                else:
+                    missing_countries.append(country)
+            
+            if missing_countries:
+                self.log(f"❌ Missing countries: {', '.join(missing_countries)}")
+                return False
+            
+            # Check if we have 30+ countries as mentioned in requirements
+            if len(countries_data) >= 30:
+                self.log(f"✅ PASS: Found {len(countries_data)} countries (30+ requirement met)")
+                return True
+            else:
+                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected 30+")
+                return False
+        
+        return False
+
+    def test_create_company_with_different_countries(self):
+        """Test creating companies with different countries and states"""
+        # Test with United States - California
+        us_company_data = {
+            "name": f"US Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
+            "company_type": "INTERNATIONAL",
+            "industry": "BFSI",
+            "sub_industry": "BANKING — Retail Banking",
+            "annual_revenue": 50000000,
+            "tax_identification_number": "US123456789",
+            "company_registration_number": "US-CRN-12345",
+            "supporting_documents": ["TAX_CERT_us.pdf"],
+            "verification_source": "MANUAL",
+            "verification_date": datetime.now().isoformat(),
+            "verified_by": "admin",
+            "address": "123 Silicon Valley Blvd, Tech District",
+            "country": "United States",
+            "state": "California",
+            "city": "San Francisco",
+            "pin_code": "400001",
+            "parent_child_mapping_confirmed": True,
+            "linked_subsidiaries": ["None"],
+            "description": "Test US company for countries/states testing"
+        }
+
+        success, response = self.run_test(
+            "Create US Company (California)",
+            "POST",
+            "/api/companies",
+            200,
+            data=us_company_data
+        )
+
+        if success and response.get('status'):
+            company = response.get('data')
+            if company and company.get('country') == "United States" and company.get('state') == "California":
+                self.log(f"✅ PASS: US company created with correct country/state")
+                return True, company.get('id')
+            else:
+                self.log(f"❌ FAIL: US company country/state not saved correctly")
+                return False, None
+        return False, None
         """Test that approval-related endpoints are not accessible or return appropriate responses"""
         # These endpoints should either not exist or return appropriate responses
         approval_endpoints = [
