@@ -348,29 +348,3 @@ class IndustryCategoryMaster(BaseModel):
     
     industry_name = Column(String(100), nullable=False, unique=True)
     description = Column(Text)
-
-# Enhanced Company Master (integrating with existing)
-class CompanyMasterEnhanced(BaseModel):
-    __tablename__ = "company_master_enhanced"
-    
-    company_name = Column(String(200), nullable=False)
-    industry_id = Column(Integer, ForeignKey('industry_category_master.id'))
-    gst_number = Column(String(15))
-    pan_number = Column(String(10))
-    
-    # Address
-    address = Column(Text)
-    city_id = Column(Integer, ForeignKey('city_master.id'))
-    state_id = Column(Integer, ForeignKey('state_master.id'))
-    postal_code = Column(String(10))
-    
-    # Additional Info
-    website = Column(String(255))
-    annual_revenue = Column(Float)
-    employee_count = Column(Integer)
-    description = Column(Text)
-    
-    # Relationships
-    industry = relationship("IndustryCategoryMaster")
-    city = relationship("CityMaster")
-    state = relationship("StateMaster")

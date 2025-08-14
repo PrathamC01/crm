@@ -103,7 +103,7 @@ class CompanyService:
                 raise ValueError(f"Duplicate company found: {duplicate_result.match_type} match detected")
         
         # Determine initial approval stage based on company type and user role
-        if user_role == "ADMIN":
+        if user_role == "admin":
             approval_stage = ApprovalStage.ADMIN_PENDING
         elif company_data.company_type in [CompanyType.DOMESTIC_NONGST, CompanyType.NGO, CompanyType.OVERSEAS]:
             approval_stage = ApprovalStage.L1_PENDING
@@ -213,7 +213,7 @@ class CompanyService:
         company_id: int,
         company_data: CompanyUpdate,
         updated_by: int,
-        user_role: str = "ADMIN"
+        user_role: str = "admin"
     ) -> Optional[Company]:
         """Update company information with role-based restrictions"""
         
@@ -222,7 +222,7 @@ class CompanyService:
             return None
         
         # Role-based update restrictions
-        if user_role != "ADMIN" and db_company.status == CompanyStatus.ACTIVE:
+        if user_role != "admin" and db_company.status == CompanyStatus.ACTIVE:
             raise ValueError("Only Admin can update active companies")
         
         # Convert Pydantic model to dict, only include fields that were provided
@@ -280,8 +280,8 @@ class CompanyService:
         if approver_role == "L1_SALES_HEAD" and current_stage != ApprovalStage.L1_PENDING:
             raise ValueError("L1 Sales Head can only approve L1 pending companies")
         
-        if approver_role == "ADMIN" and current_stage not in [ApprovalStage.ADMIN_PENDING, ApprovalStage.L1_PENDING]:
-            raise ValueError("Invalid approval stage for Admin")
+        # if approver_role == "admin" and current_stage not in [ApprovalStage.ADMIN_PENDING, ApprovalStage.L1_PENDING]:
+        #     raise ValueError("Invalid approval stage for Admin")
         
         try:
             if action == "APPROVE":
@@ -290,7 +290,7 @@ class CompanyService:
                     db_company.l1_approved_by = approver_id
                     db_company.l1_approved_date = datetime.utcnow()
                     
-                elif current_stage == ApprovalStage.ADMIN_PENDING and approver_role == "ADMIN":
+                elif current_stage == ApprovalStage.ADMIN_PENDING and approver_role == "admin":
                     # Check if Go/No-Go checklist is completed
                     if approval_request.checklist_items:
                         db_company.checklist_items = approval_request.checklist_items
@@ -329,10 +329,10 @@ class CompanyService:
             self.db.rollback()
             raise e
 
-    def delete_company(self, company_id: int, deleted_by: int, user_role: str = "ADMIN") -> bool:
+    def delete_company(self, company_id: int, deleted_by: int, user_role: str = "admin") -> bool:
         """Soft delete company (Admin only)"""
         
-        if user_role != "ADMIN":
+        if user_role != "admin":
             raise ValueError("Only Admin can delete companies")
         
         db_company = self.get_company_by_id(company_id)
@@ -357,7 +357,7 @@ class CompanyService:
         limit: int = 100, 
         search: str = None,
         filters: Dict = None,
-        user_role: str = "ADMIN",
+        user_role: str = "admin",
         user_id: int = None
     ) -> List[Company]:
         """Get all companies with pagination, search, and role-based filtering"""
@@ -404,7 +404,7 @@ class CompanyService:
         self, 
         search: str = None, 
         filters: Dict = None,
-        user_role: str = "ADMIN",
+        user_role: str = "admin",
         user_id: int = None
     ) -> int:
         """Get total count of companies with same filters as get_companies"""

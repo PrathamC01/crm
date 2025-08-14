@@ -5,12 +5,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     // Basic Information - ALL REQUIRED
     name: "",
-    parent_company_name: "",
+    parent_company_name: null,
     company_type: "",
     industry: "",
     sub_industry: "",
     annual_revenue: "",
-    
+
     // gst_number, pan_number, tax_identification_number, company_registration_number
     gst_number: "",
     pan_number: "",
@@ -20,19 +20,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     verification_source: "",
     verification_date: "",
     verified_by: "",
-    
+
     // Registered Address - ALL REQUIRED
     address: "",
     country: "India",
     state: "",
     city: "",
     pin_code: "",
-    
+
     // Hierarchy & Linkages - ALL REQUIRED
     parent_child_mapping_confirmed: false,
     linked_subsidiaries: ["None"],
     associated_channel_partner: "",
-    
+
     // Optional fields
     website: "",
     description: "",
@@ -59,16 +59,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         pan_number: company.pan_number || "",
         tax_identification_number: company.tax_identification_number || "",
         company_registration_number: company.company_registration_number || "",
-        supporting_documents: company.supporting_documents || [],
+        supporting_documents: company.supporting_documents,
         verification_source: company.verification_source || "",
-        verification_date: company.verification_date ? company.verification_date.split('T')[0] : "",
+        verification_date: company.verification_date
+          ? company.verification_date.split("T")[0]
+          : "",
         verified_by: company.verified_by || "",
         address: company.address || "",
         country: company.country || "India",
         state: company.state || "",
         city: company.city || "",
         pin_code: company.pin_code || "",
-        parent_child_mapping_confirmed: company.parent_child_mapping_confirmed || false,
+        parent_child_mapping_confirmed:
+          company.parent_child_mapping_confirmed || false,
         linked_subsidiaries: company.linked_subsidiaries || ["None"],
         associated_channel_partner: company.associated_channel_partner || "",
         website: company.website || "",
@@ -83,7 +86,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       const [companiesRes, industriesRes, countriesRes] = await Promise.all([
         apiRequest("/api/companies"),
         apiRequest("/api/companies/masters/industries"),
-        apiRequest("/api/companies/masters/countries-states")
+        apiRequest("/api/companies/masters/countries-states"),
       ]);
 
       if (companiesRes.status) {
@@ -123,7 +126,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     }
 
     if (!formData.annual_revenue || formData.annual_revenue <= 0) {
-      newErrors.annual_revenue = "Annual revenue is required and must be positive";
+      newErrors.annual_revenue =
+        "Annual revenue is required and must be positive";
     }
 
     // Conditional validation based on company type
@@ -132,44 +136,61 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       if (!formData.gst_number) {
         newErrors.gst_number = "GST number is required for domestic companies";
       } else if (!/^[0-9A-Z]{15}$/.test(formData.gst_number)) {
-        newErrors.gst_number = "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
+        newErrors.gst_number =
+          "GST must be exactly 15 alphanumeric characters (0-9, A-Z)";
       }
 
       // PAN validation for domestic companies
       if (!formData.pan_number) {
         newErrors.pan_number = "PAN number is required for domestic companies";
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan_number)) {
-        newErrors.pan_number = "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
+        newErrors.pan_number =
+          "Invalid PAN format. Expected: AAAAA0000A (5 letters, 4 digits, 1 letter)";
       }
     }
 
     if (["INTERNATIONAL", "OVERSEAS"].includes(formData.company_type)) {
       // Tax ID validation for international/overseas companies
       if (!formData.tax_identification_number) {
-        newErrors.tax_identification_number = "Tax Identification Number is required for international/overseas companies";
-      } else if (!/^[A-Z0-9\-]{6,20}$/.test(formData.tax_identification_number)) {
-        newErrors.tax_identification_number = "Tax ID must be 6-20 characters (A-Z, 0-9, -)";
+        newErrors.tax_identification_number =
+          "Tax Identification Number is required for international/overseas companies";
+      } else if (
+        !/^[A-Z0-9\-]{6,20}$/.test(formData.tax_identification_number)
+      ) {
+        newErrors.tax_identification_number =
+          "Tax ID must be 6-20 characters (A-Z, 0-9, -)";
       }
 
       // Company Registration Number validation for international/overseas companies
       if (!formData.company_registration_number) {
-        newErrors.company_registration_number = "Company Registration Number is required for international/overseas companies";
-      } else if (!/^[A-Z0-9\-\/]{5,30}$/.test(formData.company_registration_number)) {
-        newErrors.company_registration_number = "CRN must be 5-30 characters (A-Z, 0-9, -, /)";
+        newErrors.company_registration_number =
+          "Company Registration Number is required for international/overseas companies";
+      } else if (
+        !/^[A-Z0-9\-\/]{5,30}$/.test(formData.company_registration_number)
+      ) {
+        newErrors.company_registration_number =
+          "CRN must be 5-30 characters (A-Z, 0-9, -, /)";
       }
     }
 
     if (formData.company_type === "OVERSEAS") {
       if (!formData.international_unique_id) {
-        newErrors.international_unique_id = "International unique identifier is required for overseas companies";
+        newErrors.international_unique_id =
+          "International unique identifier is required for overseas companies";
       } else if (!/^[A-Z0-9-]{5,20}$/.test(formData.international_unique_id)) {
-        newErrors.international_unique_id = "Invalid international ID format (5-20 alphanumeric characters)";
+        newErrors.international_unique_id =
+          "Invalid international ID format (5-20 alphanumeric characters)";
       }
     }
 
     // Supporting documents validation
-    if (uploadedFiles.length === 0 && (!formData.supporting_documents || formData.supporting_documents.length === 0)) {
-      newErrors.supporting_documents = "At least one supporting document is required";
+    if (
+      uploadedFiles.length === 0 &&
+      (!formData.supporting_documents ||
+        formData.supporting_documents.length === 0)
+    ) {
+      newErrors.supporting_documents =
+        "At least one supporting document is required";
     }
 
     if (!formData.verification_source) {
@@ -186,7 +207,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
     // Address validation - All Required
     if (!formData.address.trim() || formData.address.length < 10) {
-      newErrors.address = "Complete address is required (minimum 10 characters)";
+      newErrors.address =
+        "Complete address is required (minimum 10 characters)";
     }
 
     if (!formData.country) {
@@ -206,12 +228,20 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     }
 
     // Hierarchy validation
-    if (formData.parent_child_mapping_confirmed === undefined || formData.parent_child_mapping_confirmed === null) {
-      newErrors.parent_child_mapping_confirmed = "Parent-child mapping confirmation is required";
+    if (
+      formData.parent_child_mapping_confirmed === undefined ||
+      formData.parent_child_mapping_confirmed === null
+    ) {
+      newErrors.parent_child_mapping_confirmed =
+        "Parent-child mapping confirmation is required";
     }
 
-    if (!formData.linked_subsidiaries || formData.linked_subsidiaries.length === 0) {
-      newErrors.linked_subsidiaries = "Please specify linked subsidiaries or select 'None'";
+    if (
+      !formData.linked_subsidiaries ||
+      formData.linked_subsidiaries.length === 0
+    ) {
+      newErrors.linked_subsidiaries =
+        "Please specify linked subsidiaries or select 'None'";
     }
 
     // Website validation (optional but must be valid if provided)
@@ -238,9 +268,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       if (response.status && response.data) {
         setDuplicateCheck(response.data);
         if (response.data.is_duplicate) {
-          setErrors(prev => ({
+          setErrors((prev) => ({
             ...prev,
-            duplicate: `${response.data.match_type} duplicate detected. Admin override may be required.`
+            duplicate: `${response.data.match_type} duplicate detected. Admin override may be required.`,
           }));
           return false;
         }
@@ -259,23 +289,24 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
     for (const file of files) {
       if (!allowedTypes.includes(file.type)) {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          supporting_documents: "Only PDF, JPEG, and PNG files are allowed"
+          supporting_documents: "Only PDF, JPEG, and PNG files are allowed",
         }));
         return;
       }
       if (file.size > maxSize) {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          supporting_documents: `File ${file.name} exceeds 10MB limit`
+          supporting_documents: `File ${file.name} exceeds 10MB limit`,
         }));
         return;
       }
     }
 
-    setUploadedFiles(prev => [...prev, ...files]);
-    setErrors(prev => {
+    setUploadedFiles((prev) => [...prev, ...files]);
+
+    setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors.supporting_documents;
       return newErrors;
@@ -283,12 +314,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   };
 
   const removeFile = (index) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(uploadedFiles);
     // Block submit until all validations pass
     if (!validateForm()) {
       return;
@@ -296,18 +327,24 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
     // Additional validation check for industry-dependent sub-type
     if (formData.industry && !formData.sub_industry) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        sub_industry: "Sub-industry is required when industry is selected"
+        sub_industry: "Sub-industry is required when industry is selected",
       }));
       return;
     }
-
-    // Check for duplicates before submission
-    const noDuplicates = await checkDuplicates();
-    if (!noDuplicates && !window.confirm("Duplicate company detected. Continue anyway? (Admin approval may be required)")) {
-      return;
+    if (!company.id) {
+      const noDuplicates = await checkDuplicates();
+      if (
+        !noDuplicates &&
+        !window.confirm(
+          "Duplicate company detected. Continue anyway? (Admin approval may be required)"
+        )
+      ) {
+        return;
+      }
     }
+    // Check for duplicates before submission
 
     setLoading(true);
     try {
@@ -320,7 +357,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       const submitData = {
         ...formData,
         annual_revenue: parseFloat(formData.annual_revenue),
-        parent_child_mapping_confirmed: Boolean(formData.parent_child_mapping_confirmed),
+        parent_child_mapping_confirmed: Boolean(
+          formData.parent_child_mapping_confirmed
+        ),
         verification_date: new Date(formData.verification_date).toISOString(),
       };
 
@@ -333,8 +372,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         // Upload files if any
         if (uploadedFiles.length > 0 && response.data?.id) {
           const formDataFiles = new FormData();
-          uploadedFiles.forEach(file => {
-            formDataFiles.append('files', file);
+          uploadedFiles.forEach((file) => {
+            formDataFiles.append("files", file);
           });
 
           await apiRequest(`/api/companies/${response.data.id}/documents`, {
@@ -358,24 +397,24 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
-    
+
     // Clear conditional fields when company type changes
     if (name === "company_type") {
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         [name]: newValue,
         // Clear all compliance fields when company type changes
         gst_number: "",
         pan_number: "",
         tax_identification_number: "",
-        company_registration_number: ""
+        company_registration_number: "",
       }));
     } else if (name === "industry") {
       // Clear sub-industry when industry changes
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         [name]: newValue,
-        sub_industry: "" // Reset sub-industry when industry changes
+        sub_industry: "", // Reset sub-industry when industry changes
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: newValue }));
@@ -428,15 +467,15 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   ];
 
   const industryTypes = [
-    { value: "GOVERNMENT", label: "Government" },
+    { value: "Government", label: "Government" },
     { value: "BFSI", label: "BFSI" },
-    { value: "ENTERPRISE", label: "Enterprise" },
+    { value: "Enterprise", label: "Enterprise" },
   ];
 
   const subTypeOptions = {
-    GOVERNMENT: [
+    Government: [
       "CENTRAL / FEDERAL — Ministries & Departments",
-      "CENTRAL / FEDERAL — National Agencies & Regulatory Authorities", 
+      "CENTRAL / FEDERAL — National Agencies & Regulatory Authorities",
       "CENTRAL / FEDERAL — Law Enforcement & Security Forces",
       "STATE / PROVINCIAL — State Departments & Authorities",
       "STATE / PROVINCIAL — State Regulatory Agencies",
@@ -446,11 +485,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       "LOCAL — Local Utility Boards (Water, Power, Waste)",
       "SPECIALIZED — Judiciary & Courts",
       "SPECIALIZED — Public Sector Undertakings (PSUs)",
-      "SPECIALIZED — Research & Development Institutions"
+      "SPECIALIZED — Research & Development Institutions",
     ],
     BFSI: [
       "BANKING — Retail Banking",
-      "BANKING — Corporate Banking", 
+      "BANKING — Corporate Banking",
       "BANKING — Private Banking / Wealth Management",
       "BANKING — Cooperative Banks",
       "BANKING — Central Banks & Monetary Authorities",
@@ -462,12 +501,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       "INSURANCE — Life Insurance",
       "INSURANCE — General Insurance (Health, Auto, Property)",
       "INSURANCE — Reinsurance",
-      "INSURANCE — Insurtech Companies"
+      "INSURANCE — Insurtech Companies",
     ],
-    ENTERPRISE: [
+    Enterprise: [
       "TECHNOLOGY & IT SERVICES — Software Development",
       "TECHNOLOGY & IT SERVICES — Cloud Computing & Data Centers",
-      "TECHNOLOGY & IT SERVICES — Cybersecurity & Networking", 
+      "TECHNOLOGY & IT SERVICES — Cybersecurity & Networking",
       "TECHNOLOGY & IT SERVICES — IT Consulting",
       "MANUFACTURING & INDUSTRIAL — Automotive",
       "MANUFACTURING & INDUSTRIAL — Electronics & Electricals",
@@ -488,8 +527,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       "TRANSPORT & LOGISTICS — Airlines & Airports",
       "TRANSPORT & LOGISTICS — Shipping & Ports",
       "TRANSPORT & LOGISTICS — Rail & Road Freight",
-      "TRANSPORT & LOGISTICS — Warehousing"
-    ]
+      "TRANSPORT & LOGISTICS — Warehousing",
+    ],
   };
 
   const verificationSources = [
@@ -526,7 +565,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       {/* Basic Information */}
       <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span>
+          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+            1
+          </span>
           Basic Information (All Required)
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -552,7 +593,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Parent Company <span className="text-red-500">*</span>
+              Parent Company
             </label>
             <select
               name="parent_company_name"
@@ -637,7 +678,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               }`}
             >
               <option value="">Select sub-industry</option>
-              {formData.industry && subTypeOptions[formData.industry] && 
+              {formData.industry &&
+                subTypeOptions[formData.industry] &&
                 subTypeOptions[formData.industry].map((subType) => (
                   <option key={subType} value={subType}>
                     {subType}
@@ -648,7 +690,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               <p className="text-red-500 text-sm mt-1">{errors.sub_industry}</p>
             )}
             {!formData.industry && (
-              <p className="text-gray-500 text-sm mt-1">Select industry first to see sub-industries</p>
+              <p className="text-gray-500 text-sm mt-1">
+                Select industry first to see sub-industries
+              </p>
             )}
           </div>
 
@@ -670,7 +714,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               placeholder="Enter annual revenue"
             />
             {errors.annual_revenue && (
-              <p className="text-red-500 text-sm mt-1">{errors.annual_revenue}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.annual_revenue}
+              </p>
             )}
             {formData.annual_revenue > 20000000 && (
               <p className="text-green-600 text-sm mt-1">
@@ -680,12 +726,16 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
           </div>
 
           {/* Conditional fields based on company type - Domestic companies */}
-          {["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(formData.company_type) && (
+          {["DOMESTIC_GST", "DOMESTIC_NONGST"].includes(
+            formData.company_type
+          ) && (
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   GST Number <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2">(15 alphanumeric characters)</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    (15 alphanumeric characters)
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -698,21 +748,29 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   }`}
                   placeholder="ABCDE1234FGHIJ5"
                   maxLength="15"
-                  style={{ textTransform: 'uppercase' }}
+                  style={{ textTransform: "uppercase" }}
                   onInput={(e) => {
-                    e.target.value = e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+                    e.target.value = e.target.value
+                      .toUpperCase()
+                      .replace(/[^0-9A-Z]/g, "");
                   }}
                 />
                 {errors.gst_number && (
-                  <p className="text-red-500 text-sm mt-1">{errors.gst_number}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.gst_number}
+                  </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">Manual entry - 15 characters (A-Z, 0-9)</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Manual entry - 15 characters (A-Z, 0-9)
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   PAN Number <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2">(Indian PAN format)</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    (Indian PAN format)
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -725,15 +783,21 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   }`}
                   placeholder="ABCDE1234F"
                   maxLength="10"
-                  style={{ textTransform: 'uppercase' }}
+                  style={{ textTransform: "uppercase" }}
                   onInput={(e) => {
-                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    e.target.value = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, "");
                   }}
                 />
                 {errors.pan_number && (
-                  <p className="text-red-500 text-sm mt-1">{errors.pan_number}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.pan_number}
+                  </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">Manual entry - Format: AAAAA0000A</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Manual entry - Format: AAAAA0000A
+                </p>
               </div>
             </>
           )}
@@ -743,8 +807,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax Identification Number <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2">(VAT/GST/TIN)</span>
+                  Tax Identification Number{" "}
+                  <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    (VAT/GST/TIN)
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -753,24 +820,33 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   value={formData.tax_identification_number}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                    errors.tax_identification_number ? "border-red-300" : "border-gray-300"
+                    errors.tax_identification_number
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                   placeholder="VAT123456789"
                   maxLength="20"
-                  style={{ textTransform: 'uppercase' }}
+                  style={{ textTransform: "uppercase" }}
                   onInput={(e) => {
-                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+                    e.target.value = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9\-]/g, "");
                   }}
                 />
                 {errors.tax_identification_number && (
-                  <p className="text-red-500 text-sm mt-1">{errors.tax_identification_number}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.tax_identification_number}
+                  </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">6-20 characters (A-Z, 0-9, -)</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  6-20 characters (A-Z, 0-9, -)
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Registration Number <span className="text-red-500">*</span>
+                  Company Registration Number{" "}
+                  <span className="text-red-500">*</span>
                   <span className="text-xs text-gray-500 ml-2">(CRN)</span>
                 </label>
                 <input
@@ -780,19 +856,27 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   value={formData.company_registration_number}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                    errors.company_registration_number ? "border-red-300" : "border-gray-300"
+                    errors.company_registration_number
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                   placeholder="CRN12345/67890"
                   maxLength="30"
-                  style={{ textTransform: 'uppercase' }}
+                  style={{ textTransform: "uppercase" }}
                   onInput={(e) => {
-                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9\-\/]/g, '');
+                    e.target.value = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9\-\/]/g, "");
                   }}
                 />
                 {errors.company_registration_number && (
-                  <p className="text-red-500 text-sm mt-1">{errors.company_registration_number}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.company_registration_number}
+                  </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">5-30 characters (A-Z, 0-9, -, /)</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  5-30 characters (A-Z, 0-9, -, /)
+                </p>
               </div>
             </>
           )}
@@ -802,10 +886,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       {/* Identification & Compliance */}
       <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span>
+          <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+            2
+          </span>
           Identification & Compliance
         </h4>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {formData.company_type === "OVERSEAS" && (
             <div>
@@ -819,13 +905,17 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 value={formData.international_unique_id}
                 onChange={handleInputChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono ${
-                  errors.international_unique_id ? "border-red-300" : "border-gray-300"
+                  errors.international_unique_id
+                    ? "border-red-300"
+                    : "border-gray-300"
                 }`}
                 placeholder="VAT/DUNS/EIN/etc."
                 maxLength="20"
               />
               {errors.international_unique_id && (
-                <p className="text-red-500 text-sm mt-1">{errors.international_unique_id}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.international_unique_id}
+                </p>
               )}
             </div>
           )}
@@ -840,7 +930,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               value={formData.verification_source}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.verification_source ? "border-red-300" : "border-gray-300"
+                errors.verification_source
+                  ? "border-red-300"
+                  : "border-gray-300"
               }`}
             >
               <option value="">Select verification source</option>
@@ -851,7 +943,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               ))}
             </select>
             {errors.verification_source && (
-              <p className="text-red-500 text-sm mt-1">{errors.verification_source}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.verification_source}
+              </p>
             )}
           </div>
 
@@ -865,13 +959,15 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               required
               value={formData.verification_date}
               onChange={handleInputChange}
-              max={new Date().toISOString().split('T')[0]}
+              max={new Date().toISOString().split("T")[0]}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
                 errors.verification_date ? "border-red-300" : "border-gray-300"
               }`}
             />
             {errors.verification_date && (
-              <p className="text-red-500 text-sm mt-1">{errors.verification_date}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.verification_date}
+              </p>
             )}
           </div>
 
@@ -912,14 +1008,19 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
           {errors.supporting_documents && (
-            <p className="text-red-500 text-sm mt-1">{errors.supporting_documents}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.supporting_documents}
+            </p>
           )}
-          
+
           {/* Display uploaded files */}
-          {uploadedFiles.length > 0 && (
-            <div className="mt-2 space-y-1">
-              {uploadedFiles.map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded">
+          <div className="mt-2 space-y-1">
+            {uploadedFiles.length > 0 &&
+              uploadedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded"
+                >
                   <span className="text-sm">{file.name}</span>
                   <button
                     type="button"
@@ -930,15 +1031,38 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   </button>
                 </div>
               ))}
-            </div>
-          )}
+            {console.log(formData.supporting_documents.length > 0)}
+            {formData.supporting_documents.length > 0
+              ? formData.supporting_documents.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded"
+                  >
+                    <span className="text-sm">
+                      <a href={file} target="_blank" rel="noopener noreferrer">
+                        {file.split("/").pop()} {/* show just the filename */}
+                      </a>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))
+              : console.log(formData.supporting_documents)}
+          </div>
         </div>
       </div>
 
       {/* Registered Address */}
       <div className="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span>
+          <span className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+            3
+          </span>
           Registered Address (All Required)
         </h4>
         <div className="space-y-4">
@@ -1060,13 +1184,16 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       {/* Hierarchy & Linkages */}
       <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">4</span>
+          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+            4
+          </span>
           Hierarchy & Linkages (All Required)
         </h4>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Parent-Child Mapping Confirmation <span className="text-red-500">*</span>
+              Parent-Child Mapping Confirmation{" "}
+              <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center space-x-4">
               <label className="flex items-center">
@@ -1075,7 +1202,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   name="parent_child_mapping_confirmed"
                   value="true"
                   checked={formData.parent_child_mapping_confirmed === true}
-                  onChange={(e) => setFormData(prev => ({ ...prev, parent_child_mapping_confirmed: true }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      parent_child_mapping_confirmed: true,
+                    }))
+                  }
                   className="mr-2"
                   required
                 />
@@ -1087,7 +1219,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   name="parent_child_mapping_confirmed"
                   value="false"
                   checked={formData.parent_child_mapping_confirmed === false}
-                  onChange={(e) => setFormData(prev => ({ ...prev, parent_child_mapping_confirmed: false }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      parent_child_mapping_confirmed: false,
+                    }))
+                  }
                   className="mr-2"
                   required
                 />
@@ -1095,7 +1232,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               </label>
             </div>
             {errors.parent_child_mapping_confirmed && (
-              <p className="text-red-500 text-sm mt-1">{errors.parent_child_mapping_confirmed}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.parent_child_mapping_confirmed}
+              </p>
             )}
           </div>
 
@@ -1106,13 +1245,32 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
             <select
               name="linked_subsidiaries"
               multiple
-              value={formData.linked_subsidiaries}
+              value={formData.linked_subsidiaries || ["None"]}
               onChange={(e) => {
-                const values = Array.from(e.target.selectedOptions, option => option.value);
-                setFormData(prev => ({ ...prev, linked_subsidiaries: values }));
+                let values = Array.from(
+                  e.target.selectedOptions,
+                  (option) => option.value
+                );
+
+                // If "None" is selected with other options, remove "None"
+                if (values.includes("None") && values.length > 1) {
+                  values = values.filter((v) => v !== "None");
+                }
+
+                // If nothing is selected, default back to "None"
+                if (values.length === 0) {
+                  values = ["None"];
+                }
+
+                setFormData((prev) => ({
+                  ...prev,
+                  linked_subsidiaries: values,
+                }));
               }}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                errors.linked_subsidiaries ? "border-red-300" : "border-gray-300"
+                errors.linked_subsidiaries
+                  ? "border-red-300"
+                  : "border-gray-300"
               }`}
               size="4"
             >
@@ -1126,10 +1284,13 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Hold Ctrl (Cmd on Mac) to select multiple. Select "None" if no subsidiaries.
+              Hold Ctrl (Cmd on Mac) to select multiple. Select "None" if no
+              subsidiaries.
             </p>
             {errors.linked_subsidiaries && (
-              <p className="text-red-500 text-sm mt-1">{errors.linked_subsidiaries}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.linked_subsidiaries}
+              </p>
             )}
           </div>
 
@@ -1152,7 +1313,9 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       {/* Optional Information */}
       <div className="bg-gray-50 p-6 rounded-lg border-l-4 border-gray-400">
         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-gray-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">5</span>
+          <span className="bg-gray-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">
+            5
+          </span>
           Additional Information (Optional)
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1197,7 +1360,14 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         </button>
         <button
           type="submit"
-          disabled={loading || Object.keys(errors).length > 0 || !formData.name || !formData.industry || !formData.sub_industry || !formData.company_type}
+          // disabled={
+          //   loading ||
+          //   Object.keys(errors).length > 0 ||
+          //   !formData.name ||
+          //   !formData.industry ||
+          //   !formData.sub_industry ||
+          //   !formData.company_type
+          // }
           className="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (

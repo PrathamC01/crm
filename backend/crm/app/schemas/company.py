@@ -65,7 +65,7 @@ class CompanyBase(BaseModel):
     gst_number: Optional[str] = Field(None, description="GST number for domestic GST companies")
     pan_number: Optional[str] = Field(None, description="PAN number")
     international_unique_id: Optional[str] = Field(None, description="International unique identifier")
-    supporting_documents: List[str] = Field(..., min_items=1, description="Supporting document file paths")
+    supporting_documents: Optional[List[str]] = Field(..., min_items=0, description="Supporting document file paths")
     verification_source: VerificationSource = Field(..., description="Verification source")
     verification_date: datetime = Field(..., description="Verification date")
     verified_by: str = Field(..., description="Admin who verified")
@@ -126,8 +126,8 @@ class CompanyBase(BaseModel):
 
     @validator("supporting_documents")
     def validate_documents(cls, v, values):
-        if not v or len(v) < 1:
-            raise ValueError("At least one supporting document is required")
+        # if not v or len(v) < 1:
+        #     raise ValueError("At least one supporting document is required")
         
         company_type = values.get("company_type")
         required_docs = {
