@@ -1,21 +1,19 @@
 """
-Enhanced Company management service for Swayatta 4.0 with comprehensive business logic
+Enhanced Company management service for Swayatta 4.0 - Simplified without approval workflow
 """
 
 from typing import Optional, List, Dict, Tuple
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_, func
-from datetime import datetime, timedelta
+from datetime import datetime
 from difflib import SequenceMatcher
 import uuid
 from ..models import Company, User
 from ..schemas.company import (
     CompanyCreate, 
     CompanyUpdate, 
-    CompanyApprovalRequest,
     DuplicateCheckResult,
     CompanyType,
-    ApprovalStage,
     CompanyStatus
 )
 
@@ -55,7 +53,7 @@ class CompanyService:
                         "city": existing.city
                     }],
                     can_override=True,
-                    requires_admin_approval=True
+                    requires_admin_approval=False  # No approval required anymore
                 )
         
         # Fuzzy match check
@@ -81,7 +79,7 @@ class CompanyService:
                     }],
                     similarity_score=name_similarity,
                     can_override=True,
-                    requires_admin_approval=True
+                    requires_admin_approval=False  # No approval required anymore
                 )
         
         return DuplicateCheckResult(is_duplicate=False, match_type="NONE", matched_companies=[])
@@ -94,21 +92,13 @@ class CompanyService:
         override_duplicate: bool = False,
         override_reason: Optional[str] = None
     ) -> Company:
-        """Create a new company with comprehensive validation and workflow"""
+        """Create a new company - immediately active without approval"""
         
         # Check for duplicates unless overridden
         if not override_duplicate:
             duplicate_result = self.check_duplicates(company_data)
             if duplicate_result.is_duplicate:
                 raise ValueError(f"Duplicate company found: {duplicate_result.match_type} match detected")
-        
-        # Determine initial approval stage based on company type and user role
-        if user_role == "admin":
-            approval_stage = ApprovalStage.ADMIN_PENDING
-        elif company_data.company_type in [CompanyType.DOMESTIC_NONGST, CompanyType.NGO, CompanyType.OVERSEAS]:
-            approval_stage = ApprovalStage.L1_PENDING
-        else:  # DOMESTIC_GST
-            approval_stage = ApprovalStage.ADMIN_PENDING
         
         try:
             db_company = Company(
@@ -140,9 +130,8 @@ class CompanyService:
                 linked_subsidiaries=self._process_subsidiaries(company_data.linked_subsidiaries),
                 associated_channel_partner=company_data.associated_channel_partner,
                 
-                # System Metadata
-                approval_stage=approval_stage,
-                status=CompanyStatus.PENDING_APPROVAL,
+                # System Metadata - Immediately ACTIVE
+                status=CompanyStatus.ACTIVE,
                 change_log_id=uuid.uuid4(),
                 created_by=created_by,
                 
@@ -166,7 +155,7 @@ class CompanyService:
             
             # Log the creation
             self._log_company_action(db_company.id, "CREATED", created_by, 
-                                   f"Company created with approval stage: {approval_stage}")
+                                   f"Company created and immediately activated")
             
             return db_company
             
@@ -181,9 +170,7 @@ class CompanyService:
             .options(
                 joinedload(Company.parent_company),
                 joinedload(Company.subsidiaries),
-                joinedload(Company.verifier),
-                joinedload(Company.l1_approver),
-                joinedload(Company.admin_approver)
+                joinedload(Company.verifier)
             )
             .filter(
                 and_(
@@ -215,15 +202,11 @@ class CompanyService:
         updated_by: int,
         user_role: str = "admin"
     ) -> Optional[Company]:
-        """Update company information with role-based restrictions"""
+        """Update company information"""
         
         db_company = self.get_company_by_id(company_id)
         if not db_company:
             return None
-        
-        # Role-based update restrictions
-        if user_role != "admin" and db_company.status == CompanyStatus.ACTIVE:
-            raise ValueError("Only Admin can update active companies")
         
         # Convert Pydantic model to dict, only include fields that were provided
         company_dict = company_data.dict(exclude_unset=True)
@@ -259,75 +242,6 @@ class CompanyService:
                                f"Company updated: {changes}")
         
         return db_company
-
-    def process_approval(
-        self,
-        company_id: int,
-        approval_request: CompanyApprovalRequest,
-        approver_id: int,
-        approver_role: str
-    ) -> bool:
-        """Process company approval workflow"""
-        
-        db_company = self.get_company_by_id(company_id)
-        if not db_company:
-            return False
-        
-        current_stage = db_company.approval_stage
-        action = approval_request.action
-        
-        # Validate approver permissions
-        if approver_role == "L1_SALES_HEAD" and current_stage != ApprovalStage.L1_PENDING:
-            raise ValueError("L1 Sales Head can only approve L1 pending companies")
-        
-        # if approver_role == "admin" and current_stage not in [ApprovalStage.ADMIN_PENDING, ApprovalStage.L1_PENDING]:
-        #     raise ValueError("Invalid approval stage for Admin")
-        
-        try:
-            if action == "APPROVE":
-                if current_stage == ApprovalStage.L1_PENDING:
-                    db_company.approval_stage = ApprovalStage.ADMIN_PENDING
-                    db_company.l1_approved_by = approver_id
-                    db_company.l1_approved_date = datetime.utcnow()
-                    
-                elif current_stage == ApprovalStage.ADMIN_PENDING and approver_role == "admin":
-                    # Check if Go/No-Go checklist is completed
-                    if approval_request.checklist_items:
-                        db_company.checklist_items = approval_request.checklist_items
-                        db_company.go_nogo_checklist_completed = True
-                    
-                    if not db_company.go_nogo_checklist_completed:
-                        raise ValueError("Go/No-Go checklist must be completed before activation")
-                    
-                    db_company.approval_stage = ApprovalStage.APPROVED
-                    db_company.status = CompanyStatus.ACTIVE
-                    db_company.admin_approved_by = approver_id
-                    db_company.admin_approved_date = datetime.utcnow()
-                    
-            elif action == "REJECT":
-                db_company.approval_stage = ApprovalStage.REJECTED
-                db_company.status = CompanyStatus.INACTIVE
-                db_company.rejection_reason = approval_request.reason
-                
-            elif action == "SEND_BACK":
-                if current_stage == ApprovalStage.ADMIN_PENDING:
-                    db_company.approval_stage = ApprovalStage.L1_PENDING
-                else:
-                    db_company.approval_stage = ApprovalStage.DRAFT
-                db_company.rejection_reason = approval_request.reason
-            
-            db_company.change_log_id = uuid.uuid4()
-            self.db.commit()
-            
-            # Log the approval action
-            self._log_company_action(company_id, f"APPROVAL_{action}", approver_id,
-                                   f"Approval {action.lower()} by {approver_role}: {approval_request.reason or 'No reason provided'}")
-            
-            return True
-            
-        except Exception as e:
-            self.db.rollback()
-            raise e
 
     def delete_company(self, company_id: int, deleted_by: int, user_role: str = "admin") -> bool:
         """Soft delete company (Admin only)"""
@@ -378,8 +292,6 @@ class CompanyService:
                 query = query.filter(Company.status == filters["status"])
             if filters.get("company_type"):
                 query = query.filter(Company.company_type == filters["company_type"])
-            if filters.get("approval_stage"):
-                query = query.filter(Company.approval_stage == filters["approval_stage"])
             if filters.get("industry"):
                 query = query.filter(Company.industry == filters["industry"])
             if filters.get("is_high_revenue"):
@@ -421,8 +333,6 @@ class CompanyService:
                 query = query.filter(Company.status == filters["status"])
             if filters.get("company_type"):
                 query = query.filter(Company.company_type == filters["company_type"])
-            if filters.get("approval_stage"):
-                query = query.filter(Company.approval_stage == filters["approval_stage"])
             if filters.get("industry"):
                 query = query.filter(Company.industry == filters["industry"])
             if filters.get("is_high_revenue"):
@@ -447,20 +357,8 @@ class CompanyService:
         active = self.db.query(Company).filter(
             and_(Company.status == CompanyStatus.ACTIVE, Company.deleted_on.is_(None))
         ).count()
-        pending = self.db.query(Company).filter(
-            and_(Company.status == CompanyStatus.PENDING_APPROVAL, Company.deleted_on.is_(None))
-        ).count()
         high_revenue = self.db.query(Company).filter(
             and_(Company.is_high_revenue == True, Company.deleted_on.is_(None))
-        ).count()
-        
-        # SLA breached companies
-        sla_breached = self.db.query(Company).filter(
-            and_(
-                Company.sla_breach_date.isnot(None),
-                Company.status == CompanyStatus.PENDING_APPROVAL,
-                Company.deleted_on.is_(None)
-            )
         ).count()
         
         # Companies by type
@@ -476,37 +374,10 @@ class CompanyService:
         return {
             "total_companies": total,
             "active_companies": active,
-            "pending_approval": pending,
             "high_revenue_companies": high_revenue,
-            "sla_breached": sla_breached,
             "companies_by_type": {str(type_): count for type_, count in type_stats},
             "companies_by_industry": {industry: count for industry, count in industry_stats}
         }
-
-    def check_and_update_sla_breaches(self) -> int:
-        """Check and update SLA breaches for pending companies"""
-        
-        # Companies pending approval for more than 48 hours
-        breach_threshold = datetime.utcnow() - timedelta(hours=48)
-        
-        breached_companies = self.db.query(Company).filter(
-            and_(
-                Company.approval_stage.in_([ApprovalStage.L1_PENDING, ApprovalStage.ADMIN_PENDING]),
-                Company.created_on < breach_threshold,
-                Company.sla_breach_date.is_(None),
-                Company.deleted_on.is_(None)
-            )
-        ).all()
-        
-        for company in breached_companies:
-            company.check_sla_breach()
-            self._log_company_action(company.id, "SLA_BREACH", None, 
-                                   f"SLA breach detected - {company.escalation_level} escalation level")
-        
-        if breached_companies:
-            self.db.commit()
-        
-        return len(breached_companies)
 
     def _get_user_id_by_name(self, username: str) -> Optional[int]:
         """Get user ID by username"""
