@@ -270,7 +270,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         if (response.data.is_duplicate) {
           setErrors((prev) => ({
             ...prev,
-            duplicate: `${response.data.match_type} duplicate detected. Admin override may be required.`,
+            duplicate: `${response.data.match_type} duplicate detected. You can continue anyway.`,
           }));
           return false;
         }
