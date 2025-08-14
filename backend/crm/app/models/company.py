@@ -33,6 +33,7 @@ class Company(BaseModel):
     contacts = relationship("Contact", back_populates="company")
     leads = relationship("Lead", foreign_keys="[Lead.company_id]", back_populates="company")
     opportunities = relationship("Opportunity", back_populates="company")
+    documents = relationship("CompanyDocument", back_populates="company")
     
     def __repr__(self):
         return f"<Company(id={self.id}, name={self.name})>"
