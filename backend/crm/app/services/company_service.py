@@ -81,29 +81,34 @@ class CompanyService:
         updated_by: Optional[int] = None,
     ) -> Optional[Company]:
         """Update company information"""
-        db_company = self.get_company_by_id(company_id)
-        if not db_company:
-            return None
+        try:
+            db_company = self.get_company_by_id(company_id)
+            if not db_company:
+                return None
 
-        # Convert Pydantic model to dict, only include fields that were provided
-        company_dict = company_data.dict(exclude_unset=True)
+            # Convert Pydantic model to dict, only include fields that were provided
+            company_dict = company_data.dict(exclude_unset=True)
 
-        for field, value in company_dict.items():
-            if field in ["id", "created_on", "created_by"]:
-                continue
+            for field, value in company_dict.items():
+                if field in ["id", "created_on", "created_by"]:
+                    continue
 
-            # ✅ Treat empty string as None
-            if isinstance(value, str) and value.strip() == "":
-                value = None
+                # ✅ Treat empty string as None
+                if isinstance(value, str) and value.strip() == "":
+                    value = None
 
-            setattr(db_company, field, value)
+                setattr(db_company, field, value)
 
-        if updated_by:
-            db_company.updated_by = updated_by
+            if updated_by:
+                db_company.updated_by = updated_by
 
-        self.db.commit()
-        self.db.refresh(db_company)
-        return db_company
+            self.db.commit()
+            self.db.refresh(db_company)
+            return db_company
+        except Exception as e:
+            print(f"Error updating company: {e}")
+            self.db.rollback()
+            raise e
 
     def delete_company(self, company_id: int, deleted_by: Optional[int] = None) -> bool:
         """Soft delete company"""
