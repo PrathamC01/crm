@@ -234,10 +234,25 @@ async def get_company_documents(
 
         documents = company_service.get_company_documents(company_id)
         
+        # Convert documents to dict format for JSON serialization
+        documents_data = []
+        for doc in documents:
+            documents_data.append({
+                "id": doc.id,
+                "filename": doc.filename,
+                "original_filename": doc.original_filename,
+                "file_path": doc.file_path,
+                "file_size": doc.file_size,
+                "document_type": doc.document_type,
+                "mime_type": doc.mime_type,
+                "uploaded_on": doc.uploaded_on.isoformat() if doc.uploaded_on else None,
+                "uploaded_by": doc.uploaded_by
+            })
+        
         return StandardResponse(
             status=True,
             message="Documents retrieved successfully",
-            data={"documents": documents}
+            data={"documents": documents_data}
         )
 
     except HTTPException:
