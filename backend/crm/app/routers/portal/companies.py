@@ -68,13 +68,19 @@ async def get_company(
         if not company:
             raise HTTPException(status_code=404, detail="Company not found")
 
+        # Convert to response model
+        company_response = CompanyResponse.from_orm(company)
+
         return StandardResponse(
-            status=True, message="Company retrieved successfully", data=company
+            status=True, 
+            message="Company retrieved successfully", 
+            data=company_response
         )
     except HTTPException:
         raise
     except Exception as e:
-        print(e)
+        print(f"Error getting company: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/", response_model=StandardResponse)
