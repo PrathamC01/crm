@@ -1,5 +1,5 @@
 """
-Enhanced Company Management API endpoints for Swayatta 4.0
+Enhanced Company Management API endpoints for Swayatta 4.0 - Simplified without approval workflow
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
@@ -9,7 +9,6 @@ from ...schemas.company import (
     CompanyUpdate,
     CompanyListResponse,
     CompanyResponse,
-    CompanyApprovalRequest,
     CompanyStats,
     DuplicateCheckResult,
 )
@@ -33,7 +32,6 @@ async def get_companies(
     search: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     company_type: Optional[str] = Query(None),
-    approval_stage: Optional[str] = Query(None),
     industry: Optional[str] = Query(None),
     is_high_revenue: Optional[bool] = Query(None),
     current_user: dict = Depends(require_companies_read),
@@ -47,8 +45,6 @@ async def get_companies(
         filters["status"] = status
     if company_type:
         filters["company_type"] = company_type
-    if approval_stage:
-        filters["approval_stage"] = approval_stage
     if industry:
         filters["industry"] = industry
     if is_high_revenue is not None:
@@ -137,16 +133,11 @@ async def create_company(
     current_user: dict = Depends(require_companies_write),
     company_service: CompanyService = Depends(get_company_service),
 ):
-    """Create new company with comprehensive validation"""
+    """Create new company - immediately active without approval"""
 
     user_role = current_user.get("role", "SALESPERSON")
 
-    # Only Admin can override duplicates
-    if override_duplicate and user_role != "ADMIN":
-        raise HTTPException(
-            status_code=403, detail="Only Admin can override duplicate checks"
-        )
-
+    # Anyone can override duplicates now since no approval is needed
     if override_duplicate and not override_reason:
         raise HTTPException(status_code=400, detail="Override reason is required")
 
@@ -162,7 +153,7 @@ async def create_company(
         company_response = CompanyResponse.from_db_model(company)
 
         return StandardResponse(
-            status=True, message="Company created successfully", data=company_response
+            status=True, message="Company created and activated successfully", data=company_response
         )
 
     except ValueError as e:
@@ -178,7 +169,7 @@ async def update_company(
     current_user: dict = Depends(require_companies_write),
     company_service: CompanyService = Depends(get_company_service),
 ):
-    """Update company information with role-based restrictions"""
+    """Update company information"""
 
     user_role = current_user.get("role", "SALESPERSON")
 
@@ -199,43 +190,6 @@ async def update_company(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Failed to update company")
-
-
-@router.post("/{company_id}/approve", response_model=StandardResponse)
-async def process_company_approval(
-    company_id: int,
-    approval_request: CompanyApprovalRequest,
-    current_user: dict = Depends(require_companies_write),
-    company_service: CompanyService = Depends(get_company_service),
-):
-    """Process company approval workflow"""
-
-    user_role = current_user.get("role_name", "SALESPERSON")
-    # Validate approver role
-    if user_role not in ["sales_head", "admin"]:
-        raise HTTPException(
-            status_code=403, detail="Insufficient permissions for approval"
-        )
-
-    try:
-        success = company_service.process_approval(
-            company_id, approval_request, current_user["id"], user_role
-        )
-
-        if not success:
-            from ...exceptions.custom_exceptions import NotFoundError
-
-            raise NotFoundError("Company", company_id)
-
-        return StandardResponse(
-            status=True,
-            message=f"Company approval {approval_request.action.lower()} processed successfully",
-        )
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to process approval")
 
 
 @router.post("/{company_id}/documents", response_model=StandardResponse)
@@ -292,8 +246,6 @@ async def upload_supporting_documents(
 
         uploaded_paths.append(object_name)
 
-    # ✅ Fetch company
-
     # ✅ Update documents
     existing_docs = company.supporting_documents or []
     company.supporting_documents = existing_docs + uploaded_paths
@@ -332,26 +284,6 @@ async def delete_company(
         raise HTTPException(status_code=403, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to delete company")
-
-
-@router.post("/sla-check", response_model=StandardResponse)
-async def check_sla_breaches(
-    current_user: dict = Depends(require_companies_read),
-    company_service: CompanyService = Depends(get_company_service),
-):
-    """Check and update SLA breaches (Admin only)"""
-
-    user_role = current_user.get("role", "SALESPERSON")
-    if user_role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Only Admin can check SLA breaches")
-
-    breached_count = company_service.check_and_update_sla_breaches()
-
-    return StandardResponse(
-        status=True,
-        message=f"SLA check completed. {breached_count} breaches detected and updated",
-        data={"breached_companies": breached_count},
-    )
 
 
 @router.get("/masters/industries", response_model=StandardResponse)
