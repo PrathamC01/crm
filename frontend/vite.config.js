@@ -10,7 +10,7 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '127.0.0.1',
-      'codebase-cleanup-7.preview.emergentagent.com',
+      'instant-company.preview.emergentagent.com',
       (host) => host.endsWith('.preview.emergentagent.com')
     ]
   },
