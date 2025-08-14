@@ -7,6 +7,7 @@ from .user import User
 from .role import Role
 from .department import Department
 from .company import Company
+from .company_document import CompanyDocument
 from .contact import Contact, RoleType
 from .lead import Lead, LeadSource, LeadStatus, LeadPriority, ReviewStatus, LeadSubType, TenderSubType, SubmissionType
 from .opportunity import (
@@ -25,6 +26,7 @@ __all__ = [
     'Role',
     'Department',
     'Company',
+    'CompanyDocument',
     'Contact',
     'RoleType',
     'Lead',
