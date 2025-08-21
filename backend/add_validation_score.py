@@ -15,14 +15,13 @@ def add_validation_score_column():
     
     try:
         with engine.connect() as conn:
-            # Check if column already exists
+            # Check if column already exists (SQLite version)
             result = conn.execute(text("""
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = 'companies' AND column_name = 'validation_score'
+                PRAGMA table_info(companies)
             """))
             
-            if result.fetchone():
+            columns = [row[1] for row in result.fetchall()]
+            if 'validation_score' in columns:
                 print("✅ validation_score column already exists")
                 return
             
