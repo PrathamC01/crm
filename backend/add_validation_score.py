@@ -8,11 +8,10 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'crm'))
 
 from sqlalchemy import text
-from app.database.init_db import get_engine
+from app.database.engine import engine
 
 def add_validation_score_column():
     """Add validation_score column to companies table"""
-    engine = get_engine()
     
     try:
         with engine.connect() as conn:
