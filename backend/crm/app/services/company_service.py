@@ -179,7 +179,7 @@ class CompanyService:
                 status=CompanyStatus.ACTIVE,
                 lead_status=validation_result.status,
                 validation_score=validation_result.score,
-                change_log_id=uuid.uuid4(),
+                change_log_id=str(uuid.uuid4()),
                 created_by=created_by,
                 
                 # Optional fields
