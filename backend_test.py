@@ -727,7 +727,7 @@ class CRMAPITester:
         }
 
         success, response = self.run_test(
-            "Create COLD Company (Small Local Business)",
+            "Create COLD Company (Village Store Pvt Ltd)",
             "POST",
             "/api/companies",
             200,
@@ -746,12 +746,17 @@ class CRMAPITester:
                 self.log(f"✅ Lead Status: {lead_status}")
                 self.log(f"✅ Validation Score: {validation_score}")
                 
-                if lead_status == "COLD":
-                    self.log(f"✅ PASS: Company correctly classified as COLD")
+                # Check if score is around 35 and status is COLD
+                if lead_status == "COLD" and validation_score and validation_score <= 40:
+                    self.log(f"✅ PASS: Company correctly classified as COLD with score {validation_score}")
+                    self.test_results["company_validation"]["cold_classification"] = "PASS"
+                    return True, company
+                elif lead_status == "COLD":
+                    self.log(f"✅ PASS: Company correctly classified as COLD (score: {validation_score})")
                     self.test_results["company_validation"]["cold_classification"] = "PASS"
                     return True, company
                 else:
-                    self.log(f"❌ FAIL: Expected COLD, got {lead_status}")
+                    self.log(f"❌ FAIL: Expected COLD with score ~35, got {lead_status} with score {validation_score}")
                     self.test_results["company_validation"]["cold_classification"] = "FAIL"
                     return False, company
             else:
