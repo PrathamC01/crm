@@ -434,12 +434,12 @@ class CRMAPITester:
             "annual_revenue": 50000000,  # ₹5 crore - good revenue
             "employee_count": 150,  # Medium-large company
             "gst_number": "27TECHV1234F1Z5",
-            "pan_number": "TECHV1234F",
+            "pan_number": "TECHV1234F",  # Valid PAN format: AAAAA0000A
             "supporting_documents": ["GST_CERTIFICATE_techventure.pdf", "PAN_CARD_techventure.pdf"],
             "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Tech Park IT Corridor Software City",
+            "address": "Tech Park IT Corridor Software City Mumbai",
             "country": "India",
             "state": "Maharashtra",
             "city": "Mumbai",
