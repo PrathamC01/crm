@@ -20,8 +20,8 @@ from ...dependencies.rbac import require_companies_read, require_companies_write
 from ...services.company_service import CompanyService
 from ...dependencies.database import get_postgres_db
 from ...utils.minio_client import minio_client
-from ...data.geographic_data import get_countries, get_states_for_country, get_country_by_code
-from ...data.cities_data import get_cities_for_state, search_cities
+from ...models.geographic import Country, State, City
+from ...services.geographic_service import GeographicService
 
 router = APIRouter(prefix="/api/companies", tags=["Company Management"])
 
