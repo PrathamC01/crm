@@ -165,6 +165,11 @@ class CompanyService:
                 city=company_data.city,
                 pin_code=company_data.pin_code,
                 
+                # Database-driven geographic relationships (New)
+                country_id=geographic_ids.get("country_id"),
+                state_id=geographic_ids.get("state_id"),
+                city_id=geographic_ids.get("city_id"),
+                
                 # Hierarchy & Linkages
                 parent_child_mapping_confirmed=company_data.parent_child_mapping_confirmed,
                 linked_subsidiaries=self._process_subsidiaries(company_data.linked_subsidiaries),
