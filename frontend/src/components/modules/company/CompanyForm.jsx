@@ -80,9 +80,37 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         website: company.website || "",
         description: company.description || "",
       });
+      
+      // If editing existing company, set country code and load states/cities
+      if (company.country) {
+        const foundCountry = countries.find(c => c.name === company.country);
+        if (foundCountry) {
+          setSelectedCountryCode(foundCountry.code);
+          fetchStates(foundCountry.code);
+          
+          // If there's also a state, fetch cities
+          if (company.state) {
+            setTimeout(() => {
+              fetchCities(foundCountry.code, company.state);
+            }, 500); // Small delay to ensure states are loaded first
+          }
+        }
+      }
     }
     fetchMasterData();
-  }, [company]);
+  }, [company, countries]);
+
+  // Initial load of states for default country (India)
+  useEffect(() => {
+    if (countries.length > 0 && !company) {
+      const indiaCountry = countries.find(c => c.code === "IN");
+      if (indiaCountry) {
+        setSelectedCountryCode("IN");
+        setFormData(prev => ({ ...prev, country: "India" }));
+        fetchStates("IN");
+      }
+    }
+  }, [countries, company]);
 
   const fetchMasterData = async () => {
     try {
