@@ -148,8 +148,9 @@ class CRMAPITester:
             "name": f"Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
             "company_type": "DOMESTIC_GST",
             "industry": "BFSI",
-            "sub_industry": "BANKING — Retail Banking",
+            "sub_industry": "Banking",
             "annual_revenue": 50000000,
+            "employee_count": 150,
             "gst_number": "27ABCDE1234F1Z5",
             "pan_number": "ABCDE1234F",
             "supporting_documents": ["GST_CERTIFICATE_test.pdf", "PAN_CARD_test.pdf"],
@@ -164,7 +165,7 @@ class CRMAPITester:
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
             "website": "https://testcompany.com",
-            "description": "Test company for approval workflow removal testing"
+            "description": "Test company for validation testing"
         }
 
         success, response = self.run_test(
@@ -178,10 +179,13 @@ class CRMAPITester:
         if success and response.get('status'):
             company = response.get('data')
             if company:
-                self.created_company_id = company.get('id')
+                company_id = company.get('id')
                 status = company.get('status')
-                self.log(f"✅ Company created with ID: {self.created_company_id}")
+                lead_status = company.get('lead_status')
+                self.created_company_ids.append(company_id)
+                self.log(f"✅ Company created with ID: {company_id}")
                 self.log(f"✅ Company status: {status}")
+                self.log(f"✅ Lead status: {lead_status}")
                 
                 # Verify the company is ACTIVE immediately
                 if status == "ACTIVE":
