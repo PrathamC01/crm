@@ -444,8 +444,44 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
 
+    // Handle country change - update country code and fetch states
+    if (name === "country") {
+      const selectedCountry = countries.find(c => c.name === value);
+      const countryCode = selectedCountry ? selectedCountry.code : "";
+      
+      setSelectedCountryCode(countryCode);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: newValue,
+        state: "", // Clear state when country changes
+        city: "" // Clear city when country changes
+      }));
+      
+      // Fetch states for the new country
+      if (countryCode) {
+        fetchStates(countryCode);
+      } else {
+        setStates([]);
+        setCities([]);
+      }
+    }
+    // Handle state change - fetch cities
+    else if (name === "state") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: newValue,
+        city: "" // Clear city when state changes
+      }));
+      
+      // Fetch cities for the new state
+      if (newValue && selectedCountryCode) {
+        fetchCities(selectedCountryCode, newValue);
+      } else {
+        setCities([]);
+      }
+    }
     // Clear conditional fields when company type changes
-    if (name === "company_type") {
+    else if (name === "company_type") {
       setFormData((prev) => ({
         ...prev,
         [name]: newValue,
