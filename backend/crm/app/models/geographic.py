@@ -33,7 +33,6 @@ class State(Base):
     # Relationships
     country = relationship("Country", back_populates="states")
     cities = relationship("City", back_populates="state", cascade="all, delete-orphan")
-    companies = relationship("Company", back_populates="state")
 
 
 class City(Base):
