@@ -706,7 +706,7 @@ class CRMAPITester:
         cold_company_data = {
             "name": "Village Store Pvt Ltd",
             "company_type": "DOMESTIC_NONGST",
-            "industry": "Retail",
+            "industry": "Retail_CPG",  # Fixed: Use valid industry
             "sub_industry": "General Store",
             "annual_revenue": 2000000,  # 20 lakh
             "employee_count": 8,
