@@ -46,4 +46,3 @@ class City(Base):
     
     # Relationships
     state = relationship("State", back_populates="cities")
-    companies = relationship("Company", back_populates="city")
