@@ -317,7 +317,7 @@ class CompanyService:
         
         # Update metadata
         db_company.updated_by = updated_by
-        db_company.change_log_id = uuid.uuid4()
+        db_company.change_log_id = str(uuid.uuid4())
         
         # Re-apply auto-tagging if revenue changed
         if 'annual_revenue' in company_dict:
