@@ -154,8 +154,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
           console.log(response.data.message);
         }
       }
-      // Clear cities when states change
-      setCities([]);
+      // Clear cities when states change (only clear city, not the array)
       setFormData(prev => ({ ...prev, state: "", city: "" }));
     } catch (err) {
       console.error("Failed to fetch states:", err);
