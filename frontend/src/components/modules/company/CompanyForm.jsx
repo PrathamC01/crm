@@ -1259,8 +1259,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   }
                 </option>
                 {states.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
+                  <option key={state.id || state.name || state} value={state.name || state}>
+                    {state.name || state}
                   </option>
                 ))}
               </select>
