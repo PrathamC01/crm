@@ -906,6 +906,94 @@ class CRMAPITester:
         
         self.test_results["company_listing"]["hot_first_sorting"] = "FAIL"
         return False
+
+    def test_create_different_industries(self):
+        """Test creating companies in different industries to verify validation differences"""
+        test_cases = [
+            {
+                "name": "BFSI Bank Corp",
+                "industry": "BFSI",
+                "sub_industry": "Banking",
+                "revenue": 80000000,  # ₹8 crore
+                "employees": 300,
+                "expected": "HOT"
+            },
+            {
+                "name": "Manufacturing Co",
+                "industry": "Manufacturing", 
+                "sub_industry": "Automotive",
+                "revenue": 60000000,  # ₹6 crore
+                "employees": 200,
+                "expected": "HOT"
+            },
+            {
+                "name": "Media House",
+                "industry": "Media_Entertainment",
+                "sub_industry": "Broadcasting",
+                "revenue": 30000000,  # ₹3 crore
+                "employees": 100,
+                "expected": "COLD"  # Lower scoring industry
+            }
+        ]
+        
+        all_passed = True
+        
+        for i, case in enumerate(test_cases):
+            company_data = {
+                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
+                "company_type": "DOMESTIC_GST",
+                "industry": case["industry"],
+                "sub_industry": case["sub_industry"],
+                "annual_revenue": case["revenue"],
+                "employee_count": case["employees"],
+                "gst_number": f"27{chr(65+i)}{chr(66+i)}{chr(67+i)}{chr(68+i)}{chr(69+i)}1234F{i}Z{i}",
+                "pan_number": f"{chr(65+i)}{chr(66+i)}{chr(67+i)}{chr(68+i)}{chr(69+i)}1234{chr(70+i)}",
+                "supporting_documents": [f"GST_CERTIFICATE_{i}.pdf", f"PAN_CARD_{i}.pdf"],
+                "verification_source": "GST",
+                "verification_date": datetime.now().isoformat(),
+                "verified_by": "admin",
+                "address": f"Business District {i} Commercial Area",
+                "country": "India",
+                "state": "Maharashtra",
+                "city": "Mumbai",
+                "pin_code": "400001",
+                "parent_child_mapping_confirmed": True,
+                "linked_subsidiaries": ["None"],
+                "description": f"Test company for {case['industry']} validation"
+            }
+            
+            success, response = self.run_test(
+                f"Create {case['industry']} Company",
+                "POST",
+                "/api/companies",
+                200,
+                data=company_data
+            )
+            
+            if success and response.get('status'):
+                company = response.get('data')
+                if company:
+                    company_id = company.get('id')
+                    lead_status = company.get('lead_status')
+                    validation_score = company.get('validation_score')
+                    
+                    self.created_company_ids.append(company_id)
+                    self.log(f"✅ {case['industry']} Company - Status: {lead_status}, Score: {validation_score}")
+                    
+                    if lead_status == case["expected"]:
+                        self.log(f"✅ PASS: {case['industry']} correctly classified as {case['expected']}")
+                    else:
+                        self.log(f"❌ FAIL: {case['industry']} expected {case['expected']}, got {lead_status}")
+                        all_passed = False
+                else:
+                    self.log(f"❌ FAIL: No company data for {case['industry']}")
+                    all_passed = False
+            else:
+                self.log(f"❌ FAIL: Could not create {case['industry']} company")
+                all_passed = False
+        
+        self.test_results["company_validation"]["industry_differences"] = "PASS" if all_passed else "FAIL"
+        return all_passed
         """Test creating companies in different industries to verify validation differences"""
         test_cases = [
             {
