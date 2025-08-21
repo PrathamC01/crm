@@ -51,12 +51,19 @@ class Company(BaseModel):
     verification_date = Column(DateTime, nullable=False)
     verified_by = Column(Integer, ForeignKey('users.id'), nullable=False)
     
-    # Address Fields (Enhanced)
+    # Address Fields (Enhanced with Database Relationships)
     address = Column(Text, nullable=False)
+    
+    # Text-based fields (kept for backward compatibility)
     country = Column(String(100), nullable=False, default='India')
     state = Column(String(100), nullable=False)
     city = Column(String(100), nullable=False)
     pin_code = Column(String(10), nullable=False)
+    
+    # Database-driven geographic relationships (New)
+    country_id = Column(Integer, ForeignKey('countries.id'), nullable=True)
+    state_id = Column(Integer, ForeignKey('states.id'), nullable=True)
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
     
     # Hierarchy & Linkages
     parent_child_mapping_confirmed = Column(Boolean, nullable=False, default=False)
