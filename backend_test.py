@@ -720,9 +720,9 @@ class CRMAPITester:
                 "expected": "HOT"
             },
             {
-                "name": "Edge Case Low Agriculture",
-                "industry": "Agriculture",
-                "sub_industry": "Livestock",
+                "name": "Edge Case Low Retail",
+                "industry": "Retail_CPG",
+                "sub_industry": "Local Retail",
                 "revenue": 1500000,  # ₹15 lakh
                 "employees": 10,
                 "company_type": "DOMESTIC_NONGST",
