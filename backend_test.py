@@ -661,6 +661,32 @@ class CRMAPITester:
             "description": "TechnoSoft Solutions - IT company with 120 employees and 7.5 crore revenue"
         }
 
+    def test_create_hot_company_specific(self):
+        """Test creating TechnoSoft Solutions - should be classified as HOT (score ~85)"""
+        hot_company_data = {
+            "name": "TechnoSoft Solutions",
+            "company_type": "DOMESTIC_GST",
+            "industry": "IT_ITeS",
+            "sub_industry": "Software Development",
+            "annual_revenue": 75000000,  # 7.5 crore
+            "employee_count": 120,
+            "gst_number": "27TECHS1234F1Z5",
+            "pan_number": "TECHS1234F",
+            "supporting_documents": ["GST_CERTIFICATE_technosoft.pdf", "PAN_CARD_technosoft.pdf"],
+            "verification_source": "GST",
+            "verification_date": datetime.now().isoformat(),
+            "verified_by": "admin",
+            "address": "Tech Park IT Corridor Software City Mumbai",
+            "country": "India",
+            "state": "Maharashtra",
+            "city": "Mumbai",
+            "pin_code": "400001",
+            "parent_child_mapping_confirmed": True,
+            "linked_subsidiaries": ["None"],
+            "website": "https://technosoft.com",
+            "description": "TechnoSoft Solutions - IT company with 120 employees and 7.5 crore revenue"
+        }
+
         success, response = self.run_test(
             "Create HOT Company (TechnoSoft Solutions)",
             "POST",
@@ -697,6 +723,11 @@ class CRMAPITester:
             else:
                 self.log(f"❌ FAIL: No company data in response")
                 return False, {}
+        else:
+            # Log the detailed error for debugging
+            self.log(f"❌ FAIL: Company creation failed")
+            if response:
+                self.log(f"   Response: {response}")
         
         self.test_results["company_validation"]["hot_classification"] = "FAIL"
         return False, {}
