@@ -1281,11 +1281,12 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 City <span className="text-red-500">*</span>
               </label>
-              {cities.length > 0 ? (
+              {cities && cities.length > 0 ? (
                 <select
+                  key={`city-dropdown-${cities.length}`} // Force re-render when cities change
                   name="city"
                   required
-                  value={formData.city}
+                  value={formData.city || ""}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
                     errors.city ? "border-red-300" : "border-gray-300"
@@ -1300,10 +1301,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                 </select>
               ) : (
                 <input
+                  key={`city-input-${formData.state || 'no-state'}`} // Force re-render when state changes
                   type="text"
                   name="city"
                   required
-                  value={formData.city}
+                  value={formData.city || ""}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
                     errors.city ? "border-red-300" : "border-gray-300"
