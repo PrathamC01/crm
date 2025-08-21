@@ -69,7 +69,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
           : "",
         verified_by: company.verified_by || "",
         address: company.address || "",
-        country: company.country || "India",
+        country: company.country || "",
         state: company.state || "",
         city: company.city || "",
         pin_code: company.pin_code || "",
