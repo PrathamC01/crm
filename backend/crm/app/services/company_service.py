@@ -346,7 +346,7 @@ class CompanyService:
         db_company.is_active = False
         db_company.deleted_on = datetime.utcnow()
         db_company.deleted_by = deleted_by
-        db_company.change_log_id = uuid.uuid4()
+        db_company.change_log_id = str(uuid.uuid4())
 
         self.db.commit()
         
