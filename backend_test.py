@@ -702,28 +702,28 @@ class CRMAPITester:
         return False, {}
 
     def test_create_cold_company_specific(self):
-        """Test creating Small Local Business - should be classified as COLD"""
+        """Test creating Village Store Pvt Ltd - should be classified as COLD (score ~35)"""
         cold_company_data = {
-            "name": "Small Local Business",
+            "name": "Village Store Pvt Ltd",
             "company_type": "DOMESTIC_NONGST",
-            "industry": "Retail_CPG",  # Use valid industry instead of Agriculture
-            "sub_industry": "Local Retail",
-            "annual_revenue": 3000000,  # ₹30 lakh - lower revenue
-            "employee_count": 25,  # Small company
+            "industry": "Retail",
+            "sub_industry": "General Store",
+            "annual_revenue": 2000000,  # 20 lakh
+            "employee_count": 8,
             "gst_number": None,  # Non-GST company
-            "pan_number": "SMALL1234F",  # Valid PAN format: AAAAA0000A
-            "supporting_documents": ["PAN_CARD_small.pdf", "MCA_CERTIFICATE_small.pdf"],
+            "pan_number": "VILLS1234F",
+            "supporting_documents": ["PAN_CARD_village.pdf", "MCA_CERTIFICATE_village.pdf"],
             "verification_source": "PAN_NSDL",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Village Road Agricultural Area Mumbai Maharashtra",
+            "address": "Village Road General Store Area Bangalore",
             "country": "India",
-            "state": "Maharashtra",
-            "city": "Mumbai",
-            "pin_code": "400001",
+            "state": "Karnataka",
+            "city": "Bangalore",
+            "pin_code": "560001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "description": "Small Local Business - Retail company with 25 employees"
+            "description": "Village Store Pvt Ltd - Retail company with 8 employees and 20 lakh revenue"
         }
 
         success, response = self.run_test(
