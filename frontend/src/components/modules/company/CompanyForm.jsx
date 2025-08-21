@@ -1153,7 +1153,6 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   </button>
                 </div>
               ))}
-            {console.log(formData.supporting_documents.length > 0)}
             {formData.supporting_documents.length > 0
               ? formData.supporting_documents.map((file, index) => (
                   <div
@@ -1174,7 +1173,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                     </button>
                   </div>
                 ))
-              : console.log(formData.supporting_documents)}
+              : null}
           </div>
         </div>
       </div>
