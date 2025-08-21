@@ -4,6 +4,7 @@ Enhanced Company Management API endpoints for Swayatta 4.0 - Simplified without 
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from typing import Optional, List, Dict
+from sqlalchemy.orm import Session
 from ...schemas.company import (
     CompanyCreate,
     CompanyUpdate,
