@@ -49,6 +49,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [duplicateCheck, setDuplicateCheck] = useState(null);
 
+  // Debug useEffect to monitor cities state changes
+  useEffect(() => {
+    console.log("🔄 Cities state changed:", cities, "Length:", cities.length);
+  }, [cities]);
+
   useEffect(() => {
     if (company) {
       setFormData({
