@@ -750,7 +750,7 @@ class CRMAPITester:
                 "annual_revenue": case["revenue"],
                 "employee_count": case["employees"],
                 "gst_number": f"27EDGE{i}1234F{i}Z{i}" if case["company_type"] == "DOMESTIC_GST" else None,
-                "pan_number": f"EDGE{i}123{chr(70+i)}",  # Valid PAN format: AAAAA0000A
+                "pan_number": f"EDGEC{1234+i}{chr(70+i)}",  # Valid PAN format: AAAAA0000A
                 "supporting_documents": [f"GST_CERTIFICATE_edge{i}.pdf", f"PAN_CARD_edge{i}.pdf"] if case["company_type"] == "DOMESTIC_GST" else [f"PAN_CARD_edge{i}.pdf", f"MCA_CERTIFICATE_edge{i}.pdf"],
                 "verification_source": "GST" if case["company_type"] == "DOMESTIC_GST" else "PAN_NSDL",
                 "verification_date": datetime.now().isoformat(),
