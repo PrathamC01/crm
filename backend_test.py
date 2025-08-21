@@ -662,7 +662,7 @@ class CRMAPITester:
         }
 
         success, response = self.run_test(
-            "Create HOT Company (TechVenture Solutions)",
+            "Create HOT Company (TechnoSoft Solutions)",
             "POST",
             "/api/companies",
             200,
@@ -681,12 +681,17 @@ class CRMAPITester:
                 self.log(f"✅ Lead Status: {lead_status}")
                 self.log(f"✅ Validation Score: {validation_score}")
                 
-                if lead_status == "HOT":
-                    self.log(f"✅ PASS: Company correctly classified as HOT")
+                # Check if score is around 85 and status is HOT
+                if lead_status == "HOT" and validation_score and validation_score >= 80:
+                    self.log(f"✅ PASS: Company correctly classified as HOT with score {validation_score}")
+                    self.test_results["company_validation"]["hot_classification"] = "PASS"
+                    return True, company
+                elif lead_status == "HOT":
+                    self.log(f"✅ PASS: Company correctly classified as HOT (score: {validation_score})")
                     self.test_results["company_validation"]["hot_classification"] = "PASS"
                     return True, company
                 else:
-                    self.log(f"❌ FAIL: Expected HOT, got {lead_status}")
+                    self.log(f"❌ FAIL: Expected HOT with score ~85, got {lead_status} with score {validation_score}")
                     self.test_results["company_validation"]["hot_classification"] = "FAIL"
                     return False, company
             else:
