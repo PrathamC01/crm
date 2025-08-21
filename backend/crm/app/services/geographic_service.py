@@ -69,13 +69,13 @@ class GeographicService:
         ]
     
     @staticmethod
-    def get_cities_by_state_name(db: Session, country_name: str, state_name: str) -> List[Dict]:
-        """Get all cities for a specific state by country and state names"""
-        # Find the state by joining with country
+    def get_cities_by_state_name(db: Session, country_code: str, state_name: str) -> List[Dict]:
+        """Get all cities for a specific state by country code and state names"""
+        # Find the state by joining with country using country code
         state = (
             db.query(State)
             .join(Country)
-            .filter(Country.name == country_name, State.name == state_name)
+            .filter(Country.code == country_code.upper(), State.name == state_name)
             .first()
         )
         
