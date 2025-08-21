@@ -149,7 +149,7 @@ async def create_company(
         raise HTTPException(status_code=400, detail="Override reason is required")
 
     try:
-        company = company_service.create_company(
+        company, validation_result = company_service.create_company(
             company_data,
             current_user["id"],
             user_role=user_role,
