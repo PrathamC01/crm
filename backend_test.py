@@ -424,18 +424,18 @@ class CRMAPITester:
         self.test_results["geographic_apis"]["maharashtra_cities"] = "FAIL"
         return False
 
-    def test_create_hot_company(self):
-        """Test creating a company that should be classified as HOT"""
+    def test_create_hot_company_specific(self):
+        """Test creating TechVenture Solutions - should be classified as HOT"""
         hot_company_data = {
-            "name": f"TechCorp Solutions {datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "name": "TechVenture Solutions",
             "company_type": "DOMESTIC_GST",
-            "industry": "IT_ITeS",
+            "industry": "IT_ITeS",  # Technology maps to IT_ITeS which is a hot industry
             "sub_industry": "Software Development",
-            "annual_revenue": 150000000,  # ₹15 crore - should be HOT
-            "employee_count": 750,  # Large company
-            "gst_number": "27ABCDE1234F1Z5",
-            "pan_number": "ABCDE1234F",
-            "supporting_documents": ["GST_CERTIFICATE_tech.pdf", "PAN_CARD_tech.pdf"],
+            "annual_revenue": 50000000,  # ₹5 crore - good revenue
+            "employee_count": 150,  # Medium-large company
+            "gst_number": "27TECHV1234F1Z5",
+            "pan_number": "TECHV1234F",
+            "supporting_documents": ["GST_CERTIFICATE_techventure.pdf", "PAN_CARD_techventure.pdf"],
             "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
@@ -446,8 +446,8 @@ class CRMAPITester:
             "pin_code": "400001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "website": "https://techcorp.com",
-            "description": "Leading software development company should be HOT lead"
+            "website": "https://techventure.com",
+            "description": "TechVenture Solutions - Technology company with 150 employees"
         }
 
         success, response = self.run_test(
