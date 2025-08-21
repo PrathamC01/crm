@@ -160,13 +160,25 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
   // Fetch cities when state changes
   const fetchCities = async (countryCode, stateName) => {
-    if (!countryCode || !stateName) return;
+    if (!countryCode || !stateName) {
+      console.log("fetchCities: Missing countryCode or stateName", { countryCode, stateName });
+      return;
+    }
+    
+    console.log("fetchCities: Fetching cities for", { countryCode, stateName });
     
     try {
-      const response = await apiRequest(`/api/companies/masters/cities/${countryCode}/${encodeURIComponent(stateName)}`);
+      const url = `/api/companies/masters/cities/${countryCode}/${encodeURIComponent(stateName)}`;
+      console.log("fetchCities: API URL", url);
+      
+      const response = await apiRequest(url);
+      console.log("fetchCities: API response", response);
+      
       if (response.status && response.data.cities) {
+        console.log("fetchCities: Setting cities", response.data.cities);
         setCities(response.data.cities);
       } else {
+        console.log("fetchCities: No cities in response, clearing");
         setCities([]);
       }
       // Clear city when cities change
