@@ -1,5 +1,5 @@
 """
-Enhanced Company schemas for Swayatta 4.0 - Simplified without approval workflow
+Enhanced Company schemas for Swayatta 4.0 - With Hot/Cold Validation System
 """
 
 from pydantic import BaseModel, validator, Field
@@ -22,6 +22,10 @@ class CompanyType(str, Enum):
 class CompanyStatus(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
+
+class LeadStatus(str, Enum):
+    HOT = "HOT"
+    COLD = "COLD"
 
 class VerificationSource(str, Enum):
     GST = "GST"
@@ -52,6 +56,7 @@ class CompanyBase(BaseModel):
     industry: IndustryType = Field(..., description="Industry category")
     sub_industry: str = Field(..., min_length=1, max_length=100, description="Sub-industry")
     annual_revenue: float = Field(..., ge=0, description="Annual revenue in INR")
+    employee_count: Optional[int] = Field(None, ge=1, description="Number of employees")
     
     # Identification & Compliance (Conditionally Required)
     gst_number: Optional[str] = Field(None, description="GST number for domestic GST companies")
@@ -62,12 +67,12 @@ class CompanyBase(BaseModel):
     verification_date: datetime = Field(..., description="Verification date")
     verified_by: str = Field(..., description="Admin who verified")
     
-    # Registered Address (All Required)
-    address: str = Field(..., min_length=10, max_length=500, description="Complete registered address")
-    country: str = Field(default="India", description="Country")
-    state: str = Field(..., min_length=2, max_length=100, description="State")
+    # Address Information (All Required)
+    address: str = Field(..., min_length=10, max_length=500, description="Complete address")
+    country: str = Field(..., min_length=2, max_length=100, description="Country")
+    state: str = Field(..., min_length=2, max_length=100, description="State/Province")
     city: str = Field(..., min_length=2, max_length=100, description="City")
-    pin_code: str = Field(..., pattern=r"^[0-9]{6}$", description="PIN code")
+    pin_code: str = Field(..., pattern=r"^[0-9A-Za-z\-\s]{3,10}$", description="PIN/ZIP code")
     
     # Hierarchy & Linkages (All Required)
     parent_child_mapping_confirmed: bool = Field(..., description="Parent-child mapping confirmation")
@@ -82,7 +87,7 @@ class CompanyBase(BaseModel):
     def validate_name(cls, v):
         if not v or len(v.strip()) < 2:
             raise ValueError("Company name must be at least 2 characters long")
-        if not v.replace(" ", "").replace("&", "").replace(".", "").replace("-", "").isalnum():
+        if not v.replace(" ", "").replace("&", "").replace(".", "").replace("-", "").replace("'", "").isalnum():
             raise ValueError("Company name contains invalid characters")
         return v.strip()
 
@@ -128,7 +133,6 @@ class CompanyBase(BaseModel):
         
         if company_type and company_type in required_docs:
             required = required_docs[company_type]
-            provided_types = [doc.split("_")[0] for doc in v]  # Extract document types
             # This is a simplified check - in real implementation, check actual document types
         
         return v
@@ -145,6 +149,30 @@ class CompanyBase(BaseModel):
             raise ValueError("Annual revenue cannot be negative")
         return v
 
+    @validator("employee_count")
+    def validate_employee_count(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError("Employee count must be positive")
+        return v
+
+    @validator("country")
+    def validate_country(cls, v):
+        if not v or len(v.strip()) < 2:
+            raise ValueError("Country is required")
+        return v.strip()
+
+    @validator("state")
+    def validate_state(cls, v):
+        if not v or len(v.strip()) < 2:
+            raise ValueError("State/Province is required")
+        return v.strip()
+
+    @validator("city") 
+    def validate_city(cls, v):
+        if not v or len(v.strip()) < 2:
+            raise ValueError("City is required")
+        return v.strip()
+
 class CompanyCreate(CompanyBase):
     """Schema for creating a new company"""
     pass
@@ -157,6 +185,7 @@ class CompanyUpdate(BaseModel):
     industry: Optional[IndustryType] = None
     sub_industry: Optional[str] = Field(None, min_length=1, max_length=100)
     annual_revenue: Optional[float] = Field(None, ge=0)
+    employee_count: Optional[int] = Field(None, ge=1)
     gst_number: Optional[str] = None
     pan_number: Optional[str] = None
     international_unique_id: Optional[str] = None
@@ -166,9 +195,9 @@ class CompanyUpdate(BaseModel):
     verified_by: Optional[str] = None
     address: Optional[str] = Field(None, min_length=10, max_length=500)
     country: Optional[str] = None
-    state: Optional[str] = Field(None, min_length=2, max_length=100)
-    city: Optional[str] = Field(None, min_length=2, max_length=100)
-    pin_code: Optional[str] = Field(None, pattern=r"^[0-9]{6}$")
+    state: Optional[str] = None
+    city: Optional[str] = None
+    pin_code: Optional[str] = Field(None, pattern=r"^[0-9A-Za-z\-\s]{3,10}$")
     parent_child_mapping_confirmed: Optional[bool] = None
     linked_subsidiaries: Optional[List[str]] = None
     associated_channel_partner: Optional[str] = None
@@ -201,11 +230,17 @@ class CompanyResponse(CompanyBase):
     
     # System fields
     status: CompanyStatus
-    change_log_id: Optional[str] = None  # Convert UUID to string
+    lead_status: LeadStatus  # New field
+    change_log_id: Optional[str] = None
     
     # Auto-tagging
     is_high_revenue: bool = False
     tags: Optional[List[str]] = None
+    
+    # Validation info
+    validation_score: Optional[int] = None
+    revenue_tier: Optional[str] = None
+    employee_tier: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -213,11 +248,17 @@ class CompanyResponse(CompanyBase):
     @classmethod
     def from_db_model(cls, company_model):
         """Create response from database model with proper conversions"""
+        # Get validation info
+        validation_info = company_model.validate_lead_status()
+        
         data = {
             **company_model.__dict__,
             'change_log_id': str(company_model.change_log_id) if company_model.change_log_id else None,
             'verified_by': getattr(company_model.verifier, 'username', None) if hasattr(company_model, 'verifier') and company_model.verifier else str(company_model.verified_by),
-            'linked_subsidiaries': company_model.linked_subsidiaries or []
+            'linked_subsidiaries': company_model.linked_subsidiaries or [],
+            'validation_score': validation_info.get('score'),
+            'revenue_tier': company_model._get_revenue_tier(),
+            'employee_tier': company_model._get_employee_tier()
         }
         return cls(**data)
 
@@ -231,12 +272,38 @@ class CompanyListResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class CompanyDropdownItem(BaseModel):
+    """Schema for company dropdown items in lead forms"""
+    id: int
+    name: str
+    lead_status: LeadStatus
+    display_name: str
+    industry: str
+    city: str
+    revenue_tier: str
+
+    class Config:
+        from_attributes = True
+
 class CompanyStats(BaseModel):
     """Schema for company statistics"""
     total_companies: int = 0
     active_companies: int = 0
+    hot_leads: int = 0
+    cold_leads: int = 0
     companies_by_type: dict = {}
     companies_by_industry: dict = {}
+    companies_by_lead_status: dict = {}
+
+    class Config:
+        from_attributes = True
+
+class ValidationResult(BaseModel):
+    """Schema for company validation results"""
+    score: int
+    status: LeadStatus
+    criteria: dict
+    recommendations: Optional[List[str]] = None
 
     class Config:
         from_attributes = True
@@ -248,4 +315,13 @@ class DuplicateCheckResult(BaseModel):
     matched_companies: List[dict] = []
     similarity_score: Optional[float] = None
     can_override: bool = False
-    requires_admin_approval: bool = False
+
+class GeographicData(BaseModel):
+    """Schema for geographic dropdown data"""
+    countries: List[dict]
+    states: Optional[List[str]] = None
+    cities: Optional[List[str]] = None
+    message: Optional[str] = None
+
+    class Config:
+        from_attributes = True
