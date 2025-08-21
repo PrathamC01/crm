@@ -166,7 +166,10 @@ async def create_company(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to create company")
+        print(f"Company creation error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to create company: {str(e)}")
 
 
 @router.put("/{company_id}", response_model=StandardResponse)
