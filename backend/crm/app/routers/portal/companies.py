@@ -20,6 +20,7 @@ from ...schemas.auth import StandardResponse
 from ...dependencies.rbac import require_companies_read, require_companies_write
 from ...services.company_service import CompanyService
 from ...dependencies.database import get_postgres_db
+from ...database import get_db
 from ...utils.minio_client import minio_client
 from ...models.geographic import Country, State, City
 from ...services.geographic_service import GeographicService
