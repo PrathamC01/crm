@@ -1597,13 +1597,13 @@ class CRMAPITester:
 
 def main():
     """Main test execution"""
-    print("CRM Backend API Testing - Geographic APIs and Database-driven Validation")
+    print("CRM Backend API Testing - Review Request: Company Creation and Validation System")
     print("=" * 90)
     
     tester = CRMAPITester()
     
     try:
-        success = tester.run_geographic_api_tests()
+        success = tester.run_review_request_tests()
         return 0 if success else 1
     except KeyboardInterrupt:
         print("\n❌ Tests interrupted by user")
