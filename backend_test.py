@@ -64,7 +64,11 @@ class CRMAPITester:
                     error_data = response.json()
                     self.log(f"   Error: {error_data.get('message', 'Unknown error')}")
                     if 'detail' in error_data:
-                        self.log(f"   Details: {error_data['detail']}")
+                        if isinstance(error_data['detail'], list):
+                            for detail in error_data['detail']:
+                                self.log(f"   Validation: {detail.get('msg', detail)}")
+                        else:
+                            self.log(f"   Details: {error_data['detail']}")
                 except:
                     self.log(f"   Raw response: {response.text[:500]}")
                 return False, {}
