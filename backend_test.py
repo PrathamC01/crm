@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Company Approval Workflow Removal
-Tests the complete company creation workflow to ensure approval process has been removed.
+Backend API Testing for Company Management with Validation and Geographic Features
+Tests the new validation system and cascading dropdown functionality.
 """
 
 import requests
@@ -11,13 +11,19 @@ from datetime import datetime, timedelta
 import time
 
 class CRMAPITester:
-    def __init__(self, base_url="https://leadflow-crm-3.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.token = None
         self.session_headers = {}
         self.tests_run = 0
         self.tests_passed = 0
-        self.created_company_id = None
+        self.created_company_ids = []
+        self.test_results = {
+            "geographic_apis": {},
+            "company_validation": {},
+            "company_creation": {},
+            "company_listing": {}
+        }
 
     def log(self, message, level="INFO"):
         """Log messages with timestamp"""
