@@ -578,7 +578,7 @@ class CRMAPITester:
         
         for i, case in enumerate(test_cases):
             company_data = {
-                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d_%H%M%S')}_{i}",
+                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
                 "company_type": "DOMESTIC_GST",
                 "industry": case["industry"],
                 "sub_industry": case["sub_industry"],
@@ -590,7 +590,7 @@ class CRMAPITester:
                 "verification_source": "GST",
                 "verification_date": datetime.now().isoformat(),
                 "verified_by": "admin",
-                "address": f"Business District {i}, Commercial Area",
+                "address": f"Business District {i} Commercial Area",
                 "country": "India",
                 "state": "Maharashtra",
                 "city": "Mumbai",
