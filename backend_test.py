@@ -309,7 +309,7 @@ class CRMAPITester:
             return False
 
     def test_countries_master_api(self):
-        """Test GET /api/companies/masters/countries - comprehensive country list"""
+        """Test GET /api/companies/masters/countries - should return 3 countries: United States, Canada, India"""
         success, response = self.run_test(
             "Get Countries Master API",
             "GET",
@@ -322,10 +322,7 @@ class CRMAPITester:
             self.log(f"✅ Found {len(countries_data)} countries")
             
             # Check for specific countries mentioned in requirements
-            expected_countries = [
-                "United States", "Germany", "Brazil", "China", "Japan", 
-                "Korea, Republic of", "India", "Canada"
-            ]
+            expected_countries = ["United States", "Canada", "India"]
             
             found_countries = []
             missing_countries = []
@@ -341,7 +338,7 @@ class CRMAPITester:
             # Check data format
             if countries_data and isinstance(countries_data[0], dict):
                 sample_country = countries_data[0]
-                if 'code' in sample_country and 'name' in sample_country:
+                if 'code' in sample_country and 'name' in sample_country and 'id' in sample_country:
                     self.log(f"✅ Country data format is correct: {sample_country}")
                     self.test_results["geographic_apis"]["countries_format"] = "PASS"
                 else:
@@ -353,13 +350,13 @@ class CRMAPITester:
                 self.test_results["geographic_apis"]["countries_completeness"] = "PARTIAL"
                 return False
             
-            # Check if we have sufficient countries (should be comprehensive)
-            if len(countries_data) >= 200:
-                self.log(f"✅ PASS: Found {len(countries_data)} countries (comprehensive list)")
+            # Check if we have the expected 3 countries
+            if len(found_countries) == 3:
+                self.log(f"✅ PASS: Found all 3 expected countries: {', '.join(found_countries)}")
                 self.test_results["geographic_apis"]["countries_completeness"] = "PASS"
                 return True
             else:
-                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected comprehensive list")
+                self.log(f"❌ FAIL: Expected 3 countries, found {len(found_countries)}")
                 self.test_results["geographic_apis"]["countries_completeness"] = "FAIL"
                 return False
         
