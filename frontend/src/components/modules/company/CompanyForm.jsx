@@ -1283,6 +1283,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 City <span className="text-red-500">*</span>
               </label>
+              {/* Debug: Show cities array length */}
+              {console.log("RENDER: cities.length =", cities.length, "cities =", cities)}
               {cities.length > 0 ? (
                 <select
                   name="city"
