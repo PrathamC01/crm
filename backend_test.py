@@ -828,7 +828,8 @@ class CRMAPITester:
                 "employee_count": 100,
                 "gst_number": None,
                 "pan_number": None,
-                "supporting_documents": [f"BUSINESS_LICENSE_{i}.pdf"],
+                "international_unique_id": f"INTL{i}12345",  # Required for OVERSEAS companies
+                "supporting_documents": [f"INTERNATIONAL_ID_{i}.pdf", f"INCORPORATION_CERTIFICATE_{i}.pdf"],
                 "verification_source": "MANUAL",  # Fixed: Use valid verification source
                 "verification_date": datetime.now().isoformat(),
                 "verified_by": "admin",
