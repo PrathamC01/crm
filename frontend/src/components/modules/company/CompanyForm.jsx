@@ -140,8 +140,11 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     
     try {
       const response = await apiRequest(`/api/companies/masters/states/${countryCode}`);
-      if (response.status && response.data.states) {
-        setStates(response.data.states);
+      if (response.status && response.data) {
+        // Database-driven API returns array directly in response.data
+        const statesArray = Array.isArray(response.data) ? response.data : response.data.states || [];
+        console.log("fetchStates: Received states", statesArray);
+        setStates(statesArray);
       } else {
         setStates([]);
         // Show message if no states available
