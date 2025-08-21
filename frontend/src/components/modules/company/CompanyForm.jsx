@@ -626,10 +626,6 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     return industryMasters[formData.industry] || [];
   };
 
-  const getStatesForCountry = () => {
-    return countryStateMasters[formData.country] || [];
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {errors.submit && (
