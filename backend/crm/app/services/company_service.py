@@ -1,5 +1,5 @@
 """
-Enhanced Company management service for Swayatta 4.0 - Simplified without approval workflow
+Enhanced Company management service for Swayatta 4.0 - With Hot/Cold Validation System
 """
 
 from typing import Optional, List, Dict, Tuple
@@ -14,7 +14,10 @@ from ..schemas.company import (
     CompanyUpdate, 
     DuplicateCheckResult,
     CompanyType,
-    CompanyStatus
+    CompanyStatus,
+    LeadStatus,
+    ValidationResult,
+    CompanyDropdownItem
 )
 
 class CompanyService:
@@ -52,8 +55,7 @@ class CompanyService:
                         "gst_number": existing.gst_number,
                         "city": existing.city
                     }],
-                    can_override=True,
-                    requires_admin_approval=False  # No approval required anymore
+                    can_override=True
                 )
         
         # Fuzzy match check
@@ -78,11 +80,36 @@ class CompanyService:
                         "city": existing.city
                     }],
                     similarity_score=name_similarity,
-                    can_override=True,
-                    requires_admin_approval=False  # No approval required anymore
+                    can_override=True
                 )
         
         return DuplicateCheckResult(is_duplicate=False, match_type="NONE", matched_companies=[])
+
+    def validate_company(self, company_data: CompanyCreate) -> ValidationResult:
+        """
+        Validate company and determine Hot/Cold status based on business criteria
+        """
+        # Create a temporary company object for validation
+        temp_company = Company(
+            industry=company_data.industry,
+            sub_industry=company_data.sub_industry,
+            annual_revenue=company_data.annual_revenue,
+            employee_count=company_data.employee_count,
+            company_type=company_data.company_type
+        )
+        
+        # Run validation logic
+        validation_info = temp_company.validate_lead_status()
+        
+        # Generate recommendations
+        recommendations = self._generate_recommendations(validation_info)
+        
+        return ValidationResult(
+            score=validation_info["score"],
+            status=LeadStatus(validation_info["status"]),
+            criteria=validation_info["criteria"],
+            recommendations=recommendations
+        )
 
     def create_company(
         self, 
@@ -91,14 +118,17 @@ class CompanyService:
         user_role: str = "SALESPERSON",
         override_duplicate: bool = False,
         override_reason: Optional[str] = None
-    ) -> Company:
-        """Create a new company - immediately active without approval"""
+    ) -> Tuple[Company, ValidationResult]:
+        """Create a new company with validation - immediately active with Hot/Cold status"""
         
         # Check for duplicates unless overridden
         if not override_duplicate:
             duplicate_result = self.check_duplicates(company_data)
             if duplicate_result.is_duplicate:
                 raise ValueError(f"Duplicate company found: {duplicate_result.match_type} match detected")
+        
+        # Validate company and get Hot/Cold status
+        validation_result = self.validate_company(company_data)
         
         try:
             db_company = Company(
@@ -108,6 +138,7 @@ class CompanyService:
                 industry=company_data.industry,
                 sub_industry=company_data.sub_industry,
                 annual_revenue=company_data.annual_revenue,
+                employee_count=company_data.employee_count,
                 
                 # Identification & Compliance
                 gst_number=company_data.gst_number,
@@ -118,7 +149,7 @@ class CompanyService:
                 verification_date=company_data.verification_date,
                 verified_by=self._get_user_id_by_name(company_data.verified_by),
                 
-                # Registered Address
+                # Address Information
                 address=company_data.address,
                 country=company_data.country,
                 state=company_data.state,
@@ -130,8 +161,9 @@ class CompanyService:
                 linked_subsidiaries=self._process_subsidiaries(company_data.linked_subsidiaries),
                 associated_channel_partner=company_data.associated_channel_partner,
                 
-                # System Metadata - Immediately ACTIVE
+                # System Metadata - Immediately ACTIVE with validation status
                 status=CompanyStatus.ACTIVE,
+                lead_status=validation_result.status,
                 change_log_id=uuid.uuid4(),
                 created_by=created_by,
                 
@@ -153,11 +185,11 @@ class CompanyService:
             self.db.commit()
             self.db.refresh(db_company)
             
-            # Log the creation
-            self._log_company_action(db_company.id, "CREATED", created_by, 
-                                   f"Company created and immediately activated")
+            # Log the creation with validation info
+            self._log_company_action(db_company.id, "CREATED_AND_VALIDATED", created_by, 
+                                   f"Company created with {validation_result.status.value} status (score: {validation_result.score})")
             
-            return db_company
+            return db_company, validation_result
             
         except Exception as e:
             self.db.rollback()
@@ -195,6 +227,37 @@ class CompanyService:
             .first()
         )
 
+    def get_companies_for_dropdown(self, user_role: str = "admin", user_id: int = None) -> List[CompanyDropdownItem]:
+        """Get companies formatted for dropdown display with lead status"""
+        query = self.db.query(Company).filter(
+            and_(
+                Company.status == CompanyStatus.ACTIVE,
+                Company.deleted_on.is_(None)
+            )
+        )
+        
+        # Role-based filtering
+        if user_role == "SALESPERSON":
+            query = query.filter(Company.created_by == user_id)
+        
+        companies = query.order_by(
+            Company.lead_status.desc(),  # Hot companies first
+            Company.name
+        ).all()
+        
+        return [
+            CompanyDropdownItem(
+                id=company.id,
+                name=company.name,
+                lead_status=company.lead_status,
+                display_name=company.get_display_name_with_status(),
+                industry=company.industry,
+                city=company.city,
+                revenue_tier=company._get_revenue_tier()
+            )
+            for company in companies
+        ]
+
     def update_company(
         self,
         company_id: int,
@@ -202,7 +265,7 @@ class CompanyService:
         updated_by: int,
         user_role: str = "admin"
     ) -> Optional[Company]:
-        """Update company information"""
+        """Update company information and re-validate if needed"""
         
         db_company = self.get_company_by_id(company_id)
         if not db_company:
@@ -212,6 +275,8 @@ class CompanyService:
         company_dict = company_data.dict(exclude_unset=True)
         
         old_values = {}
+        validation_fields_changed = False
+        
         for field, value in company_dict.items():
             if field in ["id", "created_on", "created_by"]:
                 continue
@@ -219,11 +284,21 @@ class CompanyService:
             # Store old value for audit
             old_values[field] = getattr(db_company, field, None)
             
+            # Check if validation-affecting fields changed
+            if field in ["industry", "sub_industry", "annual_revenue", "employee_count", "company_type"]:
+                validation_fields_changed = True
+            
             # Handle empty strings
             if isinstance(value, str) and value.strip() == "":
                 value = None
             
             setattr(db_company, field, value)
+        
+        # Re-validate if key fields changed
+        if validation_fields_changed:
+            validation_info = db_company.validate_lead_status()
+            self._log_company_action(company_id, "RE_VALIDATED", updated_by, 
+                                   f"Lead status updated to {db_company.lead_status.value} (score: {validation_info['score']})")
         
         # Update metadata
         db_company.updated_by = updated_by
@@ -283,13 +358,14 @@ class CompanyService:
         
         # Role-based filtering
         if user_role == "SALESPERSON":
-            # Salesperson can only see their own created companies
             query = query.filter(Company.created_by == user_id)
         
         # Apply filters
         if filters:
             if filters.get("status"):
                 query = query.filter(Company.status == filters["status"])
+            if filters.get("lead_status"):
+                query = query.filter(Company.lead_status == filters["lead_status"])
             if filters.get("company_type"):
                 query = query.filter(Company.company_type == filters["company_type"])
             if filters.get("industry"):
@@ -310,7 +386,10 @@ class CompanyService:
                 )
             )
 
-        return query.order_by(Company.name).offset(skip).limit(limit).all()
+        return query.order_by(
+            Company.lead_status.desc(),  # Hot companies first
+            Company.name
+        ).offset(skip).limit(limit).all()
 
     def get_company_count(
         self, 
@@ -331,6 +410,8 @@ class CompanyService:
         if filters:
             if filters.get("status"):
                 query = query.filter(Company.status == filters["status"])
+            if filters.get("lead_status"):
+                query = query.filter(Company.lead_status == filters["lead_status"])
             if filters.get("company_type"):
                 query = query.filter(Company.company_type == filters["company_type"])
             if filters.get("industry"):
@@ -351,11 +432,17 @@ class CompanyService:
         return query.count()
 
     def get_company_stats(self) -> Dict:
-        """Get company statistics for dashboard"""
+        """Get company statistics for dashboard including lead status"""
         
         total = self.db.query(Company).filter(Company.deleted_on.is_(None)).count()
         active = self.db.query(Company).filter(
             and_(Company.status == CompanyStatus.ACTIVE, Company.deleted_on.is_(None))
+        ).count()
+        hot_leads = self.db.query(Company).filter(
+            and_(Company.lead_status == LeadStatus.HOT, Company.deleted_on.is_(None))
+        ).count()
+        cold_leads = self.db.query(Company).filter(
+            and_(Company.lead_status == LeadStatus.COLD, Company.deleted_on.is_(None))
         ).count()
         high_revenue = self.db.query(Company).filter(
             and_(Company.is_high_revenue == True, Company.deleted_on.is_(None))
@@ -371,12 +458,20 @@ class CompanyService:
             Company.industry, func.count(Company.id)
         ).filter(Company.deleted_on.is_(None)).group_by(Company.industry).all()
         
+        # Companies by lead status
+        lead_status_stats = self.db.query(
+            Company.lead_status, func.count(Company.id)
+        ).filter(Company.deleted_on.is_(None)).group_by(Company.lead_status).all()
+        
         return {
             "total_companies": total,
             "active_companies": active,
+            "hot_leads": hot_leads,
+            "cold_leads": cold_leads,
             "high_revenue_companies": high_revenue,
             "companies_by_type": {str(type_): count for type_, count in type_stats},
-            "companies_by_industry": {industry: count for industry, count in industry_stats}
+            "companies_by_industry": {industry: count for industry, count in industry_stats},
+            "companies_by_lead_status": {str(status): count for status, count in lead_status_stats}
         }
 
     def _get_user_id_by_name(self, username: str) -> Optional[int]:
@@ -396,6 +491,41 @@ class CompanyService:
                 subsidiary_ids.append(sub_company.id)
         
         return subsidiary_ids if subsidiary_ids else None
+
+    def _generate_recommendations(self, validation_info: Dict) -> List[str]:
+        """Generate recommendations based on validation results"""
+        recommendations = []
+        score = validation_info["score"]
+        criteria = validation_info["criteria"]
+        
+        if score < 70:  # Cold lead
+            recommendations.append("💡 Consider focusing on higher-value opportunities first")
+            
+            if not criteria.get("industry_match"):
+                recommendations.append("🎯 Company is in a non-target industry - evaluate strategic value")
+            
+            if not criteria.get("sub_industry_match"):
+                recommendations.append("🔍 Sub-industry has lower business potential - assess carefully")
+            
+            if criteria.get("revenue_tier") in ["Startup (<₹50L)", "Small (₹50L-2 Cr)"]:
+                recommendations.append("💰 Low revenue tier - consider minimum deal size requirements")
+            
+            if criteria.get("employee_tier") in ["Startup (<50)", "Unknown"]:
+                recommendations.append("👥 Small or unknown team size - verify decision-making capacity")
+        
+        else:  # Hot lead
+            recommendations.append("🔥 High-potential lead - prioritize for immediate follow-up")
+            
+            if criteria.get("revenue_tier") in ["Enterprise (₹10+ Cr)", "Large (₹5-10 Cr)"]:
+                recommendations.append("💎 High-value target - assign senior sales team")
+            
+            if criteria.get("industry_match"):
+                recommendations.append("🎯 Perfect industry match - leverage relevant case studies")
+            
+            if criteria.get("employee_tier") in ["Large (500+)", "Medium (100-500)"]:
+                recommendations.append("🏢 Established organization - explore enterprise solutions")
+        
+        return recommendations
 
     def _log_company_action(self, company_id: int, action: str, user_id: Optional[int], details: str):
         """Log company actions for audit trail"""
