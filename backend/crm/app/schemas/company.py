@@ -233,6 +233,11 @@ class CompanyResponse(CompanyBase):
     lead_status: LeadStatus  # New field
     change_log_id: Optional[str] = None
     
+    # Geographic database relationships
+    country_id: Optional[int] = None
+    state_id: Optional[int] = None
+    city_id: Optional[int] = None
+    
     # Auto-tagging
     is_high_revenue: bool = False
     tags: Optional[List[str]] = None
