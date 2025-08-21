@@ -5,7 +5,6 @@ Service for database-driven geographic data (Countries, States, Cities)
 from sqlalchemy.orm import Session
 from typing import List, Dict, Optional
 from ..models.geographic import Country, State, City
-from ..database.engine import get_session
 
 
 class GeographicService:
