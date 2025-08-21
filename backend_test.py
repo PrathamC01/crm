@@ -146,7 +146,70 @@ class CRMAPITester:
             return True, companies
         return False, []
 
-    def test_create_company_immediate_active(self):
+    def test_create_company_with_database_ids(self):
+        """Test creating a company using the database-driven approach with proper IDs"""
+        company_data = {
+            "name": f"Database ID Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
+            "company_type": "DOMESTIC_GST",
+            "industry": "IT_ITeS",
+            "sub_industry": "Software Development",
+            "annual_revenue": 50000000,
+            "employee_count": 150,
+            "gst_number": "27DBTEST1234F1Z5",
+            "pan_number": "DBTES1234F",
+            "supporting_documents": ["GST_CERTIFICATE_dbtest.pdf", "PAN_CARD_dbtest.pdf"],
+            "verification_source": "GST",
+            "verification_date": datetime.now().isoformat(),
+            "verified_by": "admin",
+            "address": "123 Database Test Street, Test Area, Test Locality",
+            "country": "India",
+            "state": "Maharashtra", 
+            "city": "Mumbai",
+            "pin_code": "400001",
+            "parent_child_mapping_confirmed": True,
+            "linked_subsidiaries": ["None"],
+            "website": "https://dbtestcompany.com",
+            "description": "Test company for database-driven geographic validation"
+        }
+
+        success, response = self.run_test(
+            "Create Company with Database IDs",
+            "POST",
+            "/api/companies",
+            200,
+            data=company_data
+        )
+
+        if success and response.get('status'):
+            company = response.get('data')
+            if company:
+                company_id = company.get('id')
+                country_id = company.get('country_id')
+                state_id = company.get('state_id')
+                city_id = company.get('city_id')
+                
+                self.created_company_ids.append(company_id)
+                self.log(f"✅ Company created with ID: {company_id}")
+                self.log(f"✅ Country ID: {country_id}")
+                self.log(f"✅ State ID: {state_id}")
+                self.log(f"✅ City ID: {city_id}")
+                
+                # Verify that IDs are properly set (not None)
+                if country_id and state_id and city_id:
+                    self.log(f"✅ PASS: All geographic IDs properly set")
+                    self.test_results["company_creation"]["database_ids"] = "PASS"
+                    return True, company
+                else:
+                    self.log(f"❌ FAIL: Some geographic IDs are missing")
+                    self.log(f"   Country ID: {country_id}, State ID: {state_id}, City ID: {city_id}")
+                    self.test_results["company_creation"]["database_ids"] = "FAIL"
+                    return False, company
+            else:
+                self.log(f"❌ FAIL: No company data in response")
+                return False, {}
+        
+        self.test_results["company_creation"]["database_ids"] = "FAIL"
+        return False, {}
         """Test creating a company that should be immediately active (no approval workflow)"""
         company_data = {
             "name": f"Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
