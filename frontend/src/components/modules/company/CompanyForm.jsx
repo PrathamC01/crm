@@ -507,6 +507,8 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
     }
     // Handle state change - fetch cities
     else if (name === "state") {
+      console.log("handleInputChange: State change", { name, newValue, selectedCountryCode });
+      
       setFormData((prev) => ({
         ...prev,
         [name]: newValue,
@@ -515,8 +517,10 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       
       // Fetch cities for the new state
       if (newValue && selectedCountryCode) {
+        console.log("handleInputChange: Calling fetchCities", { selectedCountryCode, newValue });
         fetchCities(selectedCountryCode, newValue);
       } else {
+        console.log("handleInputChange: Not calling fetchCities - missing values", { newValue, selectedCountryCode });
         setCities([]);
       }
     }
