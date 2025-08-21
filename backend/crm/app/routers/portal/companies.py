@@ -435,8 +435,21 @@ async def get_states_by_country(country_code: str, db: Session = Depends(get_db)
 
 
 @router.get("/masters/cities/{country_code}/{state_name}", response_model=StandardResponse)
-async def get_cities_by_state(country_code: str, state_name: str):
+async def get_cities_by_state(country_code: str, state_name: str, db: Session = Depends(get_db)):
     """Get cities for a specific state/province"""
+    try:
+        cities = GeographicService.get_cities_by_state_name(db, country_code, state_name)
+        
+        return StandardResponse(
+            status=True,
+            message="Cities retrieved successfully",
+            data={
+                "cities": [city["name"] for city in cities],
+                "allow_custom": True
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to retrieve cities")
     
     # Major cities data for key states/provinces
     cities_data = {
