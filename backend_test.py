@@ -484,7 +484,7 @@ class CRMAPITester:
 
     def run_all_tests(self):
         """Run all tests in sequence"""
-        self.log("🚀 Starting CRM Countries and States Dropdown Testing")
+        self.log("🚀 Starting CRM 3-Level Dropdown System Testing")
         self.log("=" * 60)
 
         # Test 1: Health Check
@@ -492,27 +492,37 @@ class CRMAPITester:
             self.log("❌ CRITICAL: API health check failed, stopping tests")
             return False
 
-        # Test 2: Test Countries and States Masters Data (No auth required)
-        if not self.test_countries_states_masters():
-            self.log("❌ CRITICAL: Countries and states masters test failed")
+        # Test 2: Test Countries Master Data (No auth required)
+        if not self.test_countries_master():
+            self.log("❌ CRITICAL: Countries master test failed")
             return False
 
-        # Test 3: Admin Login (for other tests)
+        # Test 3: Test States by Country (No auth required)
+        if not self.test_states_by_country():
+            self.log("❌ CRITICAL: States by country test failed")
+            return False
+
+        # Test 4: Test Cities by State (No auth required)
+        if not self.test_cities_by_state():
+            self.log("❌ CRITICAL: Cities by state test failed")
+            return False
+
+        # Test 5: Admin Login (for company creation tests)
         login_success = self.test_login("admin", "admin123")
         if not login_success:
             self.log("❌ WARNING: Admin login failed, skipping authenticated tests")
         else:
-            # Test 4: Create Company with US/California (if login worked)
+            # Test 6: Create Company with US/California (if login worked)
             us_company_created, us_company_id = self.test_create_company_with_different_countries()
             if not us_company_created:
                 self.log("❌ WARNING: US company creation test failed (likely auth issue)")
 
-            # Test 5: Create Company (India - original test)
+            # Test 7: Create Company (India - original test)
             company_created, company_data = self.test_create_company_immediate_active()
             if not company_created:
                 self.log("❌ WARNING: India company creation failed (likely auth issue)")
 
-            # Test 6: Get companies list
+            # Test 8: Get companies list
             companies_success, companies = self.test_get_companies()
             if not companies_success:
                 self.log("❌ WARNING: Get companies test failed (likely auth issue)")
@@ -521,9 +531,9 @@ class CRMAPITester:
         self.log("=" * 60)
         self.log(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
         
-        # Focus on the main requirement - countries and states data
-        if self.tests_passed >= 2:  # Health check + countries-states at minimum
-            self.log("🎉 CORE FUNCTIONALITY WORKING: Countries and states dropdown data is available!")
+        # Focus on the main requirement - 3-level dropdown system
+        if self.tests_passed >= 4:  # Health check + countries + states + cities at minimum
+            self.log("🎉 CORE FUNCTIONALITY WORKING: 3-level dropdown system is working!")
             self.log("📝 Note: Authentication issues may prevent full company creation testing")
             return True
         else:
