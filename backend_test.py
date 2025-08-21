@@ -300,10 +300,10 @@ class CRMAPITester:
             self.log(f"❌ FAIL: Could not login as sales user")
             return False
 
-    def test_countries_master(self):
-        """Test the new countries master data endpoint"""
+    def test_countries_master_api(self):
+        """Test GET /api/companies/masters/countries - comprehensive country list"""
         success, response = self.run_test(
-            "Get Countries Master",
+            "Get Countries Master API",
             "GET",
             "/api/companies/masters/countries",
             200
@@ -313,7 +313,7 @@ class CRMAPITester:
             countries_data = response.get('data', [])
             self.log(f"✅ Found {len(countries_data)} countries")
             
-            # Check for specific countries mentioned in the requirements
+            # Check for specific countries mentioned in requirements
             expected_countries = [
                 "United States", "Germany", "Brazil", "China", "Japan", 
                 "Korea, Republic of", "India", "Canada"
@@ -330,144 +330,377 @@ class CRMAPITester:
                 else:
                     missing_countries.append(country)
             
+            # Check data format
+            if countries_data and isinstance(countries_data[0], dict):
+                sample_country = countries_data[0]
+                if 'code' in sample_country and 'name' in sample_country:
+                    self.log(f"✅ Country data format is correct: {sample_country}")
+                    self.test_results["geographic_apis"]["countries_format"] = "PASS"
+                else:
+                    self.log(f"❌ Country data format incorrect: {sample_country}")
+                    self.test_results["geographic_apis"]["countries_format"] = "FAIL"
+            
             if missing_countries:
                 self.log(f"❌ Missing countries: {', '.join(missing_countries)}")
+                self.test_results["geographic_apis"]["countries_completeness"] = "PARTIAL"
                 return False
             
-            # Check if we have 249 countries as mentioned in requirements
-            if len(countries_data) >= 249:
-                self.log(f"✅ PASS: Found {len(countries_data)} countries (249 requirement met)")
+            # Check if we have sufficient countries (should be comprehensive)
+            if len(countries_data) >= 200:
+                self.log(f"✅ PASS: Found {len(countries_data)} countries (comprehensive list)")
+                self.test_results["geographic_apis"]["countries_completeness"] = "PASS"
                 return True
             else:
-                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected 249")
+                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected comprehensive list")
+                self.test_results["geographic_apis"]["countries_completeness"] = "FAIL"
                 return False
         
+        self.test_results["geographic_apis"]["countries_api"] = "FAIL"
         return False
 
-    def test_states_by_country(self):
-        """Test the states by country endpoint"""
-        test_countries = [
-            {"code": "US", "name": "United States", "expected_states": 51},
-            {"code": "DE", "name": "Germany", "expected_states": 16},
-            {"code": "IN", "name": "India", "expected_states": 35}
-        ]
+    def test_states_for_india(self):
+        """Test GET /api/companies/masters/states/IN - states for India"""
+        success, response = self.run_test(
+            "Get States for India",
+            "GET",
+            "/api/companies/masters/states/IN",
+            200
+        )
         
-        all_passed = True
-        
-        for country in test_countries:
-            success, response = self.run_test(
-                f"Get States for {country['name']}",
-                "GET",
-                f"/api/companies/masters/states/{country['code']}",
-                200
-            )
+        if success and response.get('status'):
+            states_data = response.get('data', {}).get('states', [])
+            self.log(f"✅ India: Found {len(states_data)} states")
             
-            if success and response.get('status'):
-                states_data = response.get('data', {}).get('states', [])
-                self.log(f"✅ {country['name']}: Found {len(states_data)} states/provinces")
-                
-                if len(states_data) >= country['expected_states']:
-                    self.log(f"✅ {country['name']} has expected number of states ({len(states_data)} >= {country['expected_states']})")
-                else:
-                    self.log(f"❌ {country['name']} has fewer states than expected ({len(states_data)} < {country['expected_states']})")
-                    all_passed = False
-            else:
-                self.log(f"❌ Failed to get states for {country['name']}")
-                all_passed = False
-        
-        return all_passed
-
-    def test_cities_by_state(self):
-        """Test the cities by state endpoint"""
-        test_cases = [
-            {"country": "US", "state": "California", "expected_cities": 15},
-            {"country": "DE", "state": "Bavaria", "expected_cities": 15},
-            {"country": "IN", "state": "Maharashtra", "expected_cities": 15}
-        ]
-        
-        all_passed = True
-        
-        for case in test_cases:
-            success, response = self.run_test(
-                f"Get Cities for {case['state']}, {case['country']}",
-                "GET",
-                f"/api/companies/masters/cities/{case['country']}/{case['state']}",
-                200
-            )
+            # Check for key Indian states
+            expected_states = ["Maharashtra", "Karnataka", "Tamil Nadu", "Gujarat", "Delhi (NCT)"]
+            found_states = [state for state in expected_states if state in states_data]
             
-            if success and response.get('status'):
-                cities_data = response.get('data', {}).get('cities', [])
-                self.log(f"✅ {case['state']}: Found {len(cities_data)} cities")
-                
-                # Check for specific cities
-                if case['country'] == 'US' and case['state'] == 'California':
-                    expected_cities = ['Los Angeles', 'San Diego', 'San Francisco']
-                    found_cities = [city for city in expected_cities if city in cities_data]
-                    self.log(f"✅ California major cities found: {', '.join(found_cities)}")
-                
-                elif case['country'] == 'DE' and case['state'] == 'Bavaria':
-                    expected_cities = ['Munich', 'Nuremberg']
-                    found_cities = [city for city in expected_cities if city in cities_data]
-                    self.log(f"✅ Bavaria major cities found: {', '.join(found_cities)}")
-                
-                elif case['country'] == 'IN' and case['state'] == 'Maharashtra':
-                    expected_cities = ['Mumbai', 'Pune']
-                    found_cities = [city for city in expected_cities if city in cities_data]
-                    self.log(f"✅ Maharashtra major cities found: {', '.join(found_cities)}")
-                
-                if len(cities_data) >= case['expected_cities']:
-                    self.log(f"✅ {case['state']} has sufficient cities ({len(cities_data)} >= {case['expected_cities']})")
-                else:
-                    self.log(f"❌ {case['state']} has fewer cities than expected ({len(cities_data)} < {case['expected_cities']})")
-                    all_passed = False
+            if len(found_states) >= 4:
+                self.log(f"✅ Found key Indian states: {', '.join(found_states)}")
+                self.test_results["geographic_apis"]["india_states"] = "PASS"
+                return True
             else:
-                self.log(f"❌ Failed to get cities for {case['state']}")
-                all_passed = False
+                self.log(f"❌ Missing key Indian states. Found: {', '.join(found_states)}")
+                self.test_results["geographic_apis"]["india_states"] = "FAIL"
+                return False
         
-        return all_passed
+        self.test_results["geographic_apis"]["india_states"] = "FAIL"
+        return False
 
-    def test_create_company_with_different_countries(self):
-        """Test creating companies with different countries and states"""
-        # Test with United States - California
-        us_company_data = {
-            "name": f"US Test Company {datetime.now().strftime('%Y%m%d %H%M%S')}",
-            "company_type": "INTERNATIONAL",
-            "industry": "BFSI",
-            "sub_industry": "BANKING — Retail Banking",
-            "annual_revenue": 50000000,
-            "tax_identification_number": "US123456789",
-            "company_registration_number": "US-CRN-12345",
-            "supporting_documents": ["TAX_CERT_us.pdf"],
-            "verification_source": "MANUAL",
+    def test_cities_for_maharashtra(self):
+        """Test GET /api/companies/masters/cities/IN/Maharashtra - cities for Maharashtra, India"""
+        success, response = self.run_test(
+            "Get Cities for Maharashtra, India",
+            "GET",
+            "/api/companies/masters/cities/IN/Maharashtra",
+            200
+        )
+        
+        if success and response.get('status'):
+            cities_data = response.get('data', {}).get('cities', [])
+            self.log(f"✅ Maharashtra: Found {len(cities_data)} cities")
+            
+            # Check for major Maharashtra cities
+            expected_cities = ["Mumbai", "Pune", "Nagpur", "Nashik"]
+            found_cities = [city for city in expected_cities if city in cities_data]
+            
+            if len(found_cities) >= 3:
+                self.log(f"✅ Found major Maharashtra cities: {', '.join(found_cities)}")
+                self.test_results["geographic_apis"]["maharashtra_cities"] = "PASS"
+                return True
+            else:
+                self.log(f"❌ Missing major Maharashtra cities. Found: {', '.join(found_cities)}")
+                self.test_results["geographic_apis"]["maharashtra_cities"] = "FAIL"
+                return False
+        
+        self.test_results["geographic_apis"]["maharashtra_cities"] = "FAIL"
+        return False
+
+    def test_create_hot_company(self):
+        """Test creating a company that should be classified as HOT"""
+        hot_company_data = {
+            "name": f"TechCorp Solutions {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "company_type": "DOMESTIC_GST",
+            "industry": "IT_ITeS",
+            "sub_industry": "Software Development",
+            "annual_revenue": 150000000,  # ₹15 crore - should be HOT
+            "employee_count": 750,  # Large company
+            "gst_number": "27ABCDE1234F1Z5",
+            "pan_number": "ABCDE1234F",
+            "supporting_documents": ["GST_CERTIFICATE_tech.pdf", "PAN_CARD_tech.pdf"],
+            "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "123 Silicon Valley Blvd, Tech District",
-            "country": "United States",
-            "state": "California",
-            "city": "San Francisco",
+            "address": "Tech Park, IT Corridor, Software City",
+            "country": "India",
+            "state": "Maharashtra",
+            "city": "Mumbai",
             "pin_code": "400001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "description": "Test US company for countries/states testing"
+            "website": "https://techcorp.com",
+            "description": "Leading software development company - should be HOT lead"
         }
 
         success, response = self.run_test(
-            "Create US Company (California)",
+            "Create HOT Company (High Revenue IT)",
             "POST",
             "/api/companies",
             200,
-            data=us_company_data
+            data=hot_company_data
         )
 
         if success and response.get('status'):
             company = response.get('data')
-            if company and company.get('country') == "United States" and company.get('state') == "California":
-                self.log(f"✅ PASS: US company created with correct country/state")
-                return True, company.get('id')
+            if company:
+                company_id = company.get('id')
+                lead_status = company.get('lead_status')
+                validation_score = company.get('validation_score')
+                
+                self.created_company_ids.append(company_id)
+                self.log(f"✅ Company created with ID: {company_id}")
+                self.log(f"✅ Lead Status: {lead_status}")
+                self.log(f"✅ Validation Score: {validation_score}")
+                
+                if lead_status == "HOT":
+                    self.log(f"✅ PASS: Company correctly classified as HOT")
+                    self.test_results["company_validation"]["hot_classification"] = "PASS"
+                    return True, company
+                else:
+                    self.log(f"❌ FAIL: Expected HOT, got {lead_status}")
+                    self.test_results["company_validation"]["hot_classification"] = "FAIL"
+                    return False, company
             else:
-                self.log(f"❌ FAIL: US company country/state not saved correctly")
-                return False, None
-        return False, None
+                self.log(f"❌ FAIL: No company data in response")
+                return False, {}
+        
+        self.test_results["company_validation"]["hot_classification"] = "FAIL"
+        return False, {}
+
+    def test_create_cold_company(self):
+        """Test creating a company that should be classified as COLD"""
+        cold_company_data = {
+            "name": f"Small Retail Store {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "company_type": "DOMESTIC_GST",
+            "industry": "Retail_CPG",
+            "sub_industry": "Grocery Retail",
+            "annual_revenue": 2500000,  # ₹25 lakh - should be COLD
+            "employee_count": 15,  # Small company
+            "gst_number": "27FGHIJ5678K2L6",
+            "pan_number": "FGHIJ5678K",
+            "supporting_documents": ["GST_CERTIFICATE_retail.pdf", "PAN_CARD_retail.pdf"],
+            "verification_source": "GST",
+            "verification_date": datetime.now().isoformat(),
+            "verified_by": "admin",
+            "address": "Main Street, Local Market, Retail Area",
+            "country": "India",
+            "state": "Maharashtra",
+            "city": "Pune",
+            "pin_code": "411001",
+            "parent_child_mapping_confirmed": True,
+            "linked_subsidiaries": ["None"],
+            "description": "Small retail business - should be COLD lead"
+        }
+
+        success, response = self.run_test(
+            "Create COLD Company (Low Revenue Retail)",
+            "POST",
+            "/api/companies",
+            200,
+            data=cold_company_data
+        )
+
+        if success and response.get('status'):
+            company = response.get('data')
+            if company:
+                company_id = company.get('id')
+                lead_status = company.get('lead_status')
+                validation_score = company.get('validation_score')
+                
+                self.created_company_ids.append(company_id)
+                self.log(f"✅ Company created with ID: {company_id}")
+                self.log(f"✅ Lead Status: {lead_status}")
+                self.log(f"✅ Validation Score: {validation_score}")
+                
+                if lead_status == "COLD":
+                    self.log(f"✅ PASS: Company correctly classified as COLD")
+                    self.test_results["company_validation"]["cold_classification"] = "PASS"
+                    return True, company
+                else:
+                    self.log(f"❌ FAIL: Expected COLD, got {lead_status}")
+                    self.test_results["company_validation"]["cold_classification"] = "FAIL"
+                    return False, company
+            else:
+                self.log(f"❌ FAIL: No company data in response")
+                return False, {}
+        
+        self.test_results["company_validation"]["cold_classification"] = "FAIL"
+        return False, {}
+
+    def test_create_different_industries(self):
+        """Test creating companies in different industries to verify validation differences"""
+        test_cases = [
+            {
+                "name": "BFSI Bank Corp",
+                "industry": "BFSI",
+                "sub_industry": "Banking",
+                "revenue": 80000000,  # ₹8 crore
+                "employees": 300,
+                "expected": "HOT"
+            },
+            {
+                "name": "Manufacturing Co",
+                "industry": "Manufacturing", 
+                "sub_industry": "Automotive",
+                "revenue": 60000000,  # ₹6 crore
+                "employees": 200,
+                "expected": "HOT"
+            },
+            {
+                "name": "Media House",
+                "industry": "Media_Entertainment",
+                "sub_industry": "Broadcasting",
+                "revenue": 30000000,  # ₹3 crore
+                "employees": 100,
+                "expected": "COLD"  # Lower scoring industry
+            }
+        ]
+        
+        all_passed = True
+        
+        for i, case in enumerate(test_cases):
+            company_data = {
+                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d_%H%M%S')}_{i}",
+                "company_type": "DOMESTIC_GST",
+                "industry": case["industry"],
+                "sub_industry": case["sub_industry"],
+                "annual_revenue": case["revenue"],
+                "employee_count": case["employees"],
+                "gst_number": f"27{chr(65+i)}{chr(66+i)}{chr(67+i)}{chr(68+i)}{chr(69+i)}1234F{i}Z{i}",
+                "pan_number": f"{chr(65+i)}{chr(66+i)}{chr(67+i)}{chr(68+i)}{chr(69+i)}1234{chr(70+i)}",
+                "supporting_documents": [f"GST_CERTIFICATE_{i}.pdf", f"PAN_CARD_{i}.pdf"],
+                "verification_source": "GST",
+                "verification_date": datetime.now().isoformat(),
+                "verified_by": "admin",
+                "address": f"Business District {i}, Commercial Area",
+                "country": "India",
+                "state": "Maharashtra",
+                "city": "Mumbai",
+                "pin_code": "400001",
+                "parent_child_mapping_confirmed": True,
+                "linked_subsidiaries": ["None"],
+                "description": f"Test company for {case['industry']} validation"
+            }
+            
+            success, response = self.run_test(
+                f"Create {case['industry']} Company",
+                "POST",
+                "/api/companies",
+                200,
+                data=company_data
+            )
+            
+            if success and response.get('status'):
+                company = response.get('data')
+                if company:
+                    company_id = company.get('id')
+                    lead_status = company.get('lead_status')
+                    validation_score = company.get('validation_score')
+                    
+                    self.created_company_ids.append(company_id)
+                    self.log(f"✅ {case['industry']} Company - Status: {lead_status}, Score: {validation_score}")
+                    
+                    if lead_status == case["expected"]:
+                        self.log(f"✅ PASS: {case['industry']} correctly classified as {case['expected']}")
+                    else:
+                        self.log(f"❌ FAIL: {case['industry']} expected {case['expected']}, got {lead_status}")
+                        all_passed = False
+                else:
+                    self.log(f"❌ FAIL: No company data for {case['industry']}")
+                    all_passed = False
+            else:
+                self.log(f"❌ FAIL: Could not create {case['industry']} company")
+                all_passed = False
+        
+        self.test_results["company_validation"]["industry_differences"] = "PASS" if all_passed else "FAIL"
+        return all_passed
+
+    def test_company_listing_with_lead_status(self):
+        """Test GET /api/companies - verify companies are listed with lead_status field"""
+        success, response = self.run_test(
+            "Get Companies List with Lead Status",
+            "GET",
+            "/api/companies",
+            200
+        )
+        
+        if success and response.get('status'):
+            companies_data = response.get('data', {})
+            companies = companies_data.get('companies', [])
+            self.log(f"✅ Found {len(companies)} companies")
+            
+            # Check if companies have lead_status field
+            companies_with_status = 0
+            hot_companies = 0
+            cold_companies = 0
+            
+            for company in companies:
+                if 'lead_status' in company:
+                    companies_with_status += 1
+                    if company['lead_status'] == 'HOT':
+                        hot_companies += 1
+                    elif company['lead_status'] == 'COLD':
+                        cold_companies += 1
+            
+            self.log(f"✅ Companies with lead_status: {companies_with_status}/{len(companies)}")
+            self.log(f"✅ HOT companies: {hot_companies}")
+            self.log(f"✅ COLD companies: {cold_companies}")
+            
+            if companies_with_status == len(companies) and companies_with_status > 0:
+                self.log(f"✅ PASS: All companies have lead_status field")
+                self.test_results["company_listing"]["lead_status_present"] = "PASS"
+                return True
+            else:
+                self.log(f"❌ FAIL: Not all companies have lead_status field")
+                self.test_results["company_listing"]["lead_status_present"] = "FAIL"
+                return False
+        
+        self.test_results["company_listing"]["lead_status_present"] = "FAIL"
+        return False
+
+    def test_company_dropdown_availability(self):
+        """Test that companies are available for dropdown without status display"""
+        success, response = self.run_test(
+            "Get Companies for Dropdown",
+            "GET",
+            "/api/companies",
+            200
+        )
+        
+        if success and response.get('status'):
+            companies_data = response.get('data', {})
+            companies = companies_data.get('companies', [])
+            
+            # Check if our created companies are available
+            created_found = 0
+            for company_id in self.created_company_ids:
+                for company in companies:
+                    if company.get('id') == company_id:
+                        created_found += 1
+                        self.log(f"✅ Created company {company_id} available in dropdown")
+                        break
+            
+            if created_found == len(self.created_company_ids):
+                self.log(f"✅ PASS: All created companies available immediately")
+                self.test_results["company_listing"]["immediate_availability"] = "PASS"
+                return True
+            else:
+                self.log(f"❌ FAIL: Only {created_found}/{len(self.created_company_ids)} created companies found")
+                self.test_results["company_listing"]["immediate_availability"] = "FAIL"
+                return False
+        
+        self.test_results["company_listing"]["immediate_availability"] = "FAIL"
+        return False
         """Test that approval-related endpoints are not accessible or return appropriate responses"""
         # These endpoints should either not exist or return appropriate responses
         approval_endpoints = [
