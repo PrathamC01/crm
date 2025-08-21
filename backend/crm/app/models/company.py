@@ -88,9 +88,9 @@ class Company(BaseModel):
     subsidiaries = relationship("Company", back_populates="parent_company")
     
     # Geographic relationships (New)
-    country = relationship("Country", back_populates="companies")
-    state = relationship("State", back_populates="companies")  
-    city = relationship("City", back_populates="companies")
+    country_ref = relationship("Country", back_populates="companies")
+    state_ref = relationship("State", back_populates="companies")  
+    city_ref = relationship("City", back_populates="companies")
     
     # Audit relationships
     creator = relationship("User", foreign_keys="Company.created_by", back_populates="companies_created")
