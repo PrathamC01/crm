@@ -131,6 +131,14 @@ class CompanyService:
         # Validate company and get Hot/Cold status
         validation_result = self.validate_company(company_data)
         
+        # Get geographic IDs from names
+        geographic_ids = GeographicService.get_geographic_ids(
+            self.db, 
+            company_data.country, 
+            company_data.state, 
+            company_data.city
+        )
+        
         try:
             db_company = Company(
                 # Basic Information
