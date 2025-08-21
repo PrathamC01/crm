@@ -294,41 +294,33 @@ class CRMAPITester:
             self.log(f"❌ FAIL: Could not login as sales user")
             return False
 
-    def test_countries_states_masters(self):
-        """Test the countries and states master data endpoint"""
+    def test_countries_master(self):
+        """Test the new countries master data endpoint"""
         success, response = self.run_test(
-            "Get Countries and States Masters",
+            "Get Countries Master",
             "GET",
-            "/api/companies/masters/countries-states",
+            "/api/companies/masters/countries",
             200
         )
         
         if success and response.get('status'):
-            countries_data = response.get('data', {})
+            countries_data = response.get('data', [])
             self.log(f"✅ Found {len(countries_data)} countries")
             
             # Check for specific countries mentioned in the requirements
             expected_countries = [
                 "United States", "Germany", "Brazil", "China", "Japan", 
-                "South Korea", "India", "Canada"
+                "Korea, Republic of", "India", "Canada"
             ]
             
             found_countries = []
             missing_countries = []
+            country_names = [country.get('name') for country in countries_data]
             
             for country in expected_countries:
-                if country in countries_data:
+                if country in country_names:
                     found_countries.append(country)
-                    states = countries_data[country]
-                    self.log(f"✅ {country}: {len(states)} states/provinces")
-                    
-                    # Specific checks for countries with known state counts
-                    if country == "United States" and len(states) >= 51:
-                        self.log(f"✅ US has {len(states)} states (including DC)")
-                    elif country == "Germany" and len(states) >= 16:
-                        self.log(f"✅ Germany has {len(states)} states")
-                    elif country == "India" and len(states) >= 28:
-                        self.log(f"✅ India has {len(states)} states/territories")
+                    self.log(f"✅ Found {country}")
                 else:
                     missing_countries.append(country)
             
@@ -336,15 +328,97 @@ class CRMAPITester:
                 self.log(f"❌ Missing countries: {', '.join(missing_countries)}")
                 return False
             
-            # Check if we have 30+ countries as mentioned in requirements
-            if len(countries_data) >= 30:
-                self.log(f"✅ PASS: Found {len(countries_data)} countries (30+ requirement met)")
+            # Check if we have 249 countries as mentioned in requirements
+            if len(countries_data) >= 249:
+                self.log(f"✅ PASS: Found {len(countries_data)} countries (249 requirement met)")
                 return True
             else:
-                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected 30+")
+                self.log(f"❌ FAIL: Only {len(countries_data)} countries found, expected 249")
                 return False
         
         return False
+
+    def test_states_by_country(self):
+        """Test the states by country endpoint"""
+        test_countries = [
+            {"code": "US", "name": "United States", "expected_states": 51},
+            {"code": "DE", "name": "Germany", "expected_states": 16},
+            {"code": "IN", "name": "India", "expected_states": 35}
+        ]
+        
+        all_passed = True
+        
+        for country in test_countries:
+            success, response = self.run_test(
+                f"Get States for {country['name']}",
+                "GET",
+                f"/api/companies/masters/states/{country['code']}",
+                200
+            )
+            
+            if success and response.get('status'):
+                states_data = response.get('data', {}).get('states', [])
+                self.log(f"✅ {country['name']}: Found {len(states_data)} states/provinces")
+                
+                if len(states_data) >= country['expected_states']:
+                    self.log(f"✅ {country['name']} has expected number of states ({len(states_data)} >= {country['expected_states']})")
+                else:
+                    self.log(f"❌ {country['name']} has fewer states than expected ({len(states_data)} < {country['expected_states']})")
+                    all_passed = False
+            else:
+                self.log(f"❌ Failed to get states for {country['name']}")
+                all_passed = False
+        
+        return all_passed
+
+    def test_cities_by_state(self):
+        """Test the cities by state endpoint"""
+        test_cases = [
+            {"country": "US", "state": "California", "expected_cities": 15},
+            {"country": "DE", "state": "Bavaria", "expected_cities": 15},
+            {"country": "IN", "state": "Maharashtra", "expected_cities": 15}
+        ]
+        
+        all_passed = True
+        
+        for case in test_cases:
+            success, response = self.run_test(
+                f"Get Cities for {case['state']}, {case['country']}",
+                "GET",
+                f"/api/companies/masters/cities/{case['country']}/{case['state']}",
+                200
+            )
+            
+            if success and response.get('status'):
+                cities_data = response.get('data', {}).get('cities', [])
+                self.log(f"✅ {case['state']}: Found {len(cities_data)} cities")
+                
+                # Check for specific cities
+                if case['country'] == 'US' and case['state'] == 'California':
+                    expected_cities = ['Los Angeles', 'San Diego', 'San Francisco']
+                    found_cities = [city for city in expected_cities if city in cities_data]
+                    self.log(f"✅ California major cities found: {', '.join(found_cities)}")
+                
+                elif case['country'] == 'DE' and case['state'] == 'Bavaria':
+                    expected_cities = ['Munich', 'Nuremberg']
+                    found_cities = [city for city in expected_cities if city in cities_data]
+                    self.log(f"✅ Bavaria major cities found: {', '.join(found_cities)}")
+                
+                elif case['country'] == 'IN' and case['state'] == 'Maharashtra':
+                    expected_cities = ['Mumbai', 'Pune']
+                    found_cities = [city for city in expected_cities if city in cities_data]
+                    self.log(f"✅ Maharashtra major cities found: {', '.join(found_cities)}")
+                
+                if len(cities_data) >= case['expected_cities']:
+                    self.log(f"✅ {case['state']} has sufficient cities ({len(cities_data)} >= {case['expected_cities']})")
+                else:
+                    self.log(f"❌ {case['state']} has fewer cities than expected ({len(cities_data)} < {case['expected_cities']})")
+                    all_passed = False
+            else:
+                self.log(f"❌ Failed to get cities for {case['state']}")
+                all_passed = False
+        
+        return all_passed
 
     def test_create_company_with_different_countries(self):
         """Test creating companies with different countries and states"""
