@@ -790,7 +790,7 @@ class CRMAPITester:
         for i, case in enumerate(test_cases):
             company_data = {
                 "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
-                "company_type": "INTERNATIONAL",
+                "company_type": "OVERSEAS",  # Fixed: Use valid company type
                 "industry": "IT_ITeS",
                 "sub_industry": "Software Development",
                 "annual_revenue": 50000000,
@@ -798,7 +798,7 @@ class CRMAPITester:
                 "gst_number": None,
                 "pan_number": None,
                 "supporting_documents": [f"BUSINESS_LICENSE_{i}.pdf"],
-                "verification_source": "BUSINESS_LICENSE",
+                "verification_source": "MANUAL",  # Fixed: Use valid verification source
                 "verification_date": datetime.now().isoformat(),
                 "verified_by": "admin",
                 "address": f"Business District {i} Commercial Area",
