@@ -89,7 +89,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
       const [companiesRes, industriesRes, countriesRes] = await Promise.all([
         apiRequest("/api/companies"),
         apiRequest("/api/companies/masters/industries"),
-        apiRequest("/api/companies/masters/countries-states"),
+        apiRequest("/api/companies/masters/countries"),
       ]);
 
       if (companiesRes.status) {
@@ -99,10 +99,53 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         setIndustryMasters(industriesRes.data || {});
       }
       if (countriesRes.status) {
-        setCountryStateMasters(countriesRes.data || {});
+        setCountries(countriesRes.data || []);
       }
     } catch (err) {
       console.error("Failed to fetch master data:", err);
+    }
+  };
+
+  // Fetch states when country changes
+  const fetchStates = async (countryCode) => {
+    if (!countryCode) return;
+    
+    try {
+      const response = await apiRequest(`/api/companies/masters/states/${countryCode}`);
+      if (response.status && response.data.states) {
+        setStates(response.data.states);
+      } else {
+        setStates([]);
+        // Show message if no states available
+        if (response.data?.message) {
+          console.log(response.data.message);
+        }
+      }
+      // Clear cities when states change
+      setCities([]);
+      setFormData(prev => ({ ...prev, state: "", city: "" }));
+    } catch (err) {
+      console.error("Failed to fetch states:", err);
+      setStates([]);
+    }
+  };
+
+  // Fetch cities when state changes
+  const fetchCities = async (countryCode, stateName) => {
+    if (!countryCode || !stateName) return;
+    
+    try {
+      const response = await apiRequest(`/api/companies/masters/cities/${countryCode}/${encodeURIComponent(stateName)}`);
+      if (response.status && response.data.cities) {
+        setCities(response.data.cities);
+      } else {
+        setCities([]);
+      }
+      // Clear city when cities change
+      setFormData(prev => ({ ...prev, city: "" }));
+    } catch (err) {
+      console.error("Failed to fetch cities:", err);
+      setCities([]);
     }
   };
 
