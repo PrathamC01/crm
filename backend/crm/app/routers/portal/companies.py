@@ -453,9 +453,6 @@ async def get_cities_by_state(country_code: str, state_name: str, db: Session = 
 
 
 @router.get("/masters/countries-states", response_model=StandardResponse)
-
-
-@router.get("/masters/countries-states", response_model=StandardResponse)
 async def get_country_state_masters():
     """Get comprehensive country and state/province masters for address - DEPRECATED
     
