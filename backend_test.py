@@ -511,7 +511,7 @@ class CRMAPITester:
         }
 
         success, response = self.run_test(
-            "Create COLD Company (Low Revenue Retail)",
+            "Create COLD Company (Small Local Business)",
             "POST",
             "/api/companies",
             200,
