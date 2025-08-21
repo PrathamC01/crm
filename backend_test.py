@@ -484,23 +484,92 @@ class CRMAPITester:
         )
         
         if success and response.get('status'):
-            cities_data = response.get('data', {}).get('cities', [])
-            self.log(f"✅ Maharashtra: Found {len(cities_data)} cities")
+            cities_data = response.get('data', {})
+            cities_list = cities_data.get('cities', []) if isinstance(cities_data, dict) else cities_data
             
-            # Check for major Maharashtra cities
-            expected_cities = ["Mumbai", "Pune", "Nagpur", "Nashik"]
-            found_cities = [city for city in expected_cities if city in cities_data]
+            self.log(f"✅ Maharashtra: Found {len(cities_list)} cities")
             
-            if len(found_cities) >= 3:
+            # Check for major Maharashtra cities (should return 19 cities including Mumbai, Pune, Nagpur)
+            expected_cities = ["Mumbai", "Pune", "Nagpur"]
+            found_cities = [city for city in expected_cities if city in cities_list]
+            
+            if len(found_cities) >= 3 and len(cities_list) >= 15:
                 self.log(f"✅ Found major Maharashtra cities: {', '.join(found_cities)}")
+                self.log(f"✅ Total cities count: {len(cities_list)} (expected ~19)")
                 self.test_results["geographic_apis"]["maharashtra_cities"] = "PASS"
                 return True
             else:
                 self.log(f"❌ Missing major Maharashtra cities. Found: {', '.join(found_cities)}")
+                self.log(f"   Total cities: {len(cities_list)}, expected ~19")
+                self.log(f"   Available cities: {', '.join(cities_list[:10])}...")  # Show first 10
                 self.test_results["geographic_apis"]["maharashtra_cities"] = "FAIL"
                 return False
         
         self.test_results["geographic_apis"]["maharashtra_cities"] = "FAIL"
+        return False
+
+    def test_cities_for_california(self):
+        """Test GET /api/companies/masters/cities/US/California - cities for California, US"""
+        success, response = self.run_test(
+            "Get Cities for California, US",
+            "GET",
+            "/api/companies/masters/cities/US/California",
+            200
+        )
+        
+        if success and response.get('status'):
+            cities_data = response.get('data', {})
+            cities_list = cities_data.get('cities', []) if isinstance(cities_data, dict) else cities_data
+            
+            self.log(f"✅ California: Found {len(cities_list)} cities")
+            
+            # Check for major California cities
+            expected_cities = ["San Francisco", "Los Angeles", "San Diego"]
+            found_cities = [city for city in expected_cities if city in cities_list]
+            
+            if len(found_cities) >= 2:
+                self.log(f"✅ Found major California cities: {', '.join(found_cities)}")
+                self.test_results["geographic_apis"]["california_cities"] = "PASS"
+                return True
+            else:
+                self.log(f"❌ Missing major California cities. Found: {', '.join(found_cities)}")
+                self.log(f"   Available cities: {', '.join(cities_list[:10])}...")  # Show first 10
+                self.test_results["geographic_apis"]["california_cities"] = "FAIL"
+                return False
+        
+        self.test_results["geographic_apis"]["california_cities"] = "FAIL"
+        return False
+
+    def test_cities_for_ontario(self):
+        """Test GET /api/companies/masters/cities/CA/Ontario - cities for Ontario, Canada"""
+        success, response = self.run_test(
+            "Get Cities for Ontario, Canada",
+            "GET",
+            "/api/companies/masters/cities/CA/Ontario",
+            200
+        )
+        
+        if success and response.get('status'):
+            cities_data = response.get('data', {})
+            cities_list = cities_data.get('cities', []) if isinstance(cities_data, dict) else cities_data
+            
+            self.log(f"✅ Ontario: Found {len(cities_list)} cities")
+            
+            # Check for major Ontario cities
+            expected_cities = ["Toronto", "Ottawa", "Mississauga"]
+            found_cities = [city for city in expected_cities if city in cities_list]
+            
+            if len(found_cities) >= 2:
+                self.log(f"✅ Found major Ontario cities: {', '.join(found_cities)}")
+                self.test_results["geographic_apis"]["ontario_cities"] = "PASS"
+                return True
+            else:
+                self.log(f"❌ Missing major Ontario cities. Found: {', '.join(found_cities)}")
+                self.log(f"   Available cities: {', '.join(cities_list[:10])}...")  # Show first 10
+                self.test_results["geographic_apis"]["ontario_cities"] = "FAIL"
+                return False
+        
+        self.test_results["geographic_apis"]["ontario_cities"] = "FAIL"
         return False
 
     def test_create_hot_company_specific(self):
