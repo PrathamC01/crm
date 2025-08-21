@@ -412,8 +412,26 @@ async def get_countries_master(db: Session = Depends(get_db)):
 
 
 @router.get("/masters/states/{country_code}", response_model=StandardResponse)
-async def get_states_by_country(country_code: str):
+async def get_states_by_country(country_code: str, db: Session = Depends(get_db)):
     """Get states/provinces for a specific country by ISO code"""
+    try:
+        # Find country by code
+        country = db.query(Country).filter(Country.code == country_code.upper()).first()
+        if not country:
+            return StandardResponse(
+                status=False,
+                message=f"Country with code {country_code} not found",
+                data=[]
+            )
+        
+        states = GeographicService.get_states_by_country(db, country.id)
+        return StandardResponse(
+            status=True,
+            message="States retrieved successfully",
+            data=states
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to retrieve states")
     
     # Comprehensive state/province data for major countries
     states_data = {
