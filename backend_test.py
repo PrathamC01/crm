@@ -451,7 +451,7 @@ class CRMAPITester:
         }
 
         success, response = self.run_test(
-            "Create HOT Company (High Revenue IT)",
+            "Create HOT Company (TechVenture Solutions)",
             "POST",
             "/api/companies",
             200,
