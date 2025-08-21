@@ -743,7 +743,7 @@ class CRMAPITester:
         
         for i, case in enumerate(edge_cases):
             company_data = {
-                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
+                "name": f"{case['name'].replace(' ', '')}Company{i}",  # Remove spaces and special chars
                 "company_type": case["company_type"],
                 "industry": case["industry"],
                 "sub_industry": case["sub_industry"],
