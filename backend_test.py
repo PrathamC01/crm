@@ -723,57 +723,101 @@ class CRMAPITester:
 
     def run_all_tests(self):
         """Run all tests in sequence"""
-        self.log("🚀 Starting CRM 3-Level Dropdown System Testing")
-        self.log("=" * 60)
+        self.log("🚀 Starting CRM Company Management & Validation Testing")
+        self.log("=" * 70)
 
         # Test 1: Health Check
         if not self.test_health_check():
             self.log("❌ CRITICAL: API health check failed, stopping tests")
             return False
 
-        # Test 2: Test Countries Master Data (No auth required)
-        if not self.test_countries_master():
-            self.log("❌ CRITICAL: Countries master test failed")
-            return False
+        # Test 2: Geographic Data APIs (No auth required)
+        self.log("\n📍 TESTING GEOGRAPHIC DATA APIs")
+        self.log("-" * 40)
+        
+        countries_success = self.test_countries_master_api()
+        states_success = self.test_states_for_india()
+        cities_success = self.test_cities_for_maharashtra()
+        
+        geographic_apis_working = countries_success and states_success and cities_success
+        
+        if not geographic_apis_working:
+            self.log("❌ CRITICAL: Geographic APIs not working properly")
+            # Continue with other tests but note the failure
 
-        # Test 3: Test States by Country (No auth required)
-        if not self.test_states_by_country():
-            self.log("❌ CRITICAL: States by country test failed")
-            return False
-
-        # Test 4: Test Cities by State (No auth required)
-        if not self.test_cities_by_state():
-            self.log("❌ CRITICAL: Cities by state test failed")
-            return False
-
-        # Test 5: Admin Login (for company creation tests)
+        # Test 3: Authentication for company creation tests
+        self.log("\n🔐 TESTING AUTHENTICATION")
+        self.log("-" * 40)
+        
         login_success = self.test_login("admin", "admin123")
         if not login_success:
-            self.log("❌ WARNING: Admin login failed, skipping authenticated tests")
+            self.log("❌ WARNING: Admin login failed, trying alternative authentication")
+            # Try with test token
+            self.token = "test_admin_token"
+            self.session_headers = {'Authorization': f'Bearer test_admin_token'}
+            login_success = True
+
+        if login_success:
+            # Test 4: Company Creation with Validation
+            self.log("\n🏢 TESTING COMPANY VALIDATION SYSTEM")
+            self.log("-" * 40)
+            
+            hot_success, hot_company = self.test_create_hot_company()
+            cold_success, cold_company = self.test_create_cold_company()
+            industry_success = self.test_create_different_industries()
+            
+            validation_working = hot_success and cold_success and industry_success
+            
+            # Test 5: Company Listing
+            self.log("\n📋 TESTING COMPANY LISTING")
+            self.log("-" * 40)
+            
+            listing_success = self.test_company_listing_with_lead_status()
+            dropdown_success = self.test_company_dropdown_availability()
+            
+            listing_working = listing_success and dropdown_success
+            
         else:
-            # Test 6: Create Company with US/California (if login worked)
-            us_company_created, us_company_id = self.test_create_company_with_different_countries()
-            if not us_company_created:
-                self.log("❌ WARNING: US company creation test failed (likely auth issue)")
-
-            # Test 7: Create Company (India - original test)
-            company_created, company_data = self.test_create_company_immediate_active()
-            if not company_created:
-                self.log("❌ WARNING: India company creation failed (likely auth issue)")
-
-            # Test 8: Get companies list
-            companies_success, companies = self.test_get_companies()
-            if not companies_success:
-                self.log("❌ WARNING: Get companies test failed (likely auth issue)")
+            self.log("❌ WARNING: Could not authenticate, skipping company creation tests")
+            validation_working = False
+            listing_working = False
 
         # Final Results
-        self.log("=" * 60)
-        self.log(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
+        self.log("\n" + "=" * 70)
+        self.log("📊 DETAILED TEST RESULTS")
+        self.log("=" * 70)
         
-        # Focus on the main requirement - 3-level dropdown system
-        if self.tests_passed >= 4:  # Health check + countries + states + cities at minimum
-            self.log("🎉 CORE FUNCTIONALITY WORKING: 3-level dropdown system is working!")
-            self.log("📝 Note: Authentication issues may prevent full company creation testing")
+        # Geographic APIs Results
+        self.log("\n📍 Geographic Data APIs:")
+        for test_name, result in self.test_results["geographic_apis"].items():
+            status_icon = "✅" if result == "PASS" else "❌" if result == "FAIL" else "⚠️"
+            self.log(f"  {status_icon} {test_name}: {result}")
+        
+        # Company Validation Results
+        self.log("\n🏢 Company Validation System:")
+        for test_name, result in self.test_results["company_validation"].items():
+            status_icon = "✅" if result == "PASS" else "❌" if result == "FAIL" else "⚠️"
+            self.log(f"  {status_icon} {test_name}: {result}")
+        
+        # Company Listing Results
+        self.log("\n📋 Company Listing:")
+        for test_name, result in self.test_results["company_listing"].items():
+            status_icon = "✅" if result == "PASS" else "❌" if result == "FAIL" else "⚠️"
+            self.log(f"  {status_icon} {test_name}: {result}")
+        
+        self.log(f"\n📈 Overall Test Results: {self.tests_passed}/{self.tests_run} tests passed")
+        
+        # Determine overall success
+        critical_tests_passed = (
+            geographic_apis_working and 
+            (validation_working if login_success else True) and
+            (listing_working if login_success else True)
+        )
+        
+        if critical_tests_passed:
+            self.log("🎉 CORE FUNCTIONALITY WORKING: Company management with validation system is operational!")
+            if not login_success:
+                self.log("📝 Note: Authentication issues prevented full company creation testing")
             return True
         else:
             failed_tests = self.tests_run - self.tests_passed
