@@ -707,9 +707,95 @@ class CRMAPITester:
                 self.test_results["company_listing"]["immediate_availability"] = "FAIL"
                 return False
         
-        self.test_results["company_listing"]["immediate_availability"] = "FAIL"
-        return False
-        """Test that approval-related endpoints are not accessible or return appropriate responses"""
+    def test_validation_edge_cases(self):
+        """Test validation logic with edge cases"""
+        edge_cases = [
+            {
+                "name": "Edge Case High Tech",
+                "industry": "IT_ITeS",
+                "sub_industry": "Cloud Services",
+                "revenue": 70000000,  # ₹7 crore
+                "employees": 200,
+                "company_type": "DOMESTIC_GST",
+                "expected": "HOT"
+            },
+            {
+                "name": "Edge Case Low Agriculture",
+                "industry": "Agriculture",
+                "sub_industry": "Livestock",
+                "revenue": 1500000,  # ₹15 lakh
+                "employees": 10,
+                "company_type": "DOMESTIC_NONGST",
+                "expected": "COLD"
+            },
+            {
+                "name": "Edge Case Medium Manufacturing",
+                "industry": "Manufacturing",
+                "sub_industry": "Automotive",
+                "revenue": 40000000,  # ₹4 crore
+                "employees": 80,
+                "company_type": "DOMESTIC_GST",
+                "expected": "HOT"  # Manufacturing + Automotive should be HOT
+            }
+        ]
+        
+        all_passed = True
+        
+        for i, case in enumerate(edge_cases):
+            company_data = {
+                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
+                "company_type": case["company_type"],
+                "industry": case["industry"],
+                "sub_industry": case["sub_industry"],
+                "annual_revenue": case["revenue"],
+                "employee_count": case["employees"],
+                "gst_number": f"27EDGE{i}1234F{i}Z{i}" if case["company_type"] == "DOMESTIC_GST" else None,
+                "pan_number": f"EDGE{i}1234{chr(70+i)}",
+                "supporting_documents": [f"GST_CERTIFICATE_edge{i}.pdf", f"PAN_CARD_edge{i}.pdf"],
+                "verification_source": "GST" if case["company_type"] == "DOMESTIC_GST" else "PAN_NSDL",
+                "verification_date": datetime.now().isoformat(),
+                "verified_by": "admin",
+                "address": f"Edge Case Business District {i}",
+                "country": "India",
+                "state": "Maharashtra",
+                "city": "Mumbai",
+                "pin_code": "400001",
+                "parent_child_mapping_confirmed": True,
+                "linked_subsidiaries": ["None"],
+                "description": f"Edge case test for {case['industry']} validation"
+            }
+            
+            success, response = self.run_test(
+                f"Create Edge Case: {case['name']}",
+                "POST",
+                "/api/companies",
+                200,
+                data=company_data
+            )
+            
+            if success and response.get('status'):
+                company = response.get('data')
+                if company:
+                    company_id = company.get('id')
+                    lead_status = company.get('lead_status')
+                    validation_score = company.get('validation_score')
+                    
+                    self.created_company_ids.append(company_id)
+                    self.log(f"✅ {case['name']} - Status: {lead_status}, Score: {validation_score}")
+                    
+                    if lead_status == case["expected"]:
+                        self.log(f"✅ PASS: {case['name']} correctly classified as {case['expected']}")
+                    else:
+                        self.log(f"❌ FAIL: {case['name']} expected {case['expected']}, got {lead_status}")
+                        all_passed = False
+                else:
+                    self.log(f"❌ FAIL: No company data for {case['name']}")
+                    all_passed = False
+            else:
+                self.log(f"❌ FAIL: Could not create {case['name']}")
+                all_passed = False
+        
+        return all_passed
         # These endpoints should either not exist or return appropriate responses
         approval_endpoints = [
             "/api/companies/pending-approval",
