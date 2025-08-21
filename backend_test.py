@@ -755,7 +755,7 @@ class CRMAPITester:
                 "verification_source": "GST" if case["company_type"] == "DOMESTIC_GST" else "PAN_NSDL",
                 "verification_date": datetime.now().isoformat(),
                 "verified_by": "admin",
-                "address": f"Edge Case Business District {i}",
+                "address": f"Edge Case Business District {i} Commercial Area Mumbai",
                 "country": "India",
                 "state": "Maharashtra",
                 "city": "Mumbai",
