@@ -490,24 +490,24 @@ class CRMAPITester:
         cold_company_data = {
             "name": "Small Local Business",
             "company_type": "DOMESTIC_NONGST",
-            "industry": "Agriculture",  # Agriculture is not in hot industries list
-            "sub_industry": "Crop Production",
+            "industry": "Retail_CPG",  # Use valid industry instead of Agriculture
+            "sub_industry": "Local Retail",
             "annual_revenue": 3000000,  # ₹30 lakh - lower revenue
             "employee_count": 25,  # Small company
             "gst_number": None,  # Non-GST company
-            "pan_number": "SMALL1234F",
-            "supporting_documents": ["PAN_CARD_small.pdf", "BUSINESS_REGISTRATION_small.pdf"],
+            "pan_number": "SMALL1234F",  # Valid PAN format: AAAAA0000A
+            "supporting_documents": ["PAN_CARD_small.pdf", "MCA_CERTIFICATE_small.pdf"],
             "verification_source": "PAN_NSDL",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Village Road Agricultural Area",
+            "address": "Village Road Agricultural Area Mumbai Maharashtra",
             "country": "India",
             "state": "Maharashtra",
             "city": "Mumbai",
             "pin_code": "400001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "description": "Small Local Business - Agriculture company with 25 employees"
+            "description": "Small Local Business - Retail company with 25 employees"
         }
 
         success, response = self.run_test(
