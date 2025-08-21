@@ -488,7 +488,7 @@ class CRMAPITester:
     def test_create_cold_company(self):
         """Test creating a company that should be classified as COLD"""
         cold_company_data = {
-            "name": f"Small Retail Store {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "name": f"Small Retail Store {datetime.now().strftime('%Y%m%d%H%M%S')}",
             "company_type": "DOMESTIC_GST",
             "industry": "Retail_CPG",
             "sub_industry": "Grocery Retail",
@@ -500,14 +500,14 @@ class CRMAPITester:
             "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Main Street, Local Market, Retail Area",
+            "address": "Main Street Local Market Retail Area",
             "country": "India",
             "state": "Maharashtra",
             "city": "Pune",
             "pin_code": "411001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "description": "Small retail business - should be COLD lead"
+            "description": "Small retail business should be COLD lead"
         }
 
         success, response = self.run_test(
