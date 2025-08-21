@@ -19,7 +19,6 @@ class Country(Base):
     
     # Relationships
     states = relationship("State", back_populates="country", cascade="all, delete-orphan")
-    companies = relationship("Company", back_populates="country")
 
 
 class State(Base):
