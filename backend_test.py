@@ -543,8 +543,8 @@ class CRMAPITester:
 
 def main():
     """Main test execution"""
-    print("CRM Backend API Testing - Countries and States Dropdown Functionality")
-    print("=" * 70)
+    print("CRM Backend API Testing - 3-Level Dropdown System (Countries → States → Cities)")
+    print("=" * 80)
     
     tester = CRMAPITester()
     
