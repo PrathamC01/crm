@@ -1178,32 +1178,44 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
                   errors.country ? "border-red-300" : "border-gray-300"
                 }`}
               >
-                {Object.keys(countryStateMasters).map((country) => (
-                  <option key={country} value={country}>
-                    {country}
+                <option value="">Select country</option>
+                {countries.map((country) => (
+                  <option key={country.code} value={country.name}>
+                    {country.name}
                   </option>
                 ))}
               </select>
               {errors.country && (
                 <p className="text-red-500 text-sm mt-1">{errors.country}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                {countries.length} countries available
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State <span className="text-red-500">*</span>
+                State/Province <span className="text-red-500">*</span>
               </label>
               <select
                 name="state"
                 required
                 value={formData.state}
                 onChange={handleInputChange}
+                disabled={!formData.country || states.length === 0}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
                   errors.state ? "border-red-300" : "border-gray-300"
-                }`}
+                } ${(!formData.country || states.length === 0) ? "bg-gray-100 cursor-not-allowed" : ""}`}
               >
-                <option value="">Select state</option>
-                {getStatesForCountry().map((state) => (
+                <option value="">
+                  {!formData.country 
+                    ? "Select country first" 
+                    : states.length === 0 
+                      ? "No states available" 
+                      : "Select state/province"
+                  }
+                </option>
+                {states.map((state) => (
                   <option key={state} value={state}>
                     {state}
                   </option>
@@ -1212,25 +1224,69 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               {errors.state && (
                 <p className="text-red-500 text-sm mt-1">{errors.state}</p>
               )}
+              {states.length === 0 && formData.country && (
+                <p className="text-yellow-600 text-xs mt-1">
+                  ⚠️ No states/provinces available for this country
+                </p>
+              )}
+              {states.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {states.length} states/provinces available
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 City <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="city"
-                required
-                value={formData.city}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                  errors.city ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="Enter city"
-              />
+              {cities.length > 0 ? (
+                <select
+                  name="city"
+                  required
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                    errors.city ? "border-red-300" : "border-gray-300"
+                  }`}
+                >
+                  <option value="">Select city</option>
+                  {cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name="city"
+                  required
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                    errors.city ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder={
+                    !formData.state 
+                      ? "Select state first" 
+                      : "Enter city name"
+                  }
+                  disabled={!formData.state}
+                />
+              )}
               {errors.city && (
                 <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+              )}
+              {cities.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {cities.length} major cities available
+                </p>
+              )}
+              {cities.length === 0 && formData.state && (
+                <p className="text-blue-600 text-xs mt-1">
+                  💡 Major cities not listed? Type your city name above
+                </p>
               )}
             </div>
           </div>
