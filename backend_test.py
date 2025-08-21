@@ -485,29 +485,29 @@ class CRMAPITester:
         self.test_results["company_validation"]["hot_classification"] = "FAIL"
         return False, {}
 
-    def test_create_cold_company(self):
-        """Test creating a company that should be classified as COLD"""
+    def test_create_cold_company_specific(self):
+        """Test creating Small Local Business - should be classified as COLD"""
         cold_company_data = {
-            "name": f"Small Retail Store {datetime.now().strftime('%Y%m%d%H%M%S')}",
-            "company_type": "DOMESTIC_GST",
-            "industry": "Retail_CPG",
-            "sub_industry": "Grocery Retail",
-            "annual_revenue": 2500000,  # ₹25 lakh - should be COLD
-            "employee_count": 15,  # Small company
-            "gst_number": "27FGHIJ5678K2L6",
-            "pan_number": "FGHIJ5678K",
-            "supporting_documents": ["GST_CERTIFICATE_retail.pdf", "PAN_CARD_retail.pdf"],
-            "verification_source": "GST",
+            "name": "Small Local Business",
+            "company_type": "DOMESTIC_NONGST",
+            "industry": "Agriculture",  # Agriculture is not in hot industries list
+            "sub_industry": "Crop Production",
+            "annual_revenue": 3000000,  # ₹30 lakh - lower revenue
+            "employee_count": 25,  # Small company
+            "gst_number": None,  # Non-GST company
+            "pan_number": "SMALL1234F",
+            "supporting_documents": ["PAN_CARD_small.pdf", "BUSINESS_REGISTRATION_small.pdf"],
+            "verification_source": "PAN_NSDL",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Main Street Local Market Retail Area",
+            "address": "Village Road Agricultural Area",
             "country": "India",
             "state": "Maharashtra",
-            "city": "Pune",
-            "pin_code": "411001",
+            "city": "Mumbai",
+            "pin_code": "400001",
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
-            "description": "Small retail business should be COLD lead"
+            "description": "Small Local Business - Agriculture company with 25 employees"
         }
 
         success, response = self.run_test(
