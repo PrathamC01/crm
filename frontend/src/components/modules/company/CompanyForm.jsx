@@ -40,7 +40,10 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
 
   const [companies, setCompanies] = useState([]);
   const [industryMasters, setIndustryMasters] = useState({});
-  const [countryStateMasters, setCountryStateMasters] = useState({});
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedCountryCode, setSelectedCountryCode] = useState("IN"); // Default to India
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [uploadedFiles, setUploadedFiles] = useState([]);
