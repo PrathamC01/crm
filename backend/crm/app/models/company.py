@@ -73,6 +73,7 @@ class Company(BaseModel):
     # System Metadata
     status = Column(Enum(CompanyStatus), nullable=False, default=CompanyStatus.ACTIVE)
     lead_status = Column(Enum(LeadStatus), nullable=False)  # New field for hot/cold classification
+    validation_score = Column(Integer, nullable=True)  # Score from validation algorithm
     change_log_id = Column(String(36), nullable=False, default=lambda: str(uuid.uuid4()))
     
     # Additional fields
