@@ -1223,7 +1223,7 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
               >
                 <option value="">Select country</option>
                 {countries.map((country) => (
-                  <option key={country.code} value={country.name}>
+                  <option key={country.id || country.code || country.name} value={country.name}>
                     {country.name}
                   </option>
                 ))}
