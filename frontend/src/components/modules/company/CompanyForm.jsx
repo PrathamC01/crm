@@ -181,8 +181,6 @@ const CompanyForm = ({ company, onSave, onCancel }) => {
         console.log("fetchCities: No cities in response, clearing");
         setCities([]);
       }
-      // Clear city when cities change
-      setFormData(prev => ({ ...prev, city: "" }));
     } catch (err) {
       console.error("Failed to fetch cities:", err);
       setCities([]);
