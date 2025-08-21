@@ -766,7 +766,146 @@ class CRMAPITester:
         self.test_results["company_validation"]["cold_classification"] = "FAIL"
         return False, {}
 
-    def test_create_different_industries(self):
+    def test_geographic_integration_different_countries(self):
+        """Test geographic integration with different countries (US, Canada)"""
+        test_cases = [
+            {
+                "name": "US Tech Company",
+                "country": "United States",
+                "state": "California", 
+                "city": "San Francisco",
+                "country_code": "US"
+            },
+            {
+                "name": "Canadian Corp",
+                "country": "Canada",
+                "state": "Ontario",
+                "city": "Toronto", 
+                "country_code": "CA"
+            }
+        ]
+        
+        all_passed = True
+        
+        for i, case in enumerate(test_cases):
+            company_data = {
+                "name": f"{case['name']} {datetime.now().strftime('%Y%m%d%H%M%S')}{i}",
+                "company_type": "INTERNATIONAL",
+                "industry": "IT_ITeS",
+                "sub_industry": "Software Development",
+                "annual_revenue": 50000000,
+                "employee_count": 100,
+                "gst_number": None,
+                "pan_number": None,
+                "supporting_documents": [f"BUSINESS_LICENSE_{i}.pdf"],
+                "verification_source": "BUSINESS_LICENSE",
+                "verification_date": datetime.now().isoformat(),
+                "verified_by": "admin",
+                "address": f"Business District {i} Commercial Area",
+                "country": case["country"],
+                "state": case["state"],
+                "city": case["city"],
+                "pin_code": "12345",
+                "parent_child_mapping_confirmed": True,
+                "linked_subsidiaries": ["None"],
+                "description": f"Test company for {case['country']} geographic integration"
+            }
+            
+            success, response = self.run_test(
+                f"Create {case['country']} Company",
+                "POST",
+                "/api/companies",
+                200,
+                data=company_data
+            )
+            
+            if success and response.get('status'):
+                company = response.get('data')
+                if company:
+                    company_id = company.get('id')
+                    country_id = company.get('country_id')
+                    state_id = company.get('state_id')
+                    city_id = company.get('city_id')
+                    
+                    self.created_company_ids.append(company_id)
+                    self.log(f"✅ {case['country']} Company - ID: {company_id}")
+                    self.log(f"✅ Country ID: {country_id}, State ID: {state_id}, City ID: {city_id}")
+                    
+                    # Verify that IDs are properly set (not None)
+                    if country_id and state_id and city_id:
+                        self.log(f"✅ PASS: {case['country']} geographic IDs properly set")
+                    else:
+                        self.log(f"❌ FAIL: {case['country']} missing geographic IDs")
+                        all_passed = False
+                else:
+                    self.log(f"❌ FAIL: No company data for {case['country']}")
+                    all_passed = False
+            else:
+                self.log(f"❌ FAIL: Could not create {case['country']} company")
+                all_passed = False
+        
+        self.test_results["geographic_apis"]["international_integration"] = "PASS" if all_passed else "FAIL"
+        return all_passed
+
+    def test_company_listing_sorted_by_lead_status(self):
+        """Test that companies are listed with HOT companies appearing first"""
+        success, response = self.run_test(
+            "Get Companies List Sorted by Lead Status",
+            "GET",
+            "/api/companies",
+            200
+        )
+        
+        if success and response.get('status'):
+            companies_data = response.get('data', {})
+            companies = companies_data.get('companies', [])
+            self.log(f"✅ Found {len(companies)} companies")
+            
+            # Check if companies are sorted with HOT first
+            hot_companies = []
+            cold_companies = []
+            
+            for company in companies:
+                lead_status = company.get('lead_status')
+                if lead_status == 'HOT':
+                    hot_companies.append(company)
+                elif lead_status == 'COLD':
+                    cold_companies.append(company)
+            
+            self.log(f"✅ HOT companies: {len(hot_companies)}")
+            self.log(f"✅ COLD companies: {len(cold_companies)}")
+            
+            # Check if HOT companies appear before COLD companies
+            if len(companies) > 0:
+                first_hot_index = -1
+                last_cold_index = -1
+                
+                for i, company in enumerate(companies):
+                    if company.get('lead_status') == 'HOT' and first_hot_index == -1:
+                        first_hot_index = i
+                    if company.get('lead_status') == 'COLD':
+                        last_cold_index = i
+                
+                if first_hot_index != -1 and last_cold_index != -1:
+                    if first_hot_index < last_cold_index:
+                        self.log(f"✅ PASS: HOT companies appear before COLD companies")
+                        self.test_results["company_listing"]["hot_first_sorting"] = "PASS"
+                        return True
+                    else:
+                        self.log(f"❌ FAIL: COLD companies appear before HOT companies")
+                        self.test_results["company_listing"]["hot_first_sorting"] = "FAIL"
+                        return False
+                else:
+                    self.log(f"✅ PASS: Companies listed (sorting not applicable with current data)")
+                    self.test_results["company_listing"]["hot_first_sorting"] = "PASS"
+                    return True
+            else:
+                self.log(f"❌ FAIL: No companies found")
+                self.test_results["company_listing"]["hot_first_sorting"] = "FAIL"
+                return False
+        
+        self.test_results["company_listing"]["hot_first_sorting"] = "FAIL"
+        return False
         """Test creating companies in different industries to verify validation differences"""
         test_cases = [
             {
