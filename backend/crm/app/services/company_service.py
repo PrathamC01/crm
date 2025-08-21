@@ -19,6 +19,7 @@ from ..schemas.company import (
     ValidationResult,
     CompanyDropdownItem
 )
+from .geographic_service import GeographicService
 
 class CompanyService:
     def __init__(self, db: Session):
