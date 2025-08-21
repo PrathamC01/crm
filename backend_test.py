@@ -427,7 +427,7 @@ class CRMAPITester:
     def test_create_hot_company(self):
         """Test creating a company that should be classified as HOT"""
         hot_company_data = {
-            "name": f"TechCorp Solutions {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "name": f"TechCorp Solutions {datetime.now().strftime('%Y%m%d%H%M%S')}",
             "company_type": "DOMESTIC_GST",
             "industry": "IT_ITeS",
             "sub_industry": "Software Development",
@@ -439,7 +439,7 @@ class CRMAPITester:
             "verification_source": "GST",
             "verification_date": datetime.now().isoformat(),
             "verified_by": "admin",
-            "address": "Tech Park, IT Corridor, Software City",
+            "address": "Tech Park IT Corridor Software City",
             "country": "India",
             "state": "Maharashtra",
             "city": "Mumbai",
@@ -447,7 +447,7 @@ class CRMAPITester:
             "parent_child_mapping_confirmed": True,
             "linked_subsidiaries": ["None"],
             "website": "https://techcorp.com",
-            "description": "Leading software development company - should be HOT lead"
+            "description": "Leading software development company should be HOT lead"
         }
 
         success, response = self.run_test(
